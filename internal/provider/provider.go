@@ -48,6 +48,9 @@ var Protocols = []Protocol{Chat, Responses, Anthropic}
 
 // Provider is one configured vendor.
 type Provider struct {
+	// TuziSource identifies a deliberately imported account key, never account authentication.
+	TuziSource *TuziSource `json:"tuziSource,omitempty"`
+
 	ID   string `json:"id"`
 	Name string `json:"name"`
 	// Was are ids the provider had before it was renamed (see Rename):
@@ -1072,6 +1075,9 @@ func Save(p Provider) error {
 	p.PickedFrom = listedWith(p, was)
 	p.Delisted = delistedWith(p, was)
 	if was != nil {
+		if p.TuziSource == nil {
+			p.TuziSource = was.TuziSource
+		}
 		if p.Was == nil {
 			p.Was = was.Was
 		}
