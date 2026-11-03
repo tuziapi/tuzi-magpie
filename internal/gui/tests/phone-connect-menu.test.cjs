@@ -98,6 +98,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.ok((await top(page, "#connectAddress")) > 800, "the address starts below the fold");
       await page.evaluate(() => {
         const a = document.querySelector("#connectAddress");
+        // Native nearest scrolling rounds scrollTop to a pixel. Keep the
+        // fractional button edge inside it while testing the click guard.
+        a.style.scrollMarginBottom = "1px";
         a.scrollIntoView({ block: "center" });
         a.focus();
         a.click();
