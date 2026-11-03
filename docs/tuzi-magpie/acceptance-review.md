@@ -73,6 +73,17 @@ and render the reconnect state. Ordinary network errors must preserve the
 saved connection. UI owner has been assigned a regression and fix.
 **Open at this review snapshot.**
 
+Re-review update: UI commit `b5c98dbfde01b4f4c37bf7bd2bfcb2e239be2d4a`
+reconciles authentication failures at the shared HTTP boundary. The reviewer
+inspected the actual diff: native state reads are fenced by active page,
+lifecycle, generation and identity; identity clearing destroys old pane and
+secret dialogs even when generation is unchanged; ordinary network errors
+do not reset the connection. The regression covers read invalidation,
+disabled-account reveal and unchanged connection on network failure. Author
+evidence records red on the previous implementation and both browser engines
+passing. R2's source defect is closed; final integrated native checks remain
+the root task's gate.
+
 ## Contract and scope checks
 
 - New stylesheet selectors are scoped beneath `#view-tuzi`; no global font,
@@ -98,11 +109,14 @@ saved connection. UI owner has been assigned a regression and fix.
   from model projections is **not a confirmed defect**: the actual website
   endpoint returns the ratio-based `model.Pricing` schema. Direct-price
   fields belong to personal override metadata, which this UI must exclude.
-- Repository configuration remains an integration observation: the new
-  `product.Repository` constant is empty/unused, while About/issue links use
-  literal upstream URLs. Preserving upstream attribution is valid, but a
-  future fork-repository configuration must be wired/documented distinctly.
-  Root has been informed; this is not permission to rewrite original UI.
+- Repository configuration observation: About/issue links used literal
+  upstream URLs while `product.Repository` was an empty constant. Correction
+  to the initial observation: `update.ReleasePage` already consumed that
+  constant, so it was not unused. Follow-up `6b47155` adds actual linker
+  configuration and GUI consumption with an unchanged attribution default;
+  see `repository-configuration.md`. The reviewer implemented that follow-up,
+  so it needs independent review by root. Its two mirror-source sentences
+  were changed only after the user's explicit approval.
 
 ## AC coverage and outstanding integration gates
 
