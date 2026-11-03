@@ -26,7 +26,12 @@ explicitly does not claim visual DOM or screenshot validation.
 Validation completed while preparing the script: Python syntax parse passed;
 invocation against the current fixture-tagged app exited 2 with
 `Requires a production GUI binary without fixture hooks`. It did not create
-runtime output or register/start an app. An actual final production-bundle
-run remains pending until root supplies that rebuilt artifact. The earlier
-real cold/warm OS URL test used a fixture build and is recorded separately in
+runtime output or register/start an app. Actual production-bundle runs now pass: `production-start-01` on 3d77be3
+and `production-start-02` on c7238e1. The latest result verifies exact PID
+22858, port18543, account HTTP404, unchanged source SHA256 and restored
+registration; its process was closed. Evidence is under
+`/Users/syd08/Documents/tuzi-magpie-evidence/production-start-02/`. Neither
+run claims production window visual inspection. See
+[native-current-evidence.md](native-current-evidence.md) for build provenance.
+The earlier real cold/warm OS URL test used a fixture build and is recorded separately in
 [native-os-navigation.md](native-os-navigation.md).

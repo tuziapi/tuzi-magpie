@@ -1,8 +1,9 @@
 # Current native and production evidence
 
-These checks ran on 3d77be3 after the complete Go recheck and ownership-aware
-CLI fixture fix. Remaining GUI repairs and final full suites are still open;
-this record does not declare the development goal complete.
+The latest native and production checks below ran on c7238e1. The complete
+GUI regression is still running and has an unresolved account-eye failure;
+this record does not declare the development goal complete. Earlier checks
+on 3d77be3 are retained here as historical evidence.
 
 The fixture build uses `production,tuzi_fixture`. Both native runs execute
 real Wails DOM actions, native Go account handlers and the real gateway.
@@ -55,6 +56,44 @@ offline, generation1, no identity, network_uncertain; the UI remained silently
 Not connected. cause-summary.json retains only safe metadata.
 
 The diagnostic driver is preserved under that evidence directory. The fixed
-app is checked with the exact same script and delay after integration; the
+app was checked with the exact same script and delay after integration; the
 old red remains immutable. Independent review is recorded in
 visibility-independent-review-account.md.
+
+
+## Latest integrated source: c7238e1
+
+All paths in this section are under
+`/Users/syd08/Documents/tuzi-magpie-evidence/`.
+
+- `native-visibility-fixed-build/source.json` records clean source
+  c7238e14891f917b67d80209857d3d1db4cb4c42. The fixture bundle is preserved at
+  `native-visibility-fixed-build/tuzi-magpie-fixture.app`.
+- `native-visibility-fixed-01` passes the complete eight-check native workspace
+  and real gateway flow with the same driver hash and 500ms bootstrap delay
+  used for the old-code failure. Connection starts at 618ms, the controlled
+  hidden event occurs at 719ms, and the connected response arrives at 1140ms.
+  No pending request rejects. Invalidating the old controller after consuming
+  the successful response is expected. `comparison.json` and
+  `cause-summary.json` retain the causal evidence.
+- `native-final-lifecycle-02` reuses that run's owned isolated HOME, actually
+  restarts the app, restores/checks the account, disconnects, and verifies the
+  retained Provider through the real gateway (exact app PID 22773). All three
+  checks pass. It does not replace the workspace's separate eight checks.
+- `final-source-checks-03` records GUI Go package tests (74.25s), fixture vet,
+  Linux and Windows builds, and the production app build (8.57s) on clean
+  c7238e1. The earlier complete Go suite, all-platform vet/build and targeted
+  race run are `full-go-02`, at fdfea5c plus its recorded four GUI test edits;
+  those full results are not attributed to c7238e1.
+- `production-start-02` launches the production-only app through LaunchServices.
+  PID 22858 owns port 18543, account management returns HTTP 404, no account
+  file is created, the original bundle hash is unchanged and registration is
+  restored. The checker closes its app; `keptOpen` is false.
+
+The production artifact is
+`/Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app`, with executable
+SHA256 `f53209fed0866b97b610fd715ab9496de59645569e888712f8d2885e24358472`.
+The manifest is `final-source-checks-03/artifact.json`. Production window
+inspection remains unclaimed (`uiVisuallyVerified: false`); the earlier lock
+screen was not bypassed. All native acceptance app and fixture processes
+were closed. No real account or paid model was used.

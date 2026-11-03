@@ -1,7 +1,8 @@
 # Local delivery and acceptance
 
-Status: preparation in progress. This document does not claim the remaining
-complete suites, final build or final startup have passed. See acceptance.md
+Status: closing freeze. The c7238e1 candidate production build and actual
+startup pass; the complete GUI suite is running with an unresolved failure.
+This document does not claim final acceptance. See acceptance.md
 for the current AC-01–16 matrix and recovery.md for the latest continuation.
 
 ## Checkouts and paired source
@@ -27,14 +28,20 @@ and `nogui`; the production startup checker enforces this before launching.
 
 From the development worktree, build with `make app TAGS=production`. The
 local Go toolchain is `/Users/syd08/.local/toolchains/go1.25.12/bin/go`, which
-selects the repository's Go1.26.8 toolchain. The final binary version, source
-SHA, digest and evidence path will be recorded after the actual final build.
+selects the repository's Go1.26.8 toolchain. The current candidate is version c7238e1, source
+c7238e14891f917b67d80209857d3d1db4cb4c42, executable SHA256
+`f53209fed0866b97b610fd715ab9496de59645569e888712f8d2885e24358472`.
+Evidence is `final-source-checks-03/artifact.json` and `production-start-02`
+under `/Users/syd08/Documents/tuzi-magpie-evidence/`. The final acceptance
+commit will also include the closing evidence and any required repairs.
 
 To start the production app without touching daily applications or real
 credentials, use the production checker with a new absolute directory under
 `/private/tmp`:
 
 ```sh
+cd /Users/syd08/Documents/tuzi-magpie-local
+export PATH="/Users/syd08/.local/toolchains/go1.25.12/bin:$PATH"
 python3 scripts/tuzi-magpie/native-production-launch.py \
   --app /Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app \
   --output /private/tmp/tuzi-magpie-user-acceptance-01 \
@@ -64,6 +71,32 @@ first-run HOME and scripts/tuzi-magpie/tests/native-lifecycle.js checks restart 
 and retained Provider use. Native OS URL delivery and the final production
 startup have their own documented runners.
 
+The preserved fixture executable is distinct from the production `.app`
+directory accepted by the production checker. To replay the workspace and
+then its restart flow, use fresh output directories:
+
+```sh
+cd /Users/syd08/Documents/tuzi-magpie-local
+python3 scripts/tuzi-magpie/native-acceptance.py \
+  --app /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixed-build/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
+  --fixture /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixture/tuzi-fixture \
+  --output /Users/syd08/Documents/tuzi-magpie-evidence/native-user-workspace-01 \
+  --script /Users/syd08/Documents/tuzi-magpie-local/scripts/tuzi-magpie/tests/native-workspace.js
+
+python3 scripts/tuzi-magpie/native-acceptance.py \
+  --app /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixed-build/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
+  --fixture /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixture/tuzi-fixture \
+  --output /Users/syd08/Documents/tuzi-magpie-evidence/native-user-lifecycle-01 \
+  --home /Users/syd08/Documents/tuzi-magpie-evidence/native-user-workspace-01/home \
+  --script /Users/syd08/Documents/tuzi-magpie-local/scripts/tuzi-magpie/tests/native-lifecycle.js
+```
+
+Run the second command only after the first passes and ports18341/18343 are
+reusable. The runner refuses occupied ports; do not weaken that check or stop
+unrelated applications. A previous completed lifecycle HOME is disconnected,
+so start a fresh workspace run. These commands were checked against the script
+interfaces; this particular user replay has not been executed.
+
 Installed CLI acceptance uses installed Codex and official Claude executables
 with generated isolated native Agent configs. The commands and sandbox
 boundaries are in installed-cli-acceptance.md. No real account credential or
@@ -82,3 +115,17 @@ only its isolated output directory, and return to the untouched original
 checkout/application. Keep the task branches and evidence for recovery.
 Do not delete or reset the original Magpie/Agent data, change production
 settings, rewrite upstream history, or uninstall the user's normal app.
+
+
+## Known limits
+
+Production window visual inspection remains unclaimed because macOS was
+locked. Actual native DOM workflows, same-condition browser comparisons and
+production process startup are separate evidence.
+
+Provider storage detects changed files before replacement, but compare then
+rename is not a global atomic CAS against external writers that do not share
+the lock. Existing image MCP jobs use their timeout and generation_result;
+this change adds no separate cancel command. Credential auditing covers the
+current source and locally available shallow history, not unavailable upstream
+history. Real API behavior and paid models have not been exercised.
