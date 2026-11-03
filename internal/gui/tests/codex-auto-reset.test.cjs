@@ -160,6 +160,17 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const flip = async (page, sel, posts, body, want, said) => {
         const b = page.locator(sel);
         await b.scrollIntoViewIfNeeded();
+        // A long notice can cover the next switch. Read it and leave it so
+        // its normal timer closes it before taking the next click's baseline.
+        const covered = await b.evaluate((e) => {
+          const r = e.getBoundingClientRect();
+          return !!document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest("#status");
+        });
+        if (covered) {
+          await page.locator("#status").hover();
+          await page.mouse.move(0, 0);
+          await page.waitForFunction(() => !document.querySelector("#status").textContent);
+        }
         const at = await b.evaluate((e) => [e.getBoundingClientRect().top, document.scrollingElement.scrollTop, ...[...document.querySelectorAll(".view")].map((v) => v.scrollTop)]);
         const n = posts.length;
         await b.click();

@@ -11,6 +11,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { reach } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const WHY = "429 Too Many Requests: {\"detail\":\"usage limit reached\"} https://chatgpt.com/backend-api/codex/responses-with-a-very-long-unbroken-reason";
@@ -124,12 +125,17 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.ok(Math.abs(await at(go) - y) <= 1, `a click moved the page: the button went from ${y} to ${await at(go)}`);
         assert.deepEqual(await sideways(page), []);
 
+        // Read the long error, then leave it so its normal timer closes it.
+        await page.locator("#status").hover();
+        await page.mouse.move(0, 0);
+        await page.waitForFunction(() => !document.querySelector("#status").textContent);
         // Claude Code's tab: one account, sent at a press
         await page.locator("#warmTab-claude").click();
         const crow = page.locator("#claudeWarmNowRow");
         await crow.locator("button").waitFor();
         assert.equal((await crow.locator("button").innerText()).trim(), w.go);
         assert.equal(await crow.locator("button").getAttribute("aria-haspopup"), null);
+        await reach(page, crow.locator("button"));
         await crow.locator("button").click();
         await page.waitForFunction((s) => document.querySelector("#claudeWarmNowSub")?.textContent.startsWith(s), w.own);
         assert.deepEqual(asked.at(-1), ["claude", "own@example.com"]);
