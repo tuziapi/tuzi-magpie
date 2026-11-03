@@ -64,7 +64,19 @@ const want = {
   de: { edit: "Schlüssel ändern", hint: "Neuen Wert des Schlüssels einfügen", note: "Team nutzt jetzt den neuen Wert" },
 };
 
-const scrolled = (page) => page.evaluate(() => [window.scrollY, ...[...document.querySelectorAll("*")].filter((e) => e.scrollTop > 0).map((e) => `${e.className}:${e.scrollTop}`)].join(" "));
+// A redraw may replace the editor body, and pointerover toggles its holds
+// class. Identify the same place in the document independently of those
+// classes; every actual scroll offset must still be exactly unchanged.
+const scrolled = (page) => page.evaluate(() => {
+  const place = (e) => {
+    if (e.id) return `#${e.id}`;
+    const siblings = e.parentElement ? [...e.parentElement.children].filter((s) => s.tagName === e.tagName) : [e];
+    return `${e.parentElement ? place(e.parentElement) : ""}/${e.tagName}:${siblings.indexOf(e)}`;
+  };
+  return [window.scrollY, ...[...document.querySelectorAll("*")]
+    .filter((e) => e.scrollTop > 0)
+    .map((e) => ({ at: place(e), top: e.scrollTop }))];
+});
 const sideways = (page) => page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
 // a reader wheels the row into sight and points at it
 async function reach(page, row) {
@@ -129,7 +141,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.equal((await now.locator(".plan.mono").textContent()).trim(), "sk-…new");
         assert.equal(await now.locator(".key-rest").count(), 0);
         await page.waitForFunction((w) => document.querySelector("#status")?.textContent.trim() === w, want[lang].note);
-        assert.equal(await scrolled(page), sc, "changing the key scrolled");
+        assert.deepEqual(await scrolled(page), sc, "changing the key scrolled");
         assert.deepEqual(errors, []);
       });
 
@@ -145,7 +157,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await field.waitFor({ state: "detached" });
         assert.equal((await page.locator('.acc[data-account-id="bbbbbbbbbb"] .plan.mono').textContent()).trim(), "sk-…two");
         await page.waitForTimeout(150);
-        assert.equal(await scrolled(page), sc, "the double-click or Escape scrolled");
+        assert.deepEqual(await scrolled(page), sc, "the double-click or Escape scrolled");
         // a double-click on a control doesn't. (Its scroll isn't checked: under
         // load the editor's body went back to the top after the copy
         // button's double-click, once in ~300 runs, with no script scrolling

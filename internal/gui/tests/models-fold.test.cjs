@@ -83,7 +83,19 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       };
       const fold = editor.locator(".mchips-fold");
       const box = () => editor.locator(".models > .mchips").evaluate((c) => ({ shown: c.clientHeight, all: c.scrollHeight }));
-      const scrolled = () => page.evaluate(() => [window.scrollY, ...[...document.querySelectorAll("*")].filter((e) => e.scrollTop > 0 && !e.classList.contains("mchips")).map((e) => `${e.className}:${e.scrollTop}`)].join(" "));
+      // A redraw may replace the editor body, and pointerover toggles its holds
+      // class. Identify the same place in the document independently of those
+      // classes; every actual scroll offset must still be exactly unchanged.
+      const scrolled = () => page.evaluate(() => {
+        const place = (e) => {
+          if (e.id) return `#${e.id}`;
+          const siblings = e.parentElement ? [...e.parentElement.children].filter((s) => s.tagName === e.tagName) : [e];
+          return `${e.parentElement ? place(e.parentElement) : ""}/${e.tagName}:${siblings.indexOf(e)}`;
+        };
+        return [window.scrollY, ...[...document.querySelectorAll("*")]
+          .filter((e) => e.scrollTop > 0 && !e.classList.contains("mchips"))
+          .map((e) => ({ at: place(e), top: e.scrollTop }))];
+      });
       const settle = () => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
       // a short list fits its box: nothing to let out
@@ -114,7 +126,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       if (process.env.ARTIFACT_DIR) await page.screenshot({ path: path.join(process.env.ARTIFACT_DIR, `${engine}-${lang}-models-fold-open.png`) });
       assert.equal((await fold.textContent()).trim(), w.fold);
       assert.equal(await fold.getAttribute("aria-expanded"), "true");
-      assert.equal(await scrolled(), before, "the click scrolled");
+      assert.deepEqual(await scrolled(), before, "the click scrolled");
       assert(await fold.evaluate((e) => Math.round(e.getBoundingClientRect().top)) > at, "the button goes down with the models it lets out");
       // a pick redraws the chips: still let out
       await editor.locator(".models > .mchips .mchip", { hasText: "a-rather-long-model-name-2" }).first().click();

@@ -106,7 +106,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await page.waitForFunction(() => new URL(location.href).searchParams.get("view") === "providers");
         await page.waitForFunction(() => new URL(location.href).searchParams.get("edit") === "codex");
         // its editor, with the accounts to switch off, is what opens
-        await page.waitForFunction(() => !document.querySelector("#modal").hidden && document.querySelector("#modal").innerText.startsWith("Codex"));
+        await page.locator("#modal").waitFor({ state: "visible" });
+        const heading = page.locator("#modal .editor .ehead b");
+        await heading.waitFor({ state: "visible" });
+        assert.equal(await heading.textContent(), "Codex", "the open editor names Codex");
         assert.ok(await page.locator(".row.provider.selected[data-id=codex]").count(), "Codex is the one open");
         assert.deepEqual(dialogs, []);
         assert.deepEqual(errors, []);
