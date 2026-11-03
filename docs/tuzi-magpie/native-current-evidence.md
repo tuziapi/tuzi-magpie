@@ -34,3 +34,27 @@ the successful actual native DOM workflows. The isolated production process
 was closed after the attempt; post-visual-check-cleanup.json records this
 without rewriting the original keep-open startup result. The original user's
 Magpie was not stopped or replaced.
+
+## Deterministic native visibility cancellation
+
+A later native-final-workspace-02 run failed during connection. The failure
+was retained and investigated; a passing instrumentation run was not treated
+as a substitute. The old client's shared cancellation signal caused three
+controlled browser failures (connection, initial state and Key PATCH).
+
+The tagged synthetic server now accepts `-bootstrap-delay` from zero to five
+seconds, default zero. The native runner optionally forwards
+`--bootstrap-delay`; all sandbox, literal-loopback, private-HOME and exact-PID
+checks remain. Production builds do not include this fixture command.
+
+With a500ms bootstrap response delay, native-visibility-old-01 runs the actual
+old d384d23 desktop and Go backend. Its diagnostic script hides the document
+100ms after connection starts. The recorded timeline is643ms request start,
+744ms hidden,746ms signal abort and fetch AbortError. The final Go state is
+offline, generation1, no identity, network_uncertain; the UI remained silently
+Not connected. cause-summary.json retains only safe metadata.
+
+The diagnostic driver is preserved under that evidence directory. The fixed
+app is checked with the exact same script and delay after integration; the
+old red remains immutable. Independent review is recorded in
+visibility-independent-review-account.md.

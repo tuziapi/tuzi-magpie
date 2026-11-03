@@ -21,6 +21,7 @@ parser.add_argument("--account-link", action="store_true", help="Start through t
 parser.add_argument("--skip-gateway", action="store_true", help="Navigation-only acceptance; does not claim gateway verification")
 parser.add_argument("--home", type=Path, help="Reuse this task's isolated home for restart acceptance")
 parser.add_argument("--script", type=Path, help="Native DOM acceptance script")
+parser.add_argument("--bootstrap-delay", help="Test-only synthetic bootstrap delay, e.g. 500ms")
 args = parser.parse_args()
 repo = Path(__file__).resolve().parents[2]
 for p in (args.app, args.fixture, args.output):
@@ -70,7 +71,10 @@ logs = []
 result = {"passed": False, "checks": [], "errors": []}
 stage = "launch"
 try:
-    for name, command in (("fixture", sandboxed(args.output/"sandbox.sb", args.fixture, "-report", str(ui_result_path))),
+    fixture_command = sandboxed(args.output/"sandbox.sb", args.fixture, "-report", str(ui_result_path))
+    if args.bootstrap_delay:
+        fixture_command.extend(("-bootstrap-delay", args.bootstrap_delay))
+    for name, command in (("fixture", fixture_command),
                           ("app", sandboxed(args.output/"sandbox.sb", args.app, "tuzimagpie://account/connect" if args.account_link else "app"))):
         log = (args.output/(name+".log")).open("w")
         logs.append(log)

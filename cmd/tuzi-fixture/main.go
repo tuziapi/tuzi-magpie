@@ -19,14 +19,27 @@ import (
 func main() {
 	addr := flag.String("addr", "127.0.0.1:18341", "literal loopback address")
 	report := flag.String("report", "", "native acceptance result file")
+	bootstrapDelay := flag.Duration("bootstrap-delay", 0, "synthetic account bootstrap response delay")
 	flag.Parse()
+	if *bootstrapDelay < 0 || *bootstrapDelay > 5*time.Second {
+		log.Fatal("bootstrap delay must be between zero and five seconds")
+	}
 	host, _, err := net.SplitHostPort(*addr)
 	if err != nil || net.ParseIP(host) == nil || !net.ParseIP(host).IsLoopback() {
 		log.Fatal("fixture requires literal loopback")
 	}
 	fixture := tuzifixture.New()
 	mux := http.NewServeMux()
-	mux.Handle("/", fixture)
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/user/self/bootstrap" && *bootstrapDelay > 0 {
+			select {
+			case <-r.Context().Done():
+				return
+			case <-time.After(*bootstrapDelay):
+			}
+		}
+		fixture.ServeHTTP(w, r)
+	}))
 	mux.HandleFunc("/__snapshot", func(w http.ResponseWriter, r *http.Request) {
 		paths, calls := fixture.Snapshot()
 		_ = json.NewEncoder(w).Encode(map[string]any{"paths": paths, "modelCalls": calls})
