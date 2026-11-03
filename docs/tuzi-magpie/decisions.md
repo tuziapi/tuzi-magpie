@@ -63,9 +63,10 @@ reset measurements. These are bounded behavior exceptions, with no style or
 content changes; see routing-fixture-review.md for original failures, exact
 geometry/screenshot comparisons and final neighboring tests (15/15 per engine).
 
-## Pending tray focus repair
+## Approved tray focus repair (2026-11-03)
 
-The candidate in tray-lazy-summary-candidate-account.md waits for the lazy
-account summary before explicit card navigation. The user was asked to
-approve this inherited behavior repair. It remains evidence-only pending
-the answer; passing an isolated candidate is not authorization to integrate it.
+The user explicitly approved “采用托盘定位时序修复”. The reviewed candidate
+in tray-lazy-summary-candidate-account.md waits for the lazy account summary
+before explicit card navigation. Its five-second expiry, real wheel
+cancellation and module-failure fallback remain. The account subagent now
+owns implementation and final neighboring regression checks.

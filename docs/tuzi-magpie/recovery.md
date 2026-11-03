@@ -162,3 +162,20 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 
 - installed-cli-final-01 exec29825 finished exit1: ClaudeactualCLIpassed, Codexfailed atnativeAgentWired beforemodelrequest. Websitebranchcodex/tuzi-installed-codex-ownership @639eb16 ownsrepair: fixturecalled internalField.Set, bypassingpublicApply ownershiprecord. Proposedtest-onlyuseApply, keepWired+secret/config+modelassertions. WebsitehasGo/CLIqueue; rootnoGo/builduntilreleased.
 - Traycandidateuserapprovalasked viaasync (call in currentturn), pending. Importedcandidate-onlyreport2494e22; noapp.jschange. Accountidle, UIhasbrowser4Usage. FinalGUIrunnerisolationreviewaddressed minimalenv/perengineprivateHOME+cleanup/todo==0, notstarted.
+
+## 2026-11-03 18:19 actual CLI and strengthened native acceptance
+
+- Root3d77be3 containsreviewedCLI fixture-onlyApplyfix6fbeb65; actualCodex0.154.0/Claude2.1.241 bothpass throughrealgateway tosyntheticmodel, each1call;8ownershiprace testspass. Evidenceinstalled-cli-ownership-02. AllownCLIs/listenersended.
+- Freshproduction,tuzi_fixture appbuildat3d77be3 succeeded19.05s, fixture0.63s, exec45103completed. Source/binaryhash/buildinfo native-final-build-01. Thisisstilla testfixturebundle, NOTproductiondelivery.
+- NewactualWails workspaceexec48168passed:4populatedsummaries,create/reveal/close,Provider,logs/models/status,nativeGoAPI,actualgatewayexactPID13690→syntheticmodel. Evidence native-final-workspace-01. BothownPIDs13689/13690ended, nolisteners.
+- Lifecyclefirststartuprefused18341immediatelyaftercleanup (no liveprocess/listener;TCPportnotyetreusable). Afterbounded30sidle, exec39716passedactualrestart/restore/disconnect/preservedProviderandrealgatewayPID13963→syntheticmodel. Evidencenative-final-lifecycle-01, ownprocessesclosed. Noisolationcheckdisabled.
+- UI fourUsagefulltargetbatchrunningChromiumthenWebKit(singleworker);usertrayapprovalstillpending,noapp.jsproductchange. FinalcompleteGUI,latestposttrayembeddedchecks/nativeifchanged,productionbuild/start,finalauditanddeliveryremain.
+
+## 2026-11-03 approval and queue continuation
+
+- User explicitly approved the tray focus timing candidate (“采用托盘定位时序修复”). Account resumed on its independent branch: apply only frozen quotaAllJS/focusQuotaCard patch, add controlled module completion/wheel/expiry/failure regression to existing tray-cell-click test, update owning subsystem, then validate after UI releases the single-browser slot.
+- UI Chromium: unchanged three files47/47; ledger17/17 after specific12s state wait for existing5s backoff+up to3s first-load dependency. Complete four-file WebKit still running. Website performs read-only independent review of the4 test changes.
+- Root405d5ab records latest native/production evidence; root task app now production-only at code3d77be3. Isolated production PID14594 was stopped after CUA reported locked Mac; durable logs copied to evidence/production-start-01. No test native process remains. The original daily app is untouched.
+- After targeted integration: rerun affected embedded-GUI/package and platform/build checks, rebuild latest fixture/native and production app as needed for final source, then run frozen full GUI with4workers. No full GUI run has started yet.
+
+- Usage repairs integrated after actual diff review as1502954/7f8f60d/3030585/429addb/d24adf6; independent review2105273 from66a8226. WebKit64/64, Chromium unchangedthreefiles47/47 plus final ledger17/17. Source hashes and cleanup verified. UI agent idle; final runner awaits root followup_task with finalSHA. Account now owns single-browser final tray+neighbors validation after explicit approval.
