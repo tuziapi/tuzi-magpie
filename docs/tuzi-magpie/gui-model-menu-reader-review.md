@@ -125,3 +125,14 @@ animations running. No animation was disabled. Candidate screenshots were also
 visually inspected. The four jobs cleaned their private roots; the browser queue
 was released. Product authorization, integration checks and the independent
 Chromium two-visible-row investigation remain outstanding.
+
+
+## Approved integration — 2026-11-04
+
+Both product proposals were explicitly approved. Main integrated F08 as
+86fd638 with test preconditions791801d, and F15 as775d699. Root cmp verified
+both product files are exactly the tested external candidates; node syntax
+and git diff checks pass. F08 is closed by complete20/20-per-engine evidence.
+The F15 Chromium visible-row issue remains independent and open. The user
+also authorized necessary decisions within this finite closing scope without
+further per-item questions; this does not lower acceptance or widen scope.
