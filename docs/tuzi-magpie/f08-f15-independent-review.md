@@ -119,3 +119,53 @@ Twelve idle frames add no requests. The updated manifest explicitly scopes
 this as stage scheduling, with real rerun cleanup covered separately by
 the many-keys cases. This resolves the previously described interpretation
 gap without pretending the direct-class boundary alone covers rerun.
+
+## Focused evidence and final candidate-review conclusion
+
+Read all seven completed `focused-controls-results.json` entries, actual
+failure/pass logs, F08 event traces, and the controlled current/candidate
+test diff. All are one-test runs with zero skips/cancellations. Recomputed
+the focused and subset test hashes against their manifests: all match.
+The product candidate hashes remain the identities recorded above.
+
+F08 focused native-wheel old and candidate each pass. Both verify an open
+popup immediately before wheeling over the real view, native scroll event
+delivery and changed scroll position, then the original popup-close outcome.
+Their recorded view scrollTop is 0 to 160; both scroll decisions are true,
+guardUntil is zero, and the close call sees an open popup. This supplies the
+previously missing real-view-scroll boundary without waiving the original
+failed diagnostic or treating scrollTop alone as event delivery.
+
+The same clipped-icon controlled trigger fails both upstream 2251 and
+current old assets, and passes the candidate. All traces show a real icon
+scrollLeft change 0 to -1 with anchor edges `[54,513,336,557]` and popup
+edges `[8,102,352,505]` before and during the event. Both old traces lose
+the popup after the event with the anchor unchanged; their first Kimi K3
+click then times out on the detached item. The candidate keeps both exact
+rectangles and completes the original full model-selection assertions.
+The current/candidate test diff changes only asset routing, evidence names
+and the candidate's additional final geometry checks; their trigger and
+functional interaction sequence match. This is causal controlled-programmatic
+scroll evidence, explicitly not a natural-user-scroll reproduction claim.
+
+Independently viewed the first old/candidate WebKit screenshots. Both are
+360 by 640 with no visible layout/font/spacing difference. The accompanying
+comparison records zero differing pixels and identical PNG SHA-256
+`f47fb865457f6733de01ad5751293deb159b1dc1ef5e525d8bba76e53bb65480`.
+This covers that static popup view, not every dynamic state.
+
+The focused F15 Chromium negative shifts an existing correct visible wire
+four pixels before the initial geometry assertion. It now fails the exact
+original `a wire ends at each key in sight` deep equality for
+`solpool#k495`, with eleven keys in sight. This supplies a valid Chromium
+target-assertion negative, while the earlier failed foot control remains
+preserved and excluded from that claim. The lightweight wheel observation
+passes; it does not explain the earlier isolated two-row result and is not
+treated as a fix for it.
+
+No blocking implementation finding remains in these two exact candidate
+diffs. The available bounded controls support presenting the proposals for
+the required product-behavior decision. They do **not** constitute user
+approval, integration, complete affected-suite acceptance, or closure of
+the overall development goal. Root still owns that decision, the finite
+post-approval validation scope, and final integrated hash/budget checks.
