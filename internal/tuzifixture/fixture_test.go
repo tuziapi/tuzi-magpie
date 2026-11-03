@@ -18,7 +18,7 @@ import (
 func TestMain(m *testing.M) { testenv.Main(m) }
 
 // Exercise the real account projection instead of assuming a fixture's JSON
-// shape matches what the desktop can read. No HTTP/browser account bypass.
+// shape matches what the desktop can read, through the account service.
 func TestDesktopAccountFixtureProjection(t *testing.T) {
 	testenv.SetHome(t, t.TempDir())
 	server := httptest.NewServer(tuzifixture.New())
