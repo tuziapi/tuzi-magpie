@@ -245,3 +245,47 @@ explicitly released to the parent for account's F05/F11 work. The side-effort
 candidate remains the sole uncommitted test change, with its original failed
 batch evidence preserved. Further diagnosis requires a separately allocated
 slot and a concrete hypothesis; no additional browser run is queued here.
+
+## Further static classification of the context error
+
+The original complete-batch failure occurred at candidate line 166 while
+awaiting the explicit GET-and-render refresh after both chip interaction
+sequences. The log has no frame/protocol events or width marker, so it does
+not establish whether this was the 1100px or 420px iteration, nor what caused
+the underlying protocol failure. Its short duration is not proof of a width.
+
+The startup path already awaits `page.goto` and `settingsDrawn`. The latter
+requires `load.done` and `__settingsReads.asked === drawn`; startup `load()`
+sets `load.done` then starts `loadSettings` in the same synchronous segment,
+and the reader wrapper marks a response drawn in a task after its body has
+been consumed and the synchronous render has run. The two real startup GETs
+are covered by that barrier. The late explicit refresh follows awaited menu
+close, posted-state and scroll checks. No source evidence establishes a still
+pending startup read at that point, so an artificial overlapping GET or
+navigation is not introduced as if it were the cause.
+
+Each language test creates its own browser, context and page inside its test
+callback. The runner uses separate test-file processes with concurrency one,
+and no inherited NODE_OPTIONS. Page objects are not shared between language
+cases; within a case, both width iterations await their navigation and all
+refresh calls. Chip and menu items are explicit type=button and their handlers
+only choose/save/close. Raw coordinate clicks can be checked for stale hit
+points, but the subsequent role/state/menu/request assertions already constrain
+that hypothesis; no known clicked target navigates.
+
+Crucially, the installed Playwright `crExecutionContext.js`'s `rewriteError`
+rewrites **any** non-JavaScript-evaluate and non-session-closed underlying error
+to `Execution context was destroyed, most likely because of a navigation`.
+The displayed phrase does not itself prove a document navigation. The next
+minimal experiment therefore captures `DEBUG=pw:protocol` before that rewrite,
+instead of adding another speculative wait.
+
+Prepared, not executed: `run-side-effort-protocol-once.py` under the F01 evidence
+root runs one complete Chromium side-effort file, preserving its five languages
+and two widths, with a 90-second process limit. Its external copy only relocates
+asset/helper paths; it adds no evaluate/goto wrapper, gate, delay, retry or
+navigation. The manifest records source and copy SHA-256 values, and the log is
+opened exclusively to preserve earlier evidence. Raw CDP error replies and
+context/frame events distinguish a real frame navigation from a protocol failure
+that merely receives the same rewritten message. A green run with no such error
+still would not by itself explain or close the original symptom.
