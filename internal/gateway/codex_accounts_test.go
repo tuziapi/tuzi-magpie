@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -14,6 +15,7 @@ import (
 	"time"
 
 	"github.com/yetone/magpie/internal/access"
+	"github.com/yetone/magpie/internal/proc"
 	"github.com/yetone/magpie/internal/provider"
 )
 
@@ -699,9 +701,21 @@ func TestCallKind(t *testing.T) {
 // one that sent it, in the User-Agent and the version header alike, so a
 // model Codex CLI reaches on its own isn't refused through magpie
 // (Discord: "The 'gpt-6.1-sol' model is not supported when using Codex
-// with a ChatGPT account"). 0.161.0 is newer than any installed here or
-// magpie's own fallback, so only the client's own version can pass.
+// with a ChatGPT account"). A synthetic high client version must win over
+// the package's installed-CLI stand-in. Run alone because the observed version
+// is intentionally process-wide and must not contaminate other tests.
 func TestCodexPoolSaysTheClientsVersion(t *testing.T) {
+	if os.Getenv("TUZI_TEST_CODEX_CLIENT_VERSION_CHILD") != "1" {
+		ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+		defer cancel()
+		cmd := proc.CommandContext(ctx, os.Args[0], "-test.run=^TestCodexPoolSaysTheClientsVersion$", "-test.count=1")
+		cmd.Env = append(os.Environ(), "TUZI_TEST_CODEX_CLIENT_VERSION_CHILD=1")
+		if output, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("isolated client version regression: %v\n%s", err, output)
+		}
+		return
+	}
+
 	codexSignedIn(t, "spare@example.com")
 	var uas, vers []string
 	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -709,7 +723,7 @@ func TestCodexPoolSaysTheClientsVersion(t *testing.T) {
 		ua := r.Header.Get("User-Agent")
 		uas, vers = append(uas, ua), append(vers, r.Header.Get("version"))
 		v, _, _ := strings.Cut(strings.TrimPrefix(ua, "codex_cli_rs/"), " ")
-		if modelOf(b) == "gpt-6.1-sol" && (!strings.HasPrefix(ua, "codex_cli_rs/") || older(v, "0.161.0")) {
+		if modelOf(b) == "gpt-6.1-sol" && (!strings.HasPrefix(ua, "codex_cli_rs/") || older(v, "99.161.0")) {
 			w.WriteHeader(400)
 			io.WriteString(w, `{"detail":"The 'gpt-6.1-sol' model is not supported when using Codex with a ChatGPT account."}`)
 			return
@@ -730,14 +744,14 @@ func TestCodexPoolSaysTheClientsVersion(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer chatgpt-token")
 	req.Header.Set("chatgpt-account-id", "acct-1")
 	req.Header.Set("originator", "codex_cli_rs")
-	req.Header.Set("User-Agent", "codex_cli_rs/0.161.0 (Mac OS 26.6.0; arm64) ghostty/1.2.0")
-	req.Header.Set("version", "0.161.0")
+	req.Header.Set("User-Agent", "codex_cli_rs/99.161.0 (Mac OS 26.6.0; arm64) ghostty/1.2.0")
+	req.Header.Set("version", "99.161.0")
 	s.Handler().ServeHTTP(rec, req)
 	if rec.Code != 200 || !strings.Contains(rec.Body.String(), "pong") {
 		t.Fatalf("status %d: %s (User-Agent %q, version %q)", rec.Code, rec.Body.String(), uas, vers)
 	}
 	for i := range uas {
-		if !strings.HasPrefix(uas[i], "codex_cli_rs/0.161.0 (") || vers[i] != "0.161.0" {
+		if !strings.HasPrefix(uas[i], "codex_cli_rs/99.161.0 (") || vers[i] != "99.161.0" {
 			t.Errorf("request %d: User-Agent %q, version %q", i, uas[i], vers[i])
 		}
 	}

@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/settings"
 )
 
@@ -112,7 +113,7 @@ func TestFor(t *testing.T) {
 	if err := settings.Save(settings.Settings{Proxy: "ftp://x"}); err == nil {
 		t.Fatal("ftp proxy accepted")
 	}
-	if settings.Save(settings.Settings{Proxy: "127.0.0.1:7890"}) != nil || filepath.Dir(settings.Path()) != filepath.Join(dir, "magpie") {
+	if settings.Save(settings.Settings{Proxy: "127.0.0.1:7890"}) != nil || filepath.Dir(settings.Path()) != filepath.Join(dir, product.Name) {
 		t.Fatal("host:port proxy refused")
 	}
 }
