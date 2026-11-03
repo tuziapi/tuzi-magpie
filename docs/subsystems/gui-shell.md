@@ -16,6 +16,13 @@ an empty or invalid setting retains the upstream attribution links. This
 fallback does not enable an update feed or upstream release download. See
 [repository configuration](../tuzi-magpie/repository-configuration.md).
 
+The distribution's startup migration hook (`settings.Migrate`, called by
+`cli.startUp`) does not read or copy old `dial` or Magpie config/cache folders.
+Installed state stays in the independent `appdir.Config` and `appdir.Cache`
+locations, and portable state uses `tuzi-magpie-data`. A new install cannot
+inherit another application's accounts through the historical rename
+migration. `TestTuziMigrateLeavesOtherApplicationsAlone` checks this boundary.
+
 | Part | Responsibility | Source |
 | --- | --- | --- |
 | Native host | `Run` starts the Wails v3 app: the tray icon, the panel, the main window, single-instance handover, `magpie://` import links and open at login. `host` implements `Windows` for the API: show and hide, open URLs and folders, copy to the clipboard, fit and tint the panel, and set the text size. A copy on Linux sets PRIMARY before CLIPBOARD, since GTK 3 serves CLIPBOARD empty when PRIMARY is set after it on a compositor with no primary selection (KDE Plasma with middle-click paste off, #1881); on Wayland the copy is read back through the compositor, and one that doesn't read back whole answers `/api/copy` with 501, so the page tries its clipboard API, then the copy command, then says the copy failed with the text to copy by hand (`copy-fallback.test.cjs`). | [`app.go`](../../internal/gui/app.go), [`clipboard_gtk3.go`](../../internal/gui/clipboard_gtk3.go), [`clipboard_gtk3.h`](../../internal/gui/clipboard_gtk3.h), [`mainwindow.go`](../../internal/gui/mainwindow.go), [`traymenu.go`](../../internal/gui/traymenu.go) |

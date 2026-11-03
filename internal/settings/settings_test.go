@@ -125,7 +125,7 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
-func TestMigrate(t *testing.T) {
+func TestCopyTree(t *testing.T) {
 	cfg, cache := t.TempDir(), t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
 	t.Setenv("XDG_CACHE_HOME", cache)
@@ -139,7 +139,7 @@ func TestMigrate(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(old, "sub", "x"), []byte("x"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	Migrate()
+	copyTree(old, filepath.Join(cfg, "magpie"))
 	fi, err := os.Stat(filepath.Join(cfg, "magpie", "providers.json"))
 	if err != nil || runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600 { // Windows has no such bits
 		t.Fatalf("providers.json not copied with its mode: %v %v", fi, err)
@@ -157,7 +157,7 @@ func TestMigrate(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cfg, "magpie", "providers.json"), []byte("new"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	Migrate()
+	copyTree(old, filepath.Join(cfg, "magpie"))
 	if b, _ := os.ReadFile(filepath.Join(cfg, "magpie", "providers.json")); string(b) != "new" {
 		t.Fatal("existing folder overwritten")
 	}
