@@ -307,7 +307,15 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     const s = await seen();
     assert.equal(s.all, 29);
     assert.equal(s.shown, 29, "every account's bars are on the page, none behind a button");
+    // Check density with four columns of content. Close the sidebar with
+    // its own control to leave that content width available at 1280px;
+    // the default sidebar above must still expose all 29 accounts.
+    await page.locator("#sideToggle").click();
+    await page.waitForFunction(() => !document.body.classList.contains("side-nav") && getComputedStyle(document.querySelector("#subscriptionUsage")).gridTemplateColumns.split(" ").length === 4);
+    const wide = await seen();
+    assert.equal(wide.all, 29);
+    assert.equal(wide.shown, 29, "closing the sidebar never folds an account");
     // before the curves (9ccabdfb^) 15 were; v0.1.752 showed 12, and 12 more only behind buttons
-    assert.ok(s.onScreen >= 15, `as many accounts on the first screen as before the curves: ${s.onScreen} of 29`);
+    assert.ok(wide.onScreen >= 15, `as many accounts on the first screen as before the curves: ${wide.onScreen} of 29`);
   });
 }
