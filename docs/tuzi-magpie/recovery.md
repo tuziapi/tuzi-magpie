@@ -231,3 +231,11 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 - Prior goal turn made documentation progress and verified waits; interruption did not terminate WebKit Node PID22279 (observed live, now parent1). Original Python runner23130/session32364 and monitor65527 are missing; write_stdin confirms unknown32364. Do NOT restart actualtests. Node keeps the original1135-file command and writes originalwebkit.log.
 - Root added evidence-only recovery-monitor.py, PID86904 (detached, no test launch), polls exactNode22279 and updates progress/ownresource log every30s. When child ends it will write webkit-recovered-summary.json via original runner pureparse/snapshot helpers. Exitcode cannot be recovered bynon-parent and must remainnull; completeTAPfooter/sourcehash are independent evidence. Originalstate/results/rawlog are not rewritten. PrivateHOME cleanup waits until no groupchildren remain.
 - WebKit currentknown failures include Agent innerText/menus,click-scroll,codex-auto-reset,context-map,copilot-signed-out,group-found-skip,header-centre,json-tree,key-replace,models-fold,plugin-card-update,plugin-release,request-archive,revoked-signin,routing-context-fold/routing-many-keys/routing-rules-line ands3-sync. Several are repeated edgewhitespace, some realgeometry/interactionpending; no fixesintegrated. Root will produce finite finalblockers afterfooter, with originalcauseuncertainty andAC/minscope. Allagentscurrentlyidle/errored429; taskcontinuesroot.
+
+
+## 2026-11-03 22:30 收尾定向验证继续
+
+- 完整两引擎自然结束，权威结果及16项有限清单见 closing-blockers.md；WebKit父runner丢失的exit_code保持null，完整footer和sourcehash保留。原冻结树不再修改。
+- 主代理实际审查 F03/F04 diff、正反控及完整文件日志，集成为916c903/6ae7494。两测试文件外无产品变更；原版完整失败不改写为成功。
+- 当前唯一浏览器队列交给 UI 代理（独立 Usage worktree/codex/tuzi-f02-f06），只验证F02/F06三个文件。账户代理已释放并静态准备 F05/F07/F11；网站代理静态准备F01的17文件。root静态准备 F13/F14/F16 诊断，不与浏览器队列并跑。
+- 当前原生应用/fixture均未启动，无大型Go/build队列。产品构建仍c723来源，补测试不重建。
