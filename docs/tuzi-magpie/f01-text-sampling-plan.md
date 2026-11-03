@@ -203,16 +203,45 @@ location writes belong to agent import and update reload paths, which this
 fixture does not invoke. That inspection does not establish why the context
 was destroyed.
 
-Four external Japanese diagnostic derivatives are prepared, not run, in
+Four external Japanese diagnostic derivatives are recorded in
 `side-effort-diagnostic-manifest.json`: original or candidate test against
 current or original assets, keeping both original widths. They log navigation
 requests, main-frame changes, CDP context events, clicks and goto/evaluate
 stages without swallowing errors. No retry, delay or product fix was added.
-The parent owns the next browser slot and will assign any further diagnostic;
-there will be no automatic repeat of the entire 17-file batch.
+The parent subsequently assigned a bounded slot for these four cases; results
+follow below. There will be no automatic repeat of the entire 17-file batch.
 
 Cleanup: the target runner completed, its recorded Node children 2333 and 3858
 are gone, and temporary HOME directories for both control and targeted runs
 are absent (`cleanup.json`). The exclusive browser queue was explicitly
 released to the parent. No process, port or real account configuration remains
 owned by this work. F01 stays open until the side-effort symptom is resolved.
+
+## Side-effort bounded navigation diagnostic
+
+The parent explicitly assigned the next exclusive browser slot for the four
+prepared Japanese Chromium cases. `run-side-effort-diagnostic.py` executed
+exactly those cases once, retaining both original widths; results are in
+`side-effort-diagnostic-results.json` and the four `side-effort-ja-*.log` files.
+
+| Test sampling | Assets | OS exit | Duration |
+| --- | --- | ---: | ---: |
+| Frozen/original | c7238e1 | 0 | 5.17 s |
+| Frozen/original | 2251ca1 | 0 | 3.99 s |
+| Candidate | c7238e1 | 0 | 4.01 s |
+| Candidate | 2251ca1 | 0 | 4.03 s |
+
+Each case recorded only its three explicit `page.goto` calls and matching
+main-frame navigation requests and lifecycle events. The settings refresh at
+1100px and at 420px completed in every case. No unexpected navigation, crash
+or failed evaluate appeared. These instrumented cases did **not** reproduce
+or explain the first uninstrumented Chromium failure; instrumentation and
+isolation may affect timing, so their green status does not close the symptom.
+No random rerun, catch/retry, product change or speculative delay was added.
+
+All four child Node PIDs exited and the private temporary HOME was removed,
+recorded in `side-effort-diagnostic-cleanup.json`. The browser queue was
+explicitly released to the parent for account's F05/F11 work. The side-effort
+candidate remains the sole uncommitted test change, with its original failed
+batch evidence preserved. Further diagnosis requires a separately allocated
+slot and a concrete hypothesis; no additional browser run is queued here.
