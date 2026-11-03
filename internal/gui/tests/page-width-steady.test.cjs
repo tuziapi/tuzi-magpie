@@ -137,6 +137,14 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await row.waitFor();
       if (await row.locator(".ag-exp").count()) await row.locator(".ag-link").click(); // start folded
       await page.waitForFunction(() => !document.querySelector('.row.agent[data-id="pi"] .ag-exp'));
+      // Leave room for the folded content, including localized footer text,
+      // but make Pi's compact details cross the fold when opened.
+      const bottom = await page.locator("#view-agents").evaluate((v) => {
+        const ends = [...v.children].filter((e) => e.getClientRects().length)
+          .map((e) => e.getBoundingClientRect().bottom + (parseFloat(getComputedStyle(e).marginBottom) || 0));
+        return Math.max(...ends) + parseFloat(getComputedStyle(v).paddingBottom);
+      });
+      await page.setViewportSize({ width: 1000, height: Math.ceil(bottom + 16) });
       const edge = () => row.evaluate((r) => { const b = r.getBoundingClientRect(); return { left: b.left, right: b.right }; });
       const before = { ...(await shown(page)), edge: await edge() };
       assert(!before.over, `${lang}: the page fits before the details open`);
