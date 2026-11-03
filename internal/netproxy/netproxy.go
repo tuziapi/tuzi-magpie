@@ -290,6 +290,11 @@ func For(u *url.URL) (*url.URL, error) {
 	default:
 		return Parse(s)
 	}
+	// An environment bypass is a direct route, not an absent proxy choice.
+	// Keep it ahead of system fallback, after the user's explicit setting.
+	if noProxy(u.Hostname(), envOf("NO_PROXY", "no_proxy")) {
+		return nil, nil
+	}
 	if p, err := fromEnv(u); p != nil || err != nil {
 		return p, err
 	}

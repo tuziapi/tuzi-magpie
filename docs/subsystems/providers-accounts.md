@@ -13,6 +13,15 @@ Plugin ownership of the deprecated built-in subscriptions is in
 [Provider and plugin ownership](provider-plugins.md). How the gateway orders
 keys and accounts per request is in [Gateway routing and fallback](gateway-routing.md).
 
+Outbound proxy selection in [`netproxy.For`](../../internal/netproxy/netproxy.go)
+keeps an explicit application proxy ahead of environment choices. Without
+that explicit choice, a host matched by the existing `NO_PROXY`/`no_proxy`
+matcher goes direct and cannot fall back to the system proxy. Provider-owned
+proxy choices still take precedence in `netproxy.Func`. A nonmatching host
+retains the environment-then-system selection. This distribution correction
+was approved explicitly; `TestNoProxyDoesNotFallBackToSystem` covers bypass,
+normal system fallback and explicit settings precedence.
+
 ## Tuzi-family model-key presets
 
 `tuzi`, `tuzi-coding` and `gaccode` are ordinary API-key providers defined in

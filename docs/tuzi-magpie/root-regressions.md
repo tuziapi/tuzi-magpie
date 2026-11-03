@@ -22,7 +22,7 @@ meaningful mutation forced codexSign to its old fallback0.159.0: the test
 failed with HTTP400 and exact stale User-Agent/version values. Restored
 signing passed. No production signing change remains.
 
-## Pending proxy behavior decision
+## Approved proxy behavior correction
 
 TestNoProxyDoesNotFallBackToSystem reproduces an inherited behavior: a
 NO_PROXY-matched domain falls back to a configured system proxy. It selects
@@ -30,7 +30,12 @@ synthetic addresses without dialing anything. The unchanged production
 netproxy.go returns http://127.0.0.1:18191 in the red test. The original GUI
 proxy test also encounters this when the host has a system proxy.
 
-The user was asked to choose a behavior fix or test-system isolation plus
-a known-limit record, because original behavior changes require their
-confirmation. No product proxy edit is made while that answer is pending.
-The proposed regression test remains uncommitted until the decision.
+The user explicitly approved the behavior fix. For now checks the existing
+NO_PROXY host matcher after explicit application settings and before the
+environment/system proxy selection. Provider-specific choices remain earlier
+in Func. The regression checks the bypass and explicit settings precedence.
+The red evidence is retained. Focused netproxy tests passed1.567s and all
+GUI TestProxyCheck cases passed3.302s under temporary HOME with pinned caches,
+GOMAXPROCS2 and -p1. Log: /Users/syd08/Documents/tuzi-magpie-evidence/no-proxy-green.log.
+The complete suite remains pending; no threshold or original assertion was
+removed to make the bypass check pass.

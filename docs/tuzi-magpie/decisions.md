@@ -21,3 +21,7 @@ New account UI is a built-in plugin using the existing kernel; all new CSS is un
 ## 2026-11-03: update mirror source copy
 
 The user explicitly approved changing only the two existing mirror description/tooltip references from usemagpie.ai to the configured update feed. The mirror controls, layout, styles and behavior remain unchanged. This corrects attribution for the independent distribution feed; other upstream attribution remains. Website/lines agent owns implementation and translations.
+
+## Approved NO_PROXY system fallback correction (2026-11-03)
+
+The user explicitly approved fixing the inherited NO_PROXY fallback defect. When no application/provider proxy is explicitly selected, a matching NO_PROXY host now takes a direct route instead of falling through to the OS proxy. Explicit application/provider choices retain precedence. The existing host/domain matching helper is reused. TestNoProxyDoesNotFallBackToSystem reproduced the failure with synthetic cached system/environment proxies; focused netproxy and GUI proxy checks passed (no-proxy-green.log); the full suite remains queued. No original page layout or text changes.
