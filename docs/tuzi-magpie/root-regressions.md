@@ -40,5 +40,19 @@ port/domain/CIDR regression evidence are recorded in
 The red evidence is retained. Focused netproxy tests passed1.567s and all
 GUI TestProxyCheck cases passed3.302s under temporary HOME with pinned caches,
 GOMAXPROCS2 and -p1. Log: /Users/syd08/Documents/tuzi-magpie-evidence/no-proxy-green.log.
-The complete suite remains pending; no threshold or original assertion was
-removed to make the bypass check pass.
+The complete Go suite subsequently passed in full-go-02; no threshold or
+original assertion was removed to make the bypass check pass.
+
+## Complete Go recheck
+
+`validate-local.py` completed all eight stages against fdfea5c plus the four
+recorded, pending GUI test repairs on 2026-11-03. macOS/Linux/Windows vet and
+build all passed. Complete `go test -tags nogui -count=1 -p2 ./...` passed
+in745.82s (gateway555.005s; GUI69.552s). Tuzi, desktop-fixture, CLI and
+NO_PROXY targeted race checks across eight packages passed in77.84s.
+Evidence: `/Users/syd08/Documents/tuzi-magpie-evidence/full-go-02/`, including
+source.json, source-diff.patch, results.json and unedited stage logs.
+
+This covers that frozen source. Subsequent routing JavaScript integration
+requires its browser checks and a fresh GUI embedded-source check/build;
+these results do not claim later source or final native delivery passed.
