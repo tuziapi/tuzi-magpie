@@ -81,3 +81,33 @@ No real account files, running daily application, external update feed,
 payment, model or deployment was used. New tests use httptest and temporary
 files; the link test executes only its synthetic ln command. Large tests
 remain in the parent-managed queue. Outcomes will be appended when run.
+
+Validation completed for implementation snapshot
+`6c06fa9e21ab302c58c035245dc1a1f869a36908`:
+
+- Parent independently reviewed the actual diff before granting the short
+  test slot. No shared gateway file was modified.
+- Temporary restoration of the original restart function, original bundle
+  executable name and original container suggestion produced real failures
+  in all four affected test groups. Original/foreign/unknown servers received
+  an unauthorized restart POST; a restart redirect was followed; the emitted
+  link targeted `MacOS/magpie`; the container message named the upstream
+  image. This was a behavioral negative control, not a compile failure.
+  Package test duration: 1.981 seconds. The fixed source was restored in a
+  finally block before the green run.
+- `go test -p 1 -tags nogui ./internal/cli -run
+  'TestTuziUpdate|TestTuziStaleCLI|TestUpdateAsks|TestUpdateInContainer'
+  -count=1 -v` passed all five top-level tests and their table subcases.
+  Package test duration: 1.809 seconds; wall time including compile: 8.01 seconds.
+- Both runs used `GOMAXPROCS=2`, temporary HOME/XDG and pinned Go caches
+  (`/Users/syd08/go`, `/Users/syd08/go/pkg/mod`,
+  `/Users/syd08/Library/Caches/go-build`) alongside the parent-managed GUI queue.
+- `go test -n -race ...` reported 71 compile/cgo actions. Per queue direction,
+  the actual race run was deferred rather than competing with the full GUI
+  suite. No race pass is claimed. No production goroutine was introduced.
+- `gofmt` and `git diff --check` passed. Temporary homes were removed;
+  no test process, synthetic server or port remains.
+
+Evidence: `/Users/syd08/Documents/tuzi-magpie-evidence/update-isolation-01/`
+contains `red.log`, `green.log`, and `race-dry-run.log`. Full integrated
+verification remains a separate parent gate.
