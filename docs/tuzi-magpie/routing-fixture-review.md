@@ -140,9 +140,50 @@ including the failed parent). The same four cases fail against original
 retained and assigned for investigation; they are not waived as pre-existing.
 The approved observer-timing repair is committed independently of this
 remaining height defect: its causal error is reproduced on the original and
-removed by the patch, with unchanged final geometry. The outstanding
-story-shrinks failure still blocks full-goal acceptance. No page error or
-geometry assertion has been filtered. The next diagnostic records the story
-width key, client/outer width and retained history, without changing the
-tracked held-height logic. Browser ownership has returned to the main agent;
-this worktree starts no process until its next slot is granted.
+removed by the patch, with unchanged final geometry. At that stage the outstanding
+story-shrinks failure still blocked full-goal acceptance. No page error or
+geometry assertion has been filtered. The following diagnostic recorded the story width key, client/outer width
+and retained history before a second product change was proposed.
+
+
+### Approved scrollbar height-history repair
+
+The user explicitly approved “修复滚动条导致的高度跳动” on 2026-11-03,
+after review of `story-width-candidate.patch` and the shared effect on
+`holdMode`. The exact frozen patch is applied in this worktree. It changes
+only the observer's cached width from `clientWidth` to `offsetWidth`, with
+an explanatory comment. Both `holdStory` and `holdMode` use this value only
+as a history key and zero/hidden check, never as an absolute content width
+or a rendered size; including the border cannot enlarge a rendered element.
+
+`story-width-current.log` proves the cause: English content width changes
+822→812→822 and Chinese 354→344→354 as the steps box's internal vertical
+scrollbar appears and disappears. Outside widths remain 822 and 354. Each
+content-width change wrongly discards retained heights, so the 200px long
+story collapses to 64px (English) or 82px (Chinese, while answering) on the
+next short request. Using the outside-width key retains the intended
+three-story window and also stops that scrollbar from clearing the mode
+paragraph's height history. Real width, font and height changes still
+remeasure the current story.
+
+The isolated candidate passes all four original WebKit story-shrinks
+scenarios, 5/5 Node tests including the parent (`story-width-candidate.log`).
+A separate real-resize check changes the viewport 1100→1180: outside
+width/key 822→902, old measurements 3→1, in both completed-request and
+always-under-way scenarios (3/3 including the parent,
+`story-width-real-resize.log`). Assertions were not removed or relaxed.
+The final applied product passes the full neighboring four-file batch in
+Chromium **15/15** (67.18s) and WebKit **15/15** (66.77s), including two parent
+tests per engine and 13 actual scenarios, with no skips or filtered errors.
+The files are `routing-story-shrinks.test.cjs`, `routing-ctx-still.test.cjs`,
+`routing-steps-cap.test.cjs`, and `routing-steady.test.cjs`. Final logs are
+`width-final-chromium.log` and `width-final-webkit.log`. This closes the
+previously recorded WebKit story-shrinks failure; its original and interim
+red logs remain intact. `git diff --check` and `node --check` also pass.
+
+The main agent's full Go run is frozen at `fdfea5c`; this change is confined
+to the independent worktree/branch above and will only be integrated after
+that run ends. Only the assigned single-browser targeted batch ran here, sequentially per
+engine, alongside the main agent's queued Go run. It is now stopped. No Go
+or native process was started by this worktree. The browser slot is handed
+to the account agent for its separately assigned Tencent/tray tests.

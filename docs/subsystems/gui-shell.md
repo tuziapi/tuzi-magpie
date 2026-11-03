@@ -173,6 +173,11 @@ width, then lets it shrink as the long story leaves that set. Its steps
 animation frame. Clearing and restoring the observed minimum height inside
 the notification itself causes a WebKit ResizeObserver loop; the deferred
 measurement retains the same final geometry and the reader's position.
+`holdStory` and `holdMode` use the steps box's outside width as a history
+key, never as a content width or a rendered size. Its own vertical scrollbar
+must not erase either height history; a real outside-width change still
+invalidates earlier measurements. Font and height notifications still
+remeasure the current story.
 The observer lives with the Routing page, like its stage and column observers.
 `routing-story-shrinks.test.cjs`, `routing-ctx-still.test.cjs`,
 `routing-steps-cap.test.cjs` and `routing-steady.test.cjs` cover the held

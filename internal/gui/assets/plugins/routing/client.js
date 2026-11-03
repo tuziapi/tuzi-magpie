@@ -2953,7 +2953,9 @@ function routingPage(part) {
   // do that on the next frame, outside this round of resize observers.
   let storyAsked = 0;
   new ResizeObserver(() => { if (!storyAsked) storyAsked = requestAnimationFrame(() => {
-    storyAsked = 0; storyW = steps.clientWidth; storyDrawn = ""; holdStory(); if (headOf) header(...headOf);
+    // This is only the width key for holdStory and holdMode. A scrollbar
+    // inside the story does not change their outside space.
+    storyAsked = 0; storyW = steps.offsetWidth; storyDrawn = ""; holdStory(); if (headOf) header(...headOf);
   }); }).observe(steps);
   // renderCtx draws the request's context window under its story, with
   // its session's prompts request by request; drawn again only when what
