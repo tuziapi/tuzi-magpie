@@ -177,6 +177,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.equal(await map.locator(".ctx-tile.free").count(), 1);
         assert.match(await map.locator(".ctx-tile.free").innerText(), new RegExp(w.free));
         assert.equal(await card.locator(".ctx-look-b.on").getAttribute("aria-label"), w.map);
+        // WebKit sizes an offscreen card when it comes into sight. Measure
+        // the map the reader sees, after its responsive layout has run.
+        await wheelTo(page, map);
         // every tile inside the map, none on another
         // read once the tiles have come in and the card has opened, the
         // map and its tiles in one look
