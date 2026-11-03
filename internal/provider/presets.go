@@ -28,6 +28,7 @@ type PresetDef struct {
 	Chat      string   `json:"chat,omitempty"`
 	Responses string   `json:"responses,omitempty"`
 	Anthropic string   `json:"anthropic,omitempty"`
+	Gemini    string   `json:"gemini,omitempty"`
 	Decide    string   `json:"decide,omitempty"` // a decision API: the provider only routes (see decide.go)
 	Catalog   string   `json:"catalog,omitempty"`
 	Website   string   `json:"website,omitempty"`
@@ -160,6 +161,21 @@ var alibabaPlanModels = []string{"auto", "qwen3.8-max", "qwen3.8-flash", "qwen3.
 
 // presets are ordered as they appear in the picker.
 var presets = []PresetDef{
+	// Tuzi account management is separate from these ordinary model-key
+	// providers. Coding and GACCode have no account sign-in or balance API.
+	{ID: TuziPreset, Name: "Tuzi", Icon: "magpie", Kind: KindRelay,
+		Chat: "https://api.tu-zi.com/v1", Responses: "https://api.tu-zi.com/v1",
+		Anthropic: "https://apius.tu-zi.com", Gemini: "https://api.tu-zi.com/v1beta",
+		Website: "https://api.tu-zi.com", KeysURL: "https://api.tu-zi.com/console/token"},
+	{ID: TuziCodingPreset, Name: "Tuzi Coding", Icon: "openai", Kind: KindRelay,
+		Responses: "https://api.tu-zi.com/coding", NoList: true,
+		Models:  []string{"gpt-6-astra"},
+		Regions: []Region{{ID: "coding", Name: "Coding", Responses: "https://api.tu-zi.com/coding", Drawers: []string{"gpt-image-2"}}},
+		Website: "https://coding.tu-zi.com/reseller/", KeysURL: "https://store.tu-zi.com/cat/11"},
+	{ID: GACCodePreset, Name: "GACCode", Icon: "claude-color", Kind: KindRelay,
+		Responses: "https://gaccode.com/codex/v1", Anthropic: "https://gaccode.com/claudecode", NoList: true,
+		Models:  []string{"gpt-5.5", "anthropic/claude-sonnet-4.6", "anthropic/claude-haiku-4.5", "anthropic/claude-opus-4.7"},
+		Website: "https://gaccode.com/subscriptions", KeysURL: "https://store.tu-zi.com/cat/1"},
 	{ID: "anthropic", Name: "Anthropic", Icon: "claude-color", Kind: KindVendor, Catalog: "anthropic",
 		Anthropic: "https://api.anthropic.com",
 		Website:   "https://console.anthropic.com", KeysURL: "https://console.anthropic.com/settings/keys",
@@ -814,7 +830,7 @@ func FromPreset(id string) (Provider, error) {
 	}
 	p := Provider{
 		ID: pr.ID, Name: pr.Name, Icon: pr.Icon, Preset: pr.ID,
-		Chat: pr.Chat, Responses: pr.Responses, Anthropic: pr.Anthropic, Decide: pr.Decide,
+		Chat: pr.Chat, Responses: pr.Responses, Anthropic: pr.Anthropic, Gemini: pr.Gemini, Decide: pr.Decide,
 		Catalog: pr.Catalog, Website: pr.Website, KeysURL: pr.KeysURL,
 	}
 	if a, ok := presetAliases[id]; ok && a.region != "" {

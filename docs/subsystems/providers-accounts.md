@@ -13,6 +13,25 @@ Plugin ownership of the deprecated built-in subscriptions is in
 [Provider and plugin ownership](provider-plugins.md). How the gateway orders
 keys and accounts per request is in [Gateway routing and fallback](gateway-routing.md).
 
+## Tuzi-family model-key presets
+
+`tuzi`, `tuzi-coding` and `gaccode` are ordinary API-key providers defined in
+[`presets.go`](../../internal/provider/presets.go). They have separate endpoints
+and credentials; Coding and GACCode do not sign in to the Tuzi account service
+or read its balance. `PresetDef.Gemini` is optional and `FromPreset` copies it
+alongside the other API bases; existing presets leave it empty.
+
+Main Tuzi uses the existing live model-list reader. Coding and GACCode use
+`NoList` and editable starter model IDs because the reference does not establish
+a model-list endpoint for either plan. Coding's sole region declares
+`gpt-image-2` in `Region.Drawers`, separate from text models, so the existing
+image picker, gateway and MCP tools use its `/coding/images/generations` and
+`/coding/images/edits` APIs. No new image tool or page is introduced.
+[`TuziLinks`](../../internal/provider/tuzi.go) supplies only fixed purchase and
+query URLs for known preset IDs; it never puts a key or account credential into
+navigation. Endpoint provenance, supported protocols and synthetic verification
+are recorded in [the Tuzi lines reference](../tuzi-magpie/lines-and-images.md).
+
 ## Responsibilities and sources of truth
 
 | Part | Responsibility | Source |
