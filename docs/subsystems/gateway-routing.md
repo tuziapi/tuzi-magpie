@@ -1,6 +1,7 @@
 # Gateway routing and fallback
 
-The gateway is magpie's local LLM endpoint (`127.0.0.1:3425` by default). It
+The gateway is the local LLM endpoint (`127.0.0.1:3435` by default in this
+tuzi-magpie distribution, from [`product.GatewayAddr`](../../internal/product/product.go)). It
 serves Chat Completions, Responses, Anthropic Messages and Gemini. It finds
 the provider, key or account and model for each request. When the upstream
 doesn't speak the agent's API, the gateway translates. When an upstream

@@ -79,3 +79,14 @@ credential rotation, destructive history rewriting or production access.
 Full redacted JSON records are in the evidence paths in the commands above.
 They contain the exact scanned HEAD, scope, rules, counts, paths and historical
 blob/commit provenance. Original source, history and licensing remain intact.
+
+## Integration candidate rescan (2026-11-03)
+
+At `9b9f56e7daef0f4c3aa4757c3c1f0eeab616444c`, the same scanner read
+6,886 working-tree text files (893 binary files skipped) and 7,101 historical
+text blobs (885 binary blobs skipped), across 79 locally reachable commits.
+The 196 combined matches have the same 49 unique fingerprints already
+classified above; no additional fingerprint was found. The redacted report
+is `/Users/syd08/Documents/tuzi-magpie-evidence/final-audit/candidate-main.json`.
+This is a candidate scan while final regression repairs continue, not a final
+SHA claim. The original shallow-history and pattern-detection limits apply.
