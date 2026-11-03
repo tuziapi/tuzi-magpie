@@ -84,3 +84,9 @@
 
 #view-tuzi .tuzi-group-prices>div { grid-column:2; }
 @media(max-width:640px) { #view-tuzi .tuzi-group-prices>div { grid-column:auto; } }
+
+/* The new header entry uses its icon to preserve room for the original tabs.
+   Sidebar navigation retains the full account label. */
+body.window:not(.web) .top #nav button[data-view="tuzi"] { padding:0 8px; }
+body.window:not(.web) .top #nav button[data-view="tuzi"] > span { display:none; }
+body.window:not(.web) .top #nav button[data-view="tuzi"] > .nav-ic { display:block; }

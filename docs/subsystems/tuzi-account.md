@@ -25,6 +25,17 @@ other built-in clients do. `integration.js` declares lazy shell callbacks;
 they use the app helpers only when invoked after startup, so declaration
 does not require those helpers to exist yet.
 
+The new account entry in a native header uses its existing icon in a 32px
+button. Its translated span supplies the accessible name through
+`aria-labelledby`, and `data-tt` translates the hover title. In the sidebar
+the full label stays visible. These rules live only in the Tuzi stylesheet;
+the shell's `fitTop` steps, original controls and brand styles are unchanged.
+The added width may make Update collapse to its arrow earlier, an explicitly
+accepted difference. `brand.test.cjs` checks the logo at 860px and all five
+translated names. `header-zoom-fit.test.cjs` retains the original navigation
+as a fixture control and allows the added entry its 32px width budget.
+See [navigation evidence](../tuzi-magpie/navigation-layout-evidence.md).
+
 ## Storage and mutations
 
 The dedicated `appdir.Config()/account-private/account.json` is separate from

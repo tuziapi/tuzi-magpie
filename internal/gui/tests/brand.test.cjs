@@ -9,7 +9,8 @@ const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
 
-const assets = path.resolve(__dirname, "../assets");
+const assets = process.env.MAGPIE_BRAND_ASSETS || path.resolve(__dirname, "../assets");
+const brandName = process.env.MAGPIE_BRAND_NAME || "tuzi-magpie";
 
 function serve(web) {
   const providers = { providers: [], presets: [], excluded: [], gateway: { running: true, window: true } };
@@ -61,11 +62,30 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.ok(await brand.locator(".logo svg").isVisible(), `${where}: logo`);
         // a header short of room keeps the logo only (fitTop's tight)
         const tight = !side && await page.locator(".top.tight").count();
-        if (!tight) assert.ok(await brand.getByText("magpie", { exact: true }).isVisible(), `${where}: name`);
+        if (!tight) assert.ok(await brand.getByText(brandName, { exact: true }).isVisible(), `${where}: name`);
         // beside the tabs, not under them; above the sidebar's pages
         const [b, n] = [await brand.boundingBox(), await page.locator("#nav").boundingBox()];
         if (side) assert.ok(b.y + b.height <= n.y, `${where}: ${JSON.stringify(b)} overlaps the pages ${JSON.stringify(n)}`);
         else assert.ok(b.x + b.width <= n.x, `${where}: ${JSON.stringify(b)} overlaps the tabs ${JSON.stringify(n)}`);
+      }
+      if (process.env.ARTIFACT_DIR && width === 860 && !c.web && c.platform === "MacIntel") {
+        await fs.mkdir(process.env.ARTIFACT_DIR, { recursive: true });
+        await page.screenshot({ path: path.join(process.env.ARTIFACT_DIR, engine + "-native-860.png") });
+        const layout = await page.evaluate(() => ({ top: document.querySelector(".top").className,
+          brand: document.querySelector(".brand").getBoundingClientRect().toJSON(),
+          nav: document.querySelector("#nav").getBoundingClientRect().toJSON() }));
+        await fs.writeFile(path.join(process.env.ARTIFACT_DIR, engine + "-native-860.json"), JSON.stringify(layout, null, 2));
+      }
+      if (brandName === "tuzi-magpie" && !c.web && c.platform === "MacIntel") {
+        const account = page.locator('#nav button[data-view="tuzi"]');
+        if (side) assert(await account.locator("#tuziNavLabel").isVisible(), "the sidebar retains the full new label");
+        else for (const lang of ["en", "zh", "zh-TW", "ja", "de"]) {
+          const label = await page.evaluate((lang) => { setLocale(lang); return t("Tuzi account"); }, lang);
+          assert(await page.getByRole("button", { name: label, exact: true }).isVisible(), `${lang}: account remains accessible by its translated name`);
+          assert.equal(await account.getAttribute("title"), label, `${lang}: translated hover title`);
+          assert(!(await account.locator("#tuziNavLabel").isVisible()), `${lang}: only the new header label is hidden`);
+          assert(await account.locator(".nav-ic").isVisible(), `${lang}: the new entry keeps its existing icon`);
+        }
       }
       assert.deepEqual(errors, [], where);
       await context.close();

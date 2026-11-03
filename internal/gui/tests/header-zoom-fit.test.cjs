@@ -21,7 +21,7 @@ const { chromium, webkit } = require("playwright");
 const assets = path.resolve(__dirname, "../assets");
 const STEPS = ["tight", "cramped", "inrow", "crowded", "packed"];
 
-function server(lang, size) {
+function server(lang, size, withTuzi) {
   return async (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/boot.js") return route.fulfill({ contentType: "text/javascript", body: `window.bootPrefs = {lang:"${lang}",theme:"light",web:false,textSize:${size}};` });
@@ -34,7 +34,15 @@ function server(lang, size) {
     if (url.pathname.startsWith("/api/")) return route.fulfill({ json: {} });
     const file = path.join(assets, url.pathname === "/" ? "index.html" : url.pathname);
     const contentType = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png" }[path.extname(file)];
-    await route.fulfill({ body: await fs.readFile(file), contentType });
+    let body = await fs.readFile(file);
+    // The original navigation remains a control: omit only the new entry
+    // from this synthetic document, before the shell performs its first layout.
+    if (!withTuzi && url.pathname === "/") {
+      const html = body.toString();
+      assert.match(html, /<button data-view="tuzi"[\s\S]*?<\/button>/);
+      body = html.replace(/<button data-view="tuzi"[\s\S]*?<\/button>/, "");
+    }
+    await route.fulfill({ body, contentType });
   };
 }
 
@@ -58,7 +66,7 @@ const settled = (page) => page.evaluate(() => new Promise((r) => requestAnimatio
 const steps = (page) => page.evaluate((all) => all.filter((c) => document.querySelector(".top").classList.contains(c)).length, STEPS);
 
 for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium", "webkit"])) {
-  test(engine + ": a zoomed header with room is drawn as at 100%", async (t) => {
+  for (const withTuzi of [false, true]) test(engine + ": a zoomed header with room is drawn as at 100% (" + (withTuzi ? "Tuzi entry" : "original navigation") + ")", async (t) => {
     assert(["chromium", "webkit"].includes(engine), "BROWSER must be chromium or webkit");
     for (const lang of ["zh", "en"]) for (const zoom of [1.1, 1.25]) {
       await t.test(`${lang} at ${Math.round(zoom * 100)}%`, async (t) => {
@@ -67,7 +75,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const page = ctx.pages()[0] || await ctx.newPage();
         const errors = [];
         page.on("pageerror", (e) => errors.push(e.message));
-        await page.route("**/*", server(lang, Math.round(zoom * 100)));
+        await page.route("**/*", server(lang, Math.round(zoom * 100), withTuzi));
         await page.goto("http://magpie.test/");
         await page.waitForSelector("#nav button.on");
         await page.waitForFunction(() => !document.querySelector("#update").hidden);
@@ -78,7 +86,11 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           await page.setViewportSize({ width: engine === "webkit" ? Math.round(w / zoom) : w, height: 600 });
           await settled(page);
           const n = await steps(page), at = `${w}pt: ${await page.evaluate(() => document.querySelector(".top").className)}`;
-          if (w >= 1200) assert.equal(n, 0, "the header is drawn in with room to spare at " + at);
+          if (!withTuzi && w >= 1200) assert.equal(n, 0, "the header is drawn in with room to spare at " + at);
+          // Approved addition: the new icon occupies 32 CSS pixels. At page
+          // zoom it may advance the original collapse by that many points.
+          if (withTuzi && w >= 1200 + 32 * zoom) assert.equal(n, 0, "the header is drawn in beyond the new entry's width budget at " + at);
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, "the header overflows at " + at);
           assert(n >= last, "a wider window is drawn in more than a narrower one at " + at);
           last = n;
         }
