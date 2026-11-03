@@ -243,3 +243,11 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 
 - Root HEAD797df8c includes reviewedF02/F06; F03/F04 nonauthor UI staticreview pending. Only closing-blockers/recovery docs currentlyrootdirty. Root external diagnostics f13-f14-f16-diag-01 first/current+baseline ended, no processes. F13real overlap andF14observercallback delta observedoriginal; F16naturalgreen unresolved.
 - Website nowowns onlybrowserqueue for F01 all17files Chromium→WebKit, after70 controlled samplingruns. Account prepared frozen-scroll-01 scripts for F05/F07/F11, UI prepared gui-menu-routing-diagnostics scripts F08/F09/F12/F15. Both awaitqueue. Rootnext-entries.json/next-run.py holds nextsinglecase controls F13/F14/F16/F10, NOTstarted. Allproductchanges stillonlyexternalproposal assets. Frozenproductc723 unchanged.
+
+
+## 2026-11-03 22:53 局部收敛与下一队列
+
+- Root HEADbabc986 reviewed and integrated F01's16greenfiles fromc045a96; complete17batch Chromium154/155,WebKit155/155. side-effort ja contextdestroy remainsunresolved anduncommitted onlinesbranch; do notcallF01closed. Websiteprepared4singlecase diagnostics, no runningbrowser.
+- Root next-run.py session18141 completed: map-inview1/1 withoutCSSchange; map now328x164/cardmax520max420 vs offscreen328x132/no class, originalstrictgeometry passes. Externalbarepaddingcandidate also ran but willNOTbeadopted: realreaderpositioning solvesobservedscene. Headercurrent7tests6pass1pageerror; nextframecandidate7/7 (WebKitonlysofar). F16controlledstartafterupdate onoriginal/frozen goesInstalled/cardsabsent andoldfails; explicitDiscovercandidate3/3. F10warm/resetsinglecasesreproduceactualstatusoverlay hit, nofixapplied.
+- Root owns ONLY uncommittedcontext-map.test.cjs(realwheelTo(map)beforegeometry) andplugin-card-update.test.cjs(explicitDiscovertab) plusrecoverydoc. Bothneedfullfilesdualengine+negativecontrols beforecommit. Productassetsunchanged. Externalheadercandidateunapproved/unintegrated; mustverifybothengines+visualbeforeaskingapproval.
+- Account nowownssolebrowserqueueforF05/F07/F11 oncodex/tuzi-account-frozen-scroll; nextUIF08/F09/F12/F15 thenrootF13/F16/F10/headercandidate orwebsite'ssinglefile, accordingtoavailability. NoGo/build/nativeprocessrunning.
