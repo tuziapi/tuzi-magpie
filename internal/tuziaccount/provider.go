@@ -36,8 +36,13 @@ func (s *Service) AddProvider(ctx context.Context, in ProviderRequest) (Provider
 	if e != nil {
 		return ProviderResult{}, e
 	}
+	ctx, done := s.requestContext(ctx, in.Generation)
+	defer done()
 	// Verify a restored credential and current ownership before revealing a key.
 	id, e := s.identity(ctx, rec.Token, rec.Identity.UserID)
+	if _, current := s.credentials(in.Generation); current != nil {
+		return ProviderResult{}, current
+	}
 	if e != nil {
 		return ProviderResult{}, e
 	}

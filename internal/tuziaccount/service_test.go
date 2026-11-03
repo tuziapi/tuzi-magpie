@@ -357,6 +357,53 @@ func TestTuziAccountSecretExcludedFromBackup(t *testing.T) {
 		t.Fatal("account secret backed up")
 	}
 }
+func TestTuziProviderBootstrapCanceledOnDisconnect(t *testing.T) {
+	accountTestHome(t)
+	var hold atomic.Bool
+	started, canceled, release := make(chan struct{}), make(chan struct{}), make(chan struct{})
+	s, _ := fixture(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/user/self/bootstrap" {
+			t.Errorf("request continued after disconnect: %s", r.URL.Path)
+			return
+		}
+		if hold.Load() {
+			close(started)
+			select {
+			case <-r.Context().Done():
+				close(canceled)
+			case <-release:
+			}
+		}
+		reply(w, syntheticUser(7))
+	})
+	defer close(release)
+	st := connected(t, s)
+	hold.Store(true)
+	result := make(chan *Error, 1)
+	go func() {
+		_, e := s.AddProvider(context.Background(), ProviderRequest{Generation: st.Generation, TokenID: "8", Models: []string{"fixture-1"}, Protocol: "responses"})
+		result <- e
+	}()
+	select {
+	case <-started:
+	case <-time.After(5 * time.Second):
+		t.Fatal("bootstrap did not start")
+	}
+	s.Disconnect()
+	select {
+	case <-canceled:
+	case <-time.After(5 * time.Second):
+		t.Fatal("disconnect did not cancel provider bootstrap")
+	}
+	if e := <-result; e == nil || e.Code != "stale_generation" {
+		t.Fatalf("old provider request returned %v", e)
+	}
+	ps, err := provider.Stored()
+	if err != nil || len(ps) != 0 {
+		t.Fatalf("provider written after disconnect: %+v %v", ps, err)
+	}
+}
+
 func TestTuziProviderRevalidatesEveryBatchAndDeduplicates(t *testing.T) {
 	accountTestHome(t)
 	var mu sync.Mutex

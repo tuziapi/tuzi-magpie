@@ -54,3 +54,15 @@ CAS; see subsystem reference. No broad storage refactor was performed.
 
 No processes/ports remain running from these tests. Tests create and close their
 own ephemeral httptest listeners. No unrelated files were modified.
+
+Review repair (2026-11-03): AddProvider now attaches its initial bootstrap
+verification to the account generation's cancellation context, before any
+network work. Disconnect or switch cancels that request and returns
+stale_generation; the final local-write fence remains in place. A held synthetic
+bootstrap test verifies actual HTTP cancellation and that no Provider is written.
+`go test -race -tags nogui ./internal/tuziaccount -run TestTuziProvider -count=1
+-timeout 2m` passed. Removing the new requestContext binding made the new test fail
+with "disconnect did not cancel provider bootstrap"; restored code passed again.
+Fixed website URLs were checked against current api-contract IF-15 and PRD: the
+current coding.tu-zi.com/reseller and gaccode.com/subscriptions URLs are retained,
+not the old reference implementation's links. No background processes remain.
