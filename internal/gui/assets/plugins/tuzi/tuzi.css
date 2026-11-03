@@ -1,0 +1,86 @@
+/* Only the account workspace owns these rules. Existing Magpie pages keep
+   their original layout, typography, colors and component behavior. */
+#view-tuzi .tuzi-toolbar, #view-tuzi .tuzi-actions, #view-tuzi .tuzi-tabs { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+#view-tuzi .tuzi-toolbar { margin:12px 0; }
+#view-tuzi .tuzi-tabs { margin:16px 0; }
+#view-tuzi .tuzi-toolbar input { min-width:100px; max-width:100%; }
+#view-tuzi .tuzi-toolbar .tuzi-search { flex:1; min-width:140px; }
+#view-tuzi .tuzi-notice { color:var(--muted); font-size:12px; line-height:1.6; margin:10px 0; overflow-wrap:anywhere; }
+#view-tuzi .tuzi-error { color:var(--red); }
+#view-tuzi .tuzi-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:0; }
+#view-tuzi .tuzi-metrics>div { padding:14px; min-width:0; }
+#view-tuzi .tuzi-metrics dt { color:var(--muted); font-size:12px; }
+#view-tuzi .tuzi-metrics dd { margin:8px 0 0; font-size:19px; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+#view-tuzi .tuzi-key .who, #view-tuzi .tuzi-model .who { min-width:0; flex:1; }
+#view-tuzi .tuzi-key .name, #view-tuzi .tuzi-model .name { overflow-wrap:anywhere; }
+#view-tuzi .tuzi-key { flex-wrap:wrap; }
+#view-tuzi .tuzi-empty { padding:28px 16px; color:var(--muted); text-align:center; }
+#view-tuzi .tuzi-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:12px 0; }
+#view-tuzi .tuzi-field { display:flex; flex-direction:column; gap:6px; min-width:0; font-size:12px; }
+#view-tuzi .tuzi-field input, #view-tuzi .tuzi-field textarea { width:100%; box-sizing:border-box; }
+#view-tuzi .tuzi-field textarea { min-height:64px; resize:vertical; }
+#view-tuzi .tuzi-wide { grid-column:1/-1; }
+#view-tuzi .tuzi-check { display:flex; align-items:center; gap:8px; font-size:12px; }
+#view-tuzi .tuzi-sheet { padding:18px; margin:12px 0; }
+#view-tuzi .tuzi-sheet h3 { margin:0 0 12px; font-size:14px; font-weight:600; }
+#view-tuzi .tuzi-sheet details { margin:12px 0; }
+#view-tuzi .tuzi-sheet summary { cursor:default; color:var(--muted); font-size:12px; }
+#view-tuzi .tuzi-facts { display:grid; grid-template-columns:minmax(90px,1fr) minmax(0,3fr); gap:8px 16px; font-size:12px; }
+#view-tuzi .tuzi-facts dt { color:var(--muted); }
+#view-tuzi .tuzi-facts dd { margin:0; overflow-wrap:anywhere; white-space:pre-wrap; }
+#view-tuzi .tuzi-table-wrap { overflow-x:auto; }
+#view-tuzi table { width:100%; border-collapse:collapse; font-size:12px; text-align:left; }
+#view-tuzi th { color:var(--muted); font-weight:500; }
+#view-tuzi td, #view-tuzi th { padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+#view-tuzi .tuzi-models { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+#view-tuzi .tuzi-model { padding:14px; min-width:0; }
+#view-tuzi .tuzi-model p { overflow-wrap:anywhere; }
+#view-tuzi .tuzi-model .tuzi-actions { margin-top:12px; }
+#view-tuzi .tuzi-series { display:flex; gap:3px; margin:10px 0; height:22px; }
+#view-tuzi .tuzi-series i { flex:1; border-radius:2px; min-width:2px; background:var(--muted); opacity:.25; }
+#view-tuzi .tuzi-series i[data-level="good"] { background:var(--green); opacity:.7; }
+#view-tuzi .tuzi-series i[data-level="fair"] { background:var(--amber); opacity:.7; }
+#view-tuzi .tuzi-series i[data-level="bad"] { background:var(--red); opacity:.7; }
+#view-tuzi .tuzi-trend { display:flex; align-items:flex-end; gap:3px; height:100px; margin:12px 0; }
+#view-tuzi .tuzi-trend i { flex:1; min-width:2px; background:var(--muted); border-radius:2px 2px 0 0; }
+#view-tuzi .tuzi-secret { font-family:var(--code); overflow-wrap:anywhere; white-space:pre-wrap; user-select:text; }
+#view-tuzi .tuzi-status { display:flex; align-items:center; gap:6px; }
+#view-tuzi .tuzi-status:before { content:""; width:6px; height:6px; border-radius:50%; background:var(--muted); }
+#view-tuzi .tuzi-status[data-state="connected"]:before { background:var(--green); }
+#view-tuzi [hidden] { display:none!important; }
+@media(max-width:640px) {
+  #view-tuzi .tuzi-metrics, #view-tuzi .tuzi-models { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #view-tuzi .tuzi-form { grid-template-columns:1fr; }
+  #view-tuzi .tuzi-models { grid-template-columns:1fr; }
+  #view-tuzi .tuzi-metrics dd { font-size:16px; }
+  #view-tuzi .tuzi-key .tuzi-actions { width:100%; }
+}
+#view-tuzi .tuzi-shade { position:fixed; inset:0; z-index:18; background:rgba(0,0,0,.22); }
+#view-tuzi .tuzi-dialog { position:fixed; z-index:19; top:70px; left:50%; transform:translateX(-50%); width:min(640px,calc(100vw - 32px)); max-height:calc(100vh - 100px); box-sizing:border-box; overflow:auto; overscroll-behavior:contain; margin:0; background:var(--card); box-shadow:var(--shadow); border-radius:14px; }
+#view-tuzi .tuzi-dialog>.tuzi-toolbar { position:sticky; top:-18px; background:var(--card); margin-top:-18px; padding-top:18px; z-index:1; }
+#view-tuzi .tuzi-sheet-confirm { padding:12px; margin-bottom:12px; }
+#view-tuzi .tuzi-field input, #view-tuzi .tuzi-field textarea { border:1px solid var(--line); border-radius:7px; background:var(--card); color:var(--fg); padding:5px 8px; font-family:var(--font); font-size:12px; outline:none; min-height:28px; }
+#view-tuzi .tuzi-field input:focus, #view-tuzi .tuzi-field textarea:focus { border-color:var(--accent); }
+#view-tuzi .tuzi-field input:invalid:not(:focus) { box-shadow:none; }
+#view-tuzi .tuzi-tabs { flex-wrap:nowrap; gap:0; max-width:100%; overflow-x:auto; }
+#view-tuzi .tuzi-tabs .opt { flex:none; }
+
+#view-tuzi .tuzi-pagination { gap:6px; }
+#view-tuzi .tuzi-pagination button, #view-tuzi .tuzi-pagination input { min-height:26px; height:26px; font-size:11px; }
+#view-tuzi .tuzi-pagination .tuzi-field { flex-direction:row; align-items:center; }
+#view-tuzi .tuzi-pagination input { width:48px; min-width:48px; padding:2px 4px; }
+#view-tuzi .tuzi-logs table { table-layout:fixed; min-width:1320px; width:100%; }
+#view-tuzi .tuzi-logs tbody tr { height:64px; }
+#view-tuzi .tuzi-logs td:first-child, #view-tuzi .tuzi-logs th:first-child { text-align:left; padding-left:12px; }
+#view-tuzi .tuzi-logs td:first-child button { padding-left:0; }
+#view-tuzi .tuzi-model-name { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+#view-tuzi .tuzi-log-duration { white-space:nowrap; line-height:1.6; }
+#view-tuzi .tuzi-series i:focus, #view-tuzi .tuzi-trend i:focus { outline:2px solid var(--accent); outline-offset:2px; }
+#view-tuzi .tuzi-model-mark { color:var(--muted); flex:none; }
+#view-tuzi .tuzi-group-prices { display:grid; grid-template-columns:minmax(90px,1fr) minmax(0,3fr); gap:12px; }
+#view-tuzi .tuzi-group-prices>button { grid-column:2; }
+#view-tuzi .tuzi-detail-actions { position:sticky; bottom:-18px; background:var(--card); padding:12px 0; }
+@media(max-width:640px) { #view-tuzi .tuzi-group-prices { grid-template-columns:1fr; } #view-tuzi .tuzi-group-prices>button { grid-column:auto; } }
+
+#view-tuzi .tuzi-group-prices>div { grid-column:2; }
+@media(max-width:640px) { #view-tuzi .tuzi-group-prices>div { grid-column:auto; } }
