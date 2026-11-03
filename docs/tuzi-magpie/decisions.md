@@ -24,7 +24,7 @@ The user explicitly approved changing only the two existing mirror description/t
 
 ## Approved NO_PROXY system fallback correction (2026-11-03)
 
-The user explicitly approved fixing the inherited NO_PROXY fallback defect. When no application/provider proxy is explicitly selected, a matching NO_PROXY host now takes a direct route instead of falling through to the OS proxy. Explicit application/provider choices retain precedence. The existing host/domain matching helper is reused. TestNoProxyDoesNotFallBackToSystem reproduced the failure with synthetic cached system/environment proxies; focused netproxy and GUI proxy checks passed (no-proxy-green.log); the full suite remains queued. No original page layout or text changes.
+The user explicitly approved fixing the inherited NO_PROXY fallback defect. When no application/provider proxy is explicitly selected, a matching NO_PROXY host now takes a direct route instead of falling through to the OS proxy. Explicit application/provider choices retain precedence. The existing host/domain matching helper is reused. TestNoProxyDoesNotFallBackToSystem reproduced the failure with synthetic cached system/environment proxies; focused netproxy and GUI proxy checks passed (no-proxy-green.log); the complete Go suite and targeted race recheck now pass in full-go-02. No original page layout or text changes.
 
 Independent review found that applying the host-only bypass before `fromEnv`
 would override HTTP(S)_PROXY's existing port and leading-dot domain rules.
@@ -49,5 +49,23 @@ translated accessible name/tooltip. The original fitTop/app.css are unchanged.
 The alternative, placing the narrow-window account entry in Settings instead,
 was not selected. Before approval, candidate screenshots were reviewed at
 /Users/syd08/Documents/tuzi-magpie-evidence/lines/ui-targeted/header-original
-and header-candidate. Author is now validating legacy-nav and new-entry
-zoom assertions separately; full integrated GUI verification remains pending.
+and header-candidate. Legacy-nav and new-entry zoom assertions pass in both engines; full
+integrated GUI verification remains pending.
+
+## Approved Routing height repairs (2026-11-03)
+
+The user approved “采用下一帧合并修复” and then “修复滚动条导致的高度跳动”.
+The steps ResizeObserver coalesces its layout writes into the next animation
+frame, avoiding the original WebKit observer loop. Its height-history key
+uses outside width, so an internal scrollbar no longer discards the three
+recent stories or the mode-line height history. Real width changes still
+reset measurements. These are bounded behavior exceptions, with no style or
+content changes; see routing-fixture-review.md for original failures, exact
+geometry/screenshot comparisons and final neighboring tests (15/15 per engine).
+
+## Pending tray focus repair
+
+The candidate in tray-lazy-summary-candidate-account.md waits for the lazy
+account summary before explicit card navigation. The user was asked to
+approve this inherited behavior repair. It remains evidence-only pending
+the answer; passing an isolated candidate is not authorization to integrate it.
