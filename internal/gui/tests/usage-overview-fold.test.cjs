@@ -100,6 +100,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
             await goUsage(p);
             // drawn, folded or not: a reload may find Accounts folded away
             await p.locator("#usageAccounts .row.stat").first().waitFor({ state: "attached" });
+            // The initial state read refreshes a restored Usage page too.
+            // Loading keeps old Account rows attached but hides other lists;
+            // inspect the folds only once that read has finished drawing.
+            await p.waitForFunction(() => load.done && !document.querySelector("#view-usage").classList.contains("loading"));
             return p;
           };
           let p = await open();
