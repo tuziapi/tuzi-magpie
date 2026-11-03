@@ -395,6 +395,15 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
                 for (const p of [current, original]) await p.addStyleTag({ content: "#sideToggle, .brand, body.side-nav .top { visibility: hidden !important; }" });
                 await current.waitForTimeout(350);
               }
+              // The product name is an approved distribution difference.
+              // Normalize only that exact brand text for pixel comparison;
+              // keep the original icon, layout, content and tolerance intact.
+              await current.evaluate(() => {
+                for (const label of document.querySelectorAll(".brand > span:not(.logo)")) {
+                  if (label.textContent.trim() === "tuzi-magpie") label.textContent = "magpie";
+                }
+              });
+              await current.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
               const before = PNG.sync.read(await still(original));
               const after = PNG.sync.read(await still(current));
               const sameSize = before.width === after.width && before.height === after.height;

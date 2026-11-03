@@ -117,3 +117,5 @@ pre-fix test fails with `initialization gates connection submission`
 (`/tmp/tuzi-ui-initial-red.log`); repaired Chromium targeted testing passes
 (`/tmp/tuzi-ui-initial-green.log`). Full browser results are recorded in
 `/tmp/tuzi-ui-initial-full-{chromium,webkit}.log`.
+
+Wide-screen integration: the Tuzi view uses the original built-in pages' centred1200px reading-area padding, scoped only to #view-tuzi. The unchanged page-width regression passes Chromium/WebKit at1920/2560 and normal/narrow widths in all five languages. See gui-regressions-root.md for exact evidence.

@@ -33,3 +33,21 @@ only before system fallback. The original host helper is unchanged; a pure
 standard URL matcher additionally recognizes IP/CIDR bypass after an empty
 environment result. The synthetic matcher proxy is never dialed or returned.
 See [review and red/green evidence](no-proxy-review-account.md).
+
+## Approved compact native account entry (2026-11-03)
+
+The user accepted a32px account icon in the native top header and the
+resulting earlier Update-label folding under the original fitTop rules.
+In the measured English/Win32/125% fixture, the original header is uncompressed
+at1180pt and first tight at1170pt; the32px candidate is uncompressed at1220pt
+and first tight at1210pt (10pt sample steps). In the affected1180–1210pt
+range, Update uses its existing arrow instead of its label. Original tabs
+retain font and spacing; the centered navigation shifts left16CSS pixels
+for the new32px entry. The account label remains in the sidebar and in the
+translated accessible name/tooltip. The original fitTop/app.css are unchanged.
+
+The alternative, placing the narrow-window account entry in Settings instead,
+was not selected. Before approval, candidate screenshots were reviewed at
+/Users/syd08/Documents/tuzi-magpie-evidence/lines/ui-targeted/header-original
+and header-candidate. Author is now validating legacy-nav and new-entry
+zoom assertions separately; full integrated GUI verification remains pending.

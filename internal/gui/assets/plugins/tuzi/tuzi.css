@@ -1,5 +1,7 @@
 /* Only the account workspace owns these rules. Existing Magpie pages keep
    their original layout, typography, colors and component behavior. */
+/* Match the original built-in pages' centred 1200px reading area. */
+body.window #view-tuzi { padding-left:max(16px,calc(50% - 600px)); padding-right:max(0px,calc(max(16px,calc(50% - 600px)) - var(--bar,0px))); }
 #view-tuzi .tuzi-toolbar, #view-tuzi .tuzi-actions, #view-tuzi .tuzi-tabs { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 #view-tuzi .tuzi-toolbar { margin:12px 0; }
 #view-tuzi .tuzi-tabs { margin:16px 0; }
