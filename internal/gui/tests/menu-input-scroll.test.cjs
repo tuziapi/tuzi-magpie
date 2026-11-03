@@ -10,6 +10,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const models = [{ id: "a/opus", name: "opus", providerName: "A", icon: "generic", context: 1000000, ready: true }];
@@ -74,6 +75,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const group = page.locator(".rt-group").first();
       await group.waitFor();
       await press(page, group.locator("button", { hasText: words[lang].edit }));
+      // The editor grows under overflow:hidden. Focusing its input before
+      // that motion ends scrolls the editor itself, which correctly closes
+      // menus; this case is about the input's own horizontal blur scroll.
+      await settled(page);
       const row = page.locator(".rt-gedit .rt-rule").first();
       const box = row.locator(".rt-cond.xf input");
       for (const [opener, menu] of [[".rt-rmore", ".row-menu"], [".rt-addc", ".proto-menu"]]) {
