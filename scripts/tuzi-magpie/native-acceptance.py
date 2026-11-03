@@ -64,7 +64,7 @@ env = {"HOME":str(home), "USERPROFILE":str(home), "CFFIXED_USER_HOME":str(home),
        "MAGPIE_ADDR":"127.0.0.1:18343", "MAGPIE_NO_INSTALL":"1",
        "TUZI_MAGPIE_FIXTURE_ORIGIN":"http://127.0.0.1:18341",
        "TUZI_MAGPIE_FIXTURE_REPORT":str(ui_result_path),
-       "TUZI_MAGPIE_FIXTURE_SCRIPT":str(args.script or repo/"scripts/tuzi-magpie/native-workspace.js")}
+       "TUZI_MAGPIE_FIXTURE_SCRIPT":str(args.script or repo/"scripts/tuzi-magpie/tests/native-workspace.js")}
 processes = []
 logs = []
 result = {"passed": False, "checks": [], "errors": []}

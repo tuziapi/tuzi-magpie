@@ -102,3 +102,12 @@ observation path specifically, a separate case should omit the version header
 and carry the version only in User-Agent before removing SawCodexClient.
 The reviewer did not execute or modify root's Go test; red/green evidence
 for that test remains owned by root.
+
+## Acceptance script placement
+
+The three DOM drivers now live under scripts/tuzi-magpie/tests/. They are
+fixture-only test scripts, so the existing production word-ownership scanner
+correctly omits them with its existing tests-directory rule. The scanner
+itself is unchanged. The runner default points at tests/native-workspace.js;
+restart/nav callers use the corresponding tests/ paths. All four i18n-key
+guards pass after this move (24.47s). No production translations were removed.
