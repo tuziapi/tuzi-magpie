@@ -2379,6 +2379,9 @@ func dshWiredOnce() string {
 // once is dshWiredOnce, done only when something the round reads changed
 // since r's last round that found nothing to write.
 func (r *dshRounds) once() string {
+	if !managedAgent("dsh") {
+		return ""
+	}
 	dshWrites.Lock()
 	defer dshWrites.Unlock()
 	dir := dshHome()

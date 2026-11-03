@@ -98,7 +98,7 @@ func TestWorkBuddyRestartOnMac(t *testing.T) {
 	if a.AppBehind() != nil {
 		t.Fatal("offered a Restart for WorkBuddy not connected to magpie")
 	}
-	if err := a.Field("provider").Set("magpie"); err != nil {
+	if err := a.Apply("provider", "magpie"); err != nil {
 		t.Fatal(err)
 	}
 	got := a.AppBehind()
@@ -194,7 +194,7 @@ func TestWorkBuddyRestartOnWindows(t *testing.T) {
 		return nil
 	}
 	a := workbuddy(home)
-	if err := a.Field("provider").Set("magpie"); err != nil {
+	if err := a.Apply("provider", "magpie"); err != nil {
 		t.Fatal(err)
 	}
 	got := a.AppBehind()
@@ -274,7 +274,7 @@ func TestRestartEndsAppInTrayAtOnce(t *testing.T) {
 				return nil
 			}
 			a := workbuddy(home)
-			if err := a.Field("provider").Set("magpie"); err != nil {
+			if err := a.Apply("provider", "magpie"); err != nil {
 				t.Fatal(err)
 			}
 			began := time.Now()
@@ -393,7 +393,7 @@ func TestWorkBuddyOwnSaveAfterStartIsNoChange(t *testing.T) {
 				}
 			}
 			a := workbuddy(home)
-			if err := a.Field("provider").Set("magpie"); err != nil {
+			if err := a.Apply("provider", "magpie"); err != nil {
 				t.Fatal(err)
 			}
 			wrote := time.Now().Add(-30 * time.Minute)

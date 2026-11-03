@@ -15,7 +15,7 @@ import (
 // is behind, and otherwise only now and then (#3185: a look every 15s woke
 // an idle magpie).
 func TestCodexDaemonLooksOnWrites(t *testing.T) {
-	codexHome(t, "", `model = "gpt-5"`)
+	managedCodexHome(t, "", `model = "gpt-5"`)
 	was := daemonCheck
 	var mu sync.Mutex
 	looks := 0

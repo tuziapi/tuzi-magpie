@@ -8,6 +8,39 @@ supported agent: where its config lives, which fields matter and which
 values to offer. It also records what magpie set, so a later change made by
 something else shows up as drift.
 
+
+## tuzi-magpie distribution ownership
+
+Agent configurations are shared with original Magpie, while tuzi-magpie's
+`applied.json` and `stash.json` live in its independent data directory.
+`managedAgent` in [`ownership.go`](../../internal/agent/ownership.go) requires
+valid local application/connection/restoration evidence before automatic
+maintenance. A provider named `magpie`, a localhost endpoint, or a model
+matching the local catalog alone does not establish ownership. Malformed
+record files cannot establish ownership through a partially decoded entry.
+
+The gate covers catalog sync, legacy and effort migrations, provider/group
+renames, reseating and gateway rewiring, Claude's model-follow operation,
+Codex daemon maintenance, rollout conversion and quit relay, and dsh's
+background route repair. `Wired` and `Disconnect` use the same boundary;
+Cursor Local and Claude Science already use marks in the isolated app data.
+Explicit Connect/Apply remain available. Before their first write, the
+original primary config is preserved verbatim in `agent-originals/<id>.config`
+beside the isolated provider store (directory 0700, file 0600). An unreadable
+source or failed backup blocks that write. This backup is retained through
+Disconnect for manual recovery, alongside the existing field-level stash;
+it is never automatically copied over edits made by another application.
+Native offline Stage uses the same explicit backup and ownership path.
+
+Codex's protocol provider ID stays `magpie` for compatibility, but its generated
+files are `tuzi-magpie-models.json` and `tuzi-magpie-desktop-models.json`.
+Explicit adoption can replace the shared provider's settings; its original
+configuration backup and original Magpie catalog files remain recoverable.
+`ownership_test.go` exercises empty tuzi state against original Magpie files,
+corrupt records, background daemon maintenance, explicit adoption and backup
+failure. Existing managed-config tests must include local connection evidence
+when they construct an already-connected agent directly.
+
 ## Responsibilities and sources of truth
 
 | Part | Responsibility | Source |

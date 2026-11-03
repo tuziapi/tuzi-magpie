@@ -2283,6 +2283,9 @@ func claudeIn(at place) *Agent {
 		// older magpie's ANTHROPIC_MODEL, which held every session to that
 		// one, comes out
 		Follow: func() error {
+			if !managedAgent(strings.TrimSuffix(at.key("claude.connect.was"), ".connect.was")) {
+				return nil
+			}
 			main := mainModel()
 			bare := strings.TrimSuffix(main, "[1m]")
 			if !routed() || !isMagpie(bare) {

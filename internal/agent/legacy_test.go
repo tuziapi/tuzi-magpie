@@ -45,6 +45,7 @@ func TestRenameLegacy(t *testing.T) {
 	write(".pi/agent/models.json", `{"providers": {"dial": {"api": "openai-completions", "apiKey": "dial", "baseUrl": "http://127.0.0.1:3425/v1", "models": []}}}`)
 	write(".claude/settings.json", `{"env": {"ANTHROPIC_BASE_URL": "`+gateway.URL()+`", "ANTHROPIC_AUTH_TOKEN": "dial", "ANTHROPIC_MODEL": "deepseek/deepseek-flash"}, "theme": "dark"}`)
 
+	setUpInMagpie("codex", "claude", "pi", "opencode")
 	RenameLegacy()
 
 	read := func(rel string) string {
@@ -68,8 +69,8 @@ func TestRenameLegacy(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(home, ".codex", "dial-models.json")); err == nil {
 		t.Fatal("dial-models.json still there")
 	}
-	if _, err := os.Stat(filepath.Join(home, ".codex", "magpie-models.json")); err != nil {
-		t.Fatal("magpie-models.json missing")
+	if _, err := os.Stat(filepath.Join(home, ".codex", "tuzi-magpie-models.json")); err != nil {
+		t.Fatal("tuzi-magpie-models.json missing")
 	}
 	if b := stashLoad(); b["codex.provider"] == "dial" {
 		t.Fatal("dial stashed as the provider to go back to")

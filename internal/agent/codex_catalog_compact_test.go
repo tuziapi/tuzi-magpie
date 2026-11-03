@@ -11,7 +11,7 @@ import (
 
 // Codex is told where to compact a long conversation (#876) both from the
 // gateway's /models (provider.CodexListed, which sets catalog.Model.Compact)
-// and from the list magpie writes for it on disk (magpie-models.json,
+// and from the list magpie writes for it on disk (tuzi-magpie-models.json,
 // codex.go:593 -> codexcat.Catalog(magpieModels("codex"))).
 //
 // magpieModels left Compact unset, so codexcat fell back to the one for
@@ -30,7 +30,7 @@ func TestCodexCatalogCompactAtReachesDisk(t *testing.T) {
 	// connect Codex to magpie on a magpie model, as the app does: it writes
 	// the catalog it reads from disk
 	cx := codex(home)
-	if err := cx.Fields[0].Set("relay/glm-4.6"); err != nil {
+	if err := cx.Apply("model", "relay/glm-4.6"); err != nil {
 		t.Fatal(err)
 	}
 
@@ -43,7 +43,7 @@ func TestCodexCatalogCompactAtReachesDisk(t *testing.T) {
 				Compact       int    `json:"auto_compact_token_limit"`
 			} `json:"models"`
 		}
-		raw := readFile(filepath.Join(home, ".codex", "magpie-models.json"))
+		raw := readFile(filepath.Join(home, ".codex", "tuzi-magpie-models.json"))
 		if err := json.Unmarshal([]byte(raw), &got); err != nil {
 			t.Fatalf("%v: %s", err, raw)
 		}

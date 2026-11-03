@@ -385,7 +385,7 @@ func TestCodexFailoverEndsWithMagpie(t *testing.T) {
 			"refresh_token": "r-" + acct, "account_id": acct}}
 	}
 	me, _ := json.Marshal(auth("me@example.com", "acct-1"))
-	home, read := codexHome(t, string(me), "model = \"gpt-5.5\"\n")
+	home, read := managedCodexHome(t, string(me), "model = \"gpt-5.5\"\n")
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
 	logins := func(on bool) {
@@ -466,7 +466,7 @@ func TestCodexMirrorFailoverHeldAndEndsWithMagpie(t *testing.T) {
 			"refresh_token": "r-" + acct, "account_id": acct}}
 	}
 	me, _ := json.Marshal(auth("me@example.com", "acct-1"))
-	home, read := codexHome(t, string(me), unified)
+	home, read := managedCodexHome(t, string(me), unified)
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
 	b, _ := json.Marshal([]map[string]any{{"agent": "codex", "user": "spare@example.com", "on": true,
@@ -508,6 +508,8 @@ func TestCodexMirrorFailoverHeldAndEndsWithMagpie(t *testing.T) {
 // magpie was opened again); none when no Codex runs, and none for a
 // gateway on another computer's address, which a relay here can't take.
 func TestRelayOpenCodexLeftForRunningCodex(t *testing.T) {
+	syncHome(t)
+	setUpInMagpie("codex")
 	wasStart, wasPIDs := startRelay, codexPIDs
 	t.Cleanup(func() { startRelay, codexPIDs = wasStart, wasPIDs })
 	type call struct {

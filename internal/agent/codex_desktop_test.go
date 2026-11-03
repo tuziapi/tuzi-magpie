@@ -45,7 +45,7 @@ func deskListIs(t *testing.T, list *string) {
 func TestCodexDesktopListBesideSignIn(t *testing.T) {
 	home, read := codexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`, `model = "gpt-5.5"`+"\n")
 	dir := filepath.Join(home, ".codex")
-	desk := filepath.Join(dir, "magpie-desktop-models.json")
+	desk := filepath.Join(dir, "tuzi-magpie-desktop-models.json")
 	app := true
 	codexAppReads(t, &app)
 	list := `{"models":[{"slug":"gpt-6-sol","base_instructions":"theirs"},{"slug":"fake/m1"}]}`
@@ -56,7 +56,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 		t.Fatalf("join: %v %v", ok, err)
 	}
 	cfg := read()
-	if !strings.Contains(cfg, `model_catalog_json = "`) || !strings.Contains(cfg, "magpie-desktop-models.json") {
+	if !strings.Contains(cfg, `model_catalog_json = "`) || !strings.Contains(cfg, "tuzi-magpie-desktop-models.json") {
 		t.Fatalf("joined with the Codex app here, no list named for it:\n%s", cfg)
 	}
 	if strings.Contains(cfg, "model_provider =") {
@@ -89,7 +89,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 	if err := cx.Sync(); err != nil {
 		t.Fatal(err)
 	}
-	if b, _ := os.ReadFile(desk); string(b) != was || !strings.Contains(read(), "magpie-desktop-models.json") {
+	if b, _ := os.ReadFile(desk); string(b) != was || !strings.Contains(read(), "tuzi-magpie-desktop-models.json") {
 		t.Fatalf("unknown list: %s\n%s", b, read())
 	}
 	list = was
@@ -99,7 +99,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 	if err := cx.Fields[0].Set("fake/m1"); err != nil {
 		t.Fatal(err)
 	}
-	if cfg := read(); !cx.Beside() || !strings.Contains(cfg, "magpie-desktop-models.json") || strings.Contains(cfg, "model_provider =") {
+	if cfg := read(); !cx.Beside() || !strings.Contains(cfg, "tuzi-magpie-desktop-models.json") || strings.Contains(cfg, "model_provider =") {
 		t.Fatalf("beside: %v\n%s", cx.Beside(), cfg)
 	}
 
@@ -108,7 +108,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 	if err := cx.Field("login").Set("api"); err != nil {
 		t.Fatal(err)
 	}
-	if cfg := read(); !strings.Contains(cfg, `model_provider = "magpie"`) || strings.Contains(cfg, "magpie-desktop-models.json") {
+	if cfg := read(); !strings.Contains(cfg, `model_provider = "magpie"`) || strings.Contains(cfg, "tuzi-magpie-desktop-models.json") {
 		t.Fatalf("api:\n%s", cfg)
 	}
 	if _, err := os.Stat(desk); !os.IsNotExist(err) {
@@ -117,7 +117,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 	if err := cx.Field("login").Set(""); err != nil {
 		t.Fatal(err)
 	}
-	if cfg := read(); !strings.Contains(cfg, "magpie-desktop-models.json") || strings.Contains(cfg, "model_provider =") {
+	if cfg := read(); !strings.Contains(cfg, "tuzi-magpie-desktop-models.json") || strings.Contains(cfg, "model_provider =") {
 		t.Fatalf("back beside the sign-in:\n%s", cfg)
 	}
 
@@ -138,7 +138,7 @@ func TestCodexDesktopListBesideSignIn(t *testing.T) {
 // Codex app was installed goes once it isn't.
 func TestCodexDesktopListCLIOnly(t *testing.T) {
 	home, read := codexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`, `model = "gpt-5.5"`+"\n")
-	desk := filepath.Join(home, ".codex", "magpie-desktop-models.json")
+	desk := filepath.Join(home, ".codex", "tuzi-magpie-desktop-models.json")
 	app := false
 	codexAppReads(t, &app)
 	list := `{"models":[{"slug":"gpt-6-sol"}]}`
@@ -157,7 +157,7 @@ func TestCodexDesktopListCLIOnly(t *testing.T) {
 	if err := cx.Sync(); err != nil {
 		t.Fatal(err)
 	}
-	if cfg := read(); !strings.Contains(cfg, "magpie-desktop-models.json") {
+	if cfg := read(); !strings.Contains(cfg, "tuzi-magpie-desktop-models.json") {
 		t.Fatalf("the app installed:\n%s", cfg)
 	}
 	app = false
@@ -179,7 +179,7 @@ func TestCodexDesktopListCLIOnly(t *testing.T) {
 func TestCodexDesktopListKeepsTheirs(t *testing.T) {
 	home, read := codexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`, `model = "gpt-5.5"`+"\n")
 	dir := filepath.Join(home, ".codex")
-	desk := filepath.Join(dir, "magpie-desktop-models.json")
+	desk := filepath.Join(dir, "tuzi-magpie-desktop-models.json")
 	app := true
 	codexAppReads(t, &app)
 	list := `{"models":[{"slug":"gpt-6-sol"}]}`

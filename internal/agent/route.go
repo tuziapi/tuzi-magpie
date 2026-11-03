@@ -390,7 +390,7 @@ func buildModels(agent string) []catalog.Model {
 		}
 		// the service tiers Codex is offered on it, as the gateway's own
 		// lists offer them: Fast in the Codex CLI magpie writes
-		// magpie-models.json for (#1530)
+		// tuzi-magpie-models.json for (#1530)
 		provider.CodexTiers(&m, e, members)
 		if agent == "codex" {
 			// the entry its vendor lists the model under in Codex's own

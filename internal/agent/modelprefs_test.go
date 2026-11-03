@@ -26,9 +26,9 @@ func TestModelNameAndLevelsReachAgentFiles(t *testing.T) {
 	writeFile(t, piModels, `{"providers":{"magpie":{"name":"magpie","models":[]}}}`)
 	// Pi runs a model of magpie's: connected, so its list follows
 	writeFile(t, filepath.Join(home, ".pi", "agent", "settings.json"), `{"defaultProvider":"magpie","defaultModel":"relay/glm-4.6"}`)
-	setUpInMagpie("pi")
+	setUpInMagpie("pi", "codex")
 	codexDir := filepath.Join(home, ".codex")
-	codexCat := filepath.Join(codexDir, "magpie-models.json")
+	codexCat := filepath.Join(codexDir, "tuzi-magpie-models.json")
 	writeFile(t, filepath.Join(codexDir, "config.toml"), "model = \"relay/glm-4.6\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = '"+codexCat+"'\n")
 	writeFile(t, codexCat, `{"models":[]}`)
 	catalog.Changed = SyncCatalog

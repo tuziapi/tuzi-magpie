@@ -165,12 +165,12 @@ func TestDshDesktopOnlyWired(t *testing.T) {
 // filled new profiles). The serving round now fills a profile dsh has just
 // made; one with entries of its own, the user's, is still left to Reapply.
 func TestDshDesktopProfileMadeWhileServing(t *testing.T) {
-	home, dir, web := dshRouteHome(t)
+	home, dir, web := managedDshRouteHome(t)
 	if err := os.WriteFile(web, []byte(dshDesktopPatch), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	a := dsh(home)
-	if err := a.Field("model").Set("magpie/deepseek/flash"); err != nil {
+	if err := a.Apply("model", "magpie/deepseek/flash"); err != nil {
 		t.Fatal(err)
 	}
 	if d := a.Check(); d != "" {

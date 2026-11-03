@@ -9,16 +9,16 @@ import (
 	"github.com/yetone/magpie/internal/provider"
 )
 
-// A magpie-models.json that doesn't parse is kept aside before magpie
+// A tuzi-magpie-models.json that doesn't parse is kept aside before magpie
 // writes its list over the file or takes the file away: Keep (#1450) can
 // hold nothing of a file it can't read, so the keys the user added by hand
 // would end with no copy — the rule the other state files were given
 // (#2263), which this file missed.
 func TestUnparsedCodexCatalogKeptAside(t *testing.T) {
-	home, _ := codexHome(t, "", "")
-	list := filepath.Join(home, ".codex", "magpie-models.json")
+	home, _ := managedCodexHome(t, "", "")
+	list := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 	cx := codex(home)
-	if err := cx.Fields[0].Set("fake/m1"); err != nil {
+	if err := cx.Apply("model", "fake/m1"); err != nil {
 		t.Fatal(err)
 	}
 	// the file as it stands, broken the way a half-save or a sync conflict
@@ -41,7 +41,7 @@ func TestUnparsedCodexCatalogKeptAside(t *testing.T) {
 	// the list broken again, and magpie steps out: the file goes, but a
 	// copy of what it held stays
 	writeFile(t, list, b[:len(b)-2])
-	if err := cx.Fields[0].Set(""); err != nil {
+	if err := cx.Apply("model", ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(list); err == nil {

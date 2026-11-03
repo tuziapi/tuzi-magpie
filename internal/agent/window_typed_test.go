@@ -23,6 +23,7 @@ import (
 // Settings (Compact at) still comes before a typed window.
 func TestTypedWindowReachesCodexAndClaudeCode(t *testing.T) {
 	home := syncHome(t)
+	setUpInMagpie("codex")
 	catalog.Changed = SyncCatalog
 	t.Cleanup(func() { catalog.Changed = nil })
 	must := func(err error) {
@@ -36,7 +37,7 @@ func TestTypedWindowReachesCodexAndClaudeCode(t *testing.T) {
 	must(catalog.SaveLive("ds", "http://127.0.0.1:1/v1", []catalog.Model{{ID: "flash", Context: 1000000}, {ID: "pro", Context: 1000000}}))
 	must(provider.SaveGroup(provider.Group{ID: "flash", Name: "Flash", Members: []string{"ds/flash"}, Context: 500000}))
 
-	must(codex(home).Fields[0].Set("group/flash"))
+	must(codex(home).Apply("model", "group/flash"))
 	type window struct{ context, compact int }
 	onDisk := func() map[string]window {
 		t.Helper()
@@ -47,7 +48,7 @@ func TestTypedWindowReachesCodexAndClaudeCode(t *testing.T) {
 				Compact int    `json:"auto_compact_token_limit"`
 			} `json:"models"`
 		}
-		raw := readFile(filepath.Join(home, ".codex", "magpie-models.json"))
+		raw := readFile(filepath.Join(home, ".codex", "tuzi-magpie-models.json"))
 		if err := json.Unmarshal([]byte(raw), &got); err != nil {
 			t.Fatalf("%v: %s", err, raw)
 		}
@@ -89,15 +90,15 @@ func TestTypedWindowReachesCodexAndClaudeCode(t *testing.T) {
 	writeFile(t, path, `{}`)
 	a := claude(home)
 	env := func(k string) string { v, _ := edit.GetJSON(path, "env."+k); return v }
-	must(a.Field("model").Set("group/flash"))
+	must(a.Apply("model", "group/flash"))
 	if c, w := env(claudeCompactEnv), env(claudeContextEnv); c != "" || w != "500000" {
 		t.Errorf("Claude Code on the group: compact %q, window %q; want none and 500000", c, w)
 	}
-	must(a.Field("model").Set("ds/pro"))
+	must(a.Apply("model", "ds/pro"))
 	if c, w := env(claudeCompactEnv), env(claudeContextEnv); c != "" || w != "400000" {
 		t.Errorf("Claude Code on ds/pro: compact %q, window %q; want none and 400000", c, w)
 	}
-	must(a.Field("model").Set("ds/flash"))
+	must(a.Apply("model", "ds/flash"))
 	if c := env(claudeCompactEnv); c != "272000" {
 		t.Errorf("Claude Code on ds/flash: compact %q; want the default 272000", c)
 	}
@@ -109,7 +110,7 @@ func TestTypedWindowReachesCodexAndClaudeCode(t *testing.T) {
 		"group/flash": {500000, 300000},
 		"ds/pro":      {400000, 300000},
 	}, map[string]int{"group/flash": 0, "ds/pro": 0})
-	must(a.Field("model").Set("group/flash"))
+	must(a.Apply("model", "group/flash"))
 	if c := env(claudeCompactEnv); c != "300000" {
 		t.Errorf("Claude Code on the group with Compact at 300K: %q", c)
 	}
@@ -137,7 +138,7 @@ func TestSmallestMemberTypedWindow(t *testing.T) {
 	must(provider.SaveGroup(provider.Group{ID: "plain", Name: "Plain", Members: []string{"w/other", "v/glm"}, Context: provider.ContextSmallest}))
 
 	// Codex: the gateway's list and its context_window
-	must(codex(home).Fields[0].Set("group/pool"))
+	must(codex(home).Apply("model", "group/pool"))
 	compacts := map[string]int{}
 	for _, m := range provider.CodexListed() {
 		compacts[m.ID] = m.Compact
@@ -149,7 +150,7 @@ func TestSmallestMemberTypedWindow(t *testing.T) {
 	}
 
 	// Claude Desktop: each group's own autoCompactWindow
-	must(claudeDesktop(home).Field("provider").Set("magpie"))
+	must(claudeDesktop(home).Apply("provider", "magpie"))
 	ids := map[string]string{}
 	for _, e := range provider.Catalog() {
 		ids[e.ID] = gateway.DesktopID(e)
@@ -200,7 +201,7 @@ func TestLargestMemberTypedWindow(t *testing.T) {
 			Compact int    `json:"auto_compact_token_limit"`
 		} `json:"models"`
 	}
-	raw := readFile(filepath.Join(home, ".codex", "magpie-models.json"))
+	raw := readFile(filepath.Join(home, ".codex", "tuzi-magpie-models.json"))
 	must(json.Unmarshal([]byte(raw), &disk))
 	for _, m := range disk.Models {
 		want := map[string][2]int{"group/ultra": {872000, 0}, "group/loose": {1000000, 272000}}

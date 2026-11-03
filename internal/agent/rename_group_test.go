@@ -16,11 +16,12 @@ import (
 // and the user had to pick it again in each (lucis0116 on X).
 func TestRenameGroupMovesTheAgentsOnIt(t *testing.T) {
 	home := syncHome(t)
+	setUpInMagpie("codex", "claude", "pi", "opencode")
 	if err := provider.SaveGroup(provider.Group{ID: "smart", Name: "Smart", Members: []string{"relay/glm-4.6"}}); err != nil {
 		t.Fatal(err)
 	}
 	codexCfg := filepath.Join(home, ".codex", "config.toml")
-	codexCat := filepath.Join(home, ".codex", "magpie-models.json")
+	codexCat := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 	writeFile(t, codexCfg, "model = \"group/smart\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = '"+codexCat+"'\n")
 	writeFile(t, codexCat, `{"models":[]}`)
 	piModels := filepath.Join(home, ".pi", "agent", "models.json")
@@ -75,7 +76,8 @@ func TestRenameGroupMovesTheAgentsOnIt(t *testing.T) {
 // at its next launch (TestCodexEffortPickKeepsTheAppRunning says why).
 func TestCodexAppRouteIgnoresARename(t *testing.T) {
 	home := syncHome(t)
-	codexCat := filepath.Join(home, ".codex", "magpie-models.json")
+	setUpInMagpie("codex")
+	codexCat := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 	writeFile(t, filepath.Join(home, ".codex", "config.toml"), "model = \"relay/glm-4.6\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = '"+codexCat+"'\n")
 	writeFile(t, codexCat, `{"models":[]}`)
 	SyncCatalog()

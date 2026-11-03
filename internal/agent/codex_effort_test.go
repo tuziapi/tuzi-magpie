@@ -34,7 +34,7 @@ func TestCodexCustomProviderModelHasEfforts(t *testing.T) {
 	if cfg := read(); !strings.Contains(cfg, `model_reasoning_effort = "low"`) {
 		t.Fatalf("effort not settled on the nearest level:\n%s", cfg)
 	}
-	b, _ := os.ReadFile(filepath.Join(home, ".codex", "magpie-models.json"))
+	b, _ := os.ReadFile(filepath.Join(home, ".codex", "tuzi-magpie-models.json"))
 	var cat struct {
 		Models []struct {
 			Slug    string  `json:"slug"`

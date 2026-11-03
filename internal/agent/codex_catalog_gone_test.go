@@ -30,7 +30,7 @@ func namesGone(home string) string {
 
 // Whatever leads up to it, magpie stepping out of Codex never leaves its
 // config naming a model list that isn't there. Disconnect removed
-// magpie-models.json whatever Codex's provider was, and took
+// tuzi-magpie-models.json whatever Codex's provider was, and took
 // model_catalog_json out only while model_provider was still magpie's: one
 // moved off magpie (by the app, another tool, a hand edit) kept the key
 // naming the removed file, and Codex didn't open again.
@@ -143,7 +143,7 @@ func TestCodexOwnCatalogGoneNotPutBack(t *testing.T) {
 func TestCodexSyncMendsGoneCatalog(t *testing.T) {
 	t.Run("not the provider", func(t *testing.T) {
 		home, read := codexHome(t, "", "model = \"gpt-5.5\"\n")
-		list := filepath.Join(home, ".codex", "magpie-models.json")
+		list := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 		os.WriteFile(filepath.Join(home, ".codex", "config.toml"),
 			[]byte("model = \"gpt-5.5\"\nmodel_catalog_json = \""+filepath.ToSlash(list)+"\"\n"), 0o644)
 		if err := codex(home).Sync(); err != nil {
@@ -162,7 +162,7 @@ func TestCodexSyncMendsGoneCatalog(t *testing.T) {
 		if err := cx.Connect(); err != nil {
 			t.Fatal(err)
 		}
-		list := filepath.Join(home, ".codex", "magpie-models.json")
+		list := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 		if err := os.Remove(list); err != nil {
 			t.Fatal(err)
 		}

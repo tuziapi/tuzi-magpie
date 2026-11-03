@@ -14,7 +14,16 @@ func aside(home string) *Agent { return asideIn(here(home)) }
 func asideIn(at place) *Agent {
 	c := newAsideConnection(at)
 	a := &Agent{ID: "aside", Name: "Aside", Icon: "aside", Bin: "aside", Path: c.path, Spelled: prefixed, Dir: at.join(".aside"), Sync: c.sync}
-	a.Native = &NativeConnection{Read: c.state, Connect: c.connect, Apply: c.apply, Stage: c.stage, Disconnect: c.plan, Execute: c.execute, ExecuteOffline: c.executeOffline}
+	a.Native = &NativeConnection{Read: c.state, Connect: c.connect, Apply: c.apply, Stage: func(key, value string) error {
+		if err := a.keepOriginal(); err != nil {
+			return err
+		}
+		if err := c.stage(key, value); err != nil {
+			return err
+		}
+		stash(map[string]string{a.ID + ".tuzi-managed": "1"})
+		return nil
+	}, Disconnect: c.plan, Execute: c.execute, ExecuteOffline: c.executeOffline}
 	a.Check = func() string {
 		status, detail := c.provider()
 		if status == "invalid" {

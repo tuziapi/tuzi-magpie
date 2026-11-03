@@ -48,9 +48,9 @@ func TestCodexAdviceNamesTheSharedAppServer(t *testing.T) {
 // magpie when no session is on it, named with the Agents page's Restart
 // when one is.
 func TestCodexNoticeKeepsTheDaemonCurrent(t *testing.T) {
-	home, _ := codexHome(t, "", "")
+	home, _ := managedCodexHome(t, "", "")
 	dir := filepath.Join(home, ".codex")
-	cfg, list := filepath.Join(dir, "config.toml"), filepath.Join(dir, "magpie-models.json")
+	cfg, list := filepath.Join(dir, "config.toml"), filepath.Join(dir, "tuzi-magpie-models.json")
 	os.WriteFile(cfg, []byte("model_provider = \"magpie\"\nmodel_catalog_json = \""+list+"\"\n"), 0o600)
 	os.WriteFile(list, []byte(`{"models":[{"slug":"magpie/a"}]}`), 0o644)
 	then := time.Now().Add(-2 * time.Hour)

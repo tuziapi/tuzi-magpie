@@ -94,14 +94,14 @@ func TestDshACPSettingsGetTheRoute(t *testing.T) {
 // again, and an import of the user's own from before magpie's first is
 // kept aside rather than lost under magpie's.
 func TestDshACPSettingsWrittenAgain(t *testing.T) {
-	_, dir, web := dshRouteHome(t)
+	_, dir, web := managedDshRouteHome(t)
 	t.Setenv("DSH_HOME", dir)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"), 0o644)
 	settings := filepath.Join(dir, "settings.yaml")
 	imported := settings + ".imported"
 	mine := "llm-deepseek:\n  thinking: enabled\nagent-default-model:\n  model: deepseek-v4-pro\n"
 	os.WriteFile(imported, []byte(mine), 0o644)
-	if err := dsh(filepath.Dir(dir)).Field("model").Set("magpie/deepseek/pro"); err != nil {
+	if err := dsh(filepath.Dir(dir)).Apply("model", "magpie/deepseek/pro"); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(imported + ".kept"); string(b) != mine {

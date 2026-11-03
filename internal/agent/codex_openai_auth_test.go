@@ -19,7 +19,7 @@ import (
 // both ways.
 func TestCodexMagpieProviderKeepsChatGPTAccount(t *testing.T) {
 	// the table as an older magpie wrote it, bytes from a live config.toml
-	const older = "model = \"fake/m1\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = \"magpie-models.json\"\n\n" +
+	const older = "model = \"fake/m1\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = \"tuzi-magpie-models.json\"\n\n" +
 		"[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:3425/v1\"\nwire_api = \"responses\"\n" +
 		"experimental_bearer_token = \"magpie\"\nhttp_headers = { \"x-openai-actor-authorization\" = \"magpie\" }\n"
 	flag := func(t *testing.T, cfg string) string {

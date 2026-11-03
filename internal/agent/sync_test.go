@@ -228,6 +228,7 @@ func TestMaxTokensWithinContextWindow(t *testing.T) {
 // keep of magpie's models; a file magpie wrote nothing into stays as it is.
 func TestSyncCatalogRewritesAgentLists(t *testing.T) {
 	home := syncHome(t)
+	setUpInMagpie("codex")
 	piModels := filepath.Join(home, ".pi", "agent", "models.json")
 	writeFile(t, piModels, `{"providers":{"mine":{"baseUrl":"http://x"},"magpie":{"name":"magpie","models":[]}}}`)
 	// connected: a block of magpie's name in an agent not on magpie is the
@@ -238,7 +239,7 @@ func TestSyncCatalogRewritesAgentLists(t *testing.T) {
 	crushBody := `{"providers":{"mine":{"base_url":"http://x"}}}`
 	writeFile(t, crushCfg, crushBody)
 	codexDir := filepath.Join(home, ".codex")
-	codexCat := filepath.Join(codexDir, "magpie-models.json")
+	codexCat := filepath.Join(codexDir, "tuzi-magpie-models.json")
 	writeFile(t, filepath.Join(codexDir, "config.toml"), "model = \"relay/glm-4.6\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = '"+codexCat+"'\n")
 	writeFile(t, codexCat, `{"models":[]}`)
 
@@ -275,6 +276,7 @@ func TestSyncCatalogRewritesAgentLists(t *testing.T) {
 // the list as it is stays as it is.
 func TestSyncCatalogAgesCodexCache(t *testing.T) {
 	home := syncHome(t)
+	setUpInMagpie("codex")
 	dir := filepath.Join(home, ".codex")
 	writeFile(t, filepath.Join(dir, "auth.json"), `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`)
 	writeFile(t, filepath.Join(dir, "config.toml"), "model = \"relay/glm-4.6\"\nopenai_base_url = \""+codexGatewayURL()+"\"\n")
@@ -343,13 +345,13 @@ func TestOpenCodeKeepsItsOwnGatewayProviders(t *testing.T) {
 	cfg := filepath.Join(home, ".config", "opencode", "opencode.json")
 	writeFile(t, cfg, `{
   "provider": {
-    "magpie-relay": {"npm": "@ai-sdk/openai-compatible", "options": {"baseURL": "http://localhost:3425/v1/"}, "models": {"relay/glm-4.6": {}}},
+    "magpie-relay": {"npm": "@ai-sdk/openai-compatible", "options": {"baseURL": "http://localhost:3435/v1/"}, "models": {"relay/glm-4.6": {}}},
     "elsewhere": {"options": {"baseURL": "https://example.com/v1"}, "models": {"relay/glm-4.6": {}}}
   },
   "model": "magpie-relay/relay/glm-4.6"
 }`)
 	oc := opencode(home, filepath.Join(home, ".config"))
-	if err := oc.Fields[0].Set("magpie/relay/glm-4.6"); err != nil {
+	if err := oc.Apply("model", "magpie/relay/glm-4.6"); err != nil {
 		t.Fatal(err)
 	}
 	if v, _ := edit.GetJSON(cfg, "model"); v != "magpie-relay/relay/glm-4.6" {
@@ -359,8 +361,8 @@ func TestOpenCodeKeepsItsOwnGatewayProviders(t *testing.T) {
 		t.Fatal("magpie's provider added beside the file's own")
 	}
 	// a model none of them lists still gets magpie's provider
-	os.WriteFile(cfg, []byte(`{"provider": {"magpie-relay": {"options": {"baseURL": "http://127.0.0.1:3425/v1"}, "models": {}}}}`), 0o644)
-	if err := oc.Fields[0].Set("magpie/relay/glm-4.6"); err != nil {
+	os.WriteFile(cfg, []byte(`{"provider": {"magpie-relay": {"options": {"baseURL": "http://127.0.0.1:3435/v1"}, "models": {}}}}`), 0o644)
+	if err := oc.Apply("model", "magpie/relay/glm-4.6"); err != nil {
 		t.Fatal(err)
 	}
 	if v, _ := edit.GetJSON(cfg, "model"); v != "magpie/relay/glm-4.6" {

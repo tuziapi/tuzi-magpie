@@ -46,6 +46,9 @@ var codexDaemonSeen struct {
 // against when magpie last changed what Codex reads at start, and
 // restarts it when no codex session is on it.
 func codexDaemonCheck(path string) provider.CodexDaemonCheck {
+	if !managedAgent("codex") {
+		return provider.CodexDaemonCheck{}
+	}
 	a := &Agent{ID: "codex", Path: path}
 	_, files, reads := a.startsWith()
 	changed := a.changedAt(files, reads)
@@ -101,7 +104,7 @@ func KeepCodexDaemonCurrent(ctx context.Context) {
 		// taken before the look, so a write made during it isn't missed
 		written = filememo.Written()
 		var c provider.CodexDaemonCheck
-		if _, err := os.Stat(path); err == nil {
+		if _, err := os.Stat(path); err == nil && managedAgent("codex") {
 			if c = daemonCheck(path); c.Restarted {
 				log.Println("codex app-server: restarted, it had the model list from before", c.Since.Format(time.RFC3339))
 			}

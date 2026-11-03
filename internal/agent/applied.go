@@ -45,7 +45,9 @@ func appliedPath() string { return filepath.Join(filepath.Dir(provider.Path()), 
 func appliedLoad() map[string]applied {
 	out := map[string]applied{}
 	if b, err := os.ReadFile(appliedPath()); err == nil {
-		json.Unmarshal(b, &out)
+		if json.Unmarshal(b, &out) != nil || out == nil {
+			return map[string]applied{}
+		}
 	}
 	return out
 }
@@ -98,8 +100,15 @@ func record(id, key, v string) {
 // which read as changed outside magpie, and the drift kept the row up
 // among the connected ones while it said Not connected (#834).
 func (a *Agent) Apply(key, v string) error {
+	if err := a.keepOriginal(); err != nil {
+		return err
+	}
 	if a.Native != nil {
-		return a.Native.Apply(key, v)
+		if err := a.Native.Apply(key, v); err != nil {
+			return err
+		}
+		stash(map[string]string{a.ID + ".tuzi-managed": "1"})
+		return nil
 	}
 	f := a.Field(key)
 	if f == nil {
@@ -399,7 +408,8 @@ func orDefault(v string) string {
 // Either way the record is renewed, so a use before now no longer counts.
 func (a *Agent) Reapply() error {
 	if a.Native != nil {
-		return a.Native.Connect()
+		_, err := a.ConnectHow()
+		return err
 	}
 	d := a.Drift()
 	if d != nil && d.Kind == "unreachable" && d.Move != "" && a.move != nil {
@@ -504,6 +514,9 @@ func (a *Agent) handWired() bool { return a.Native == nil && a.Spelled != nil &&
 // as its provider). A model on a provider of the agent's own config named
 // magpie counts only where magpie set the agent up (handWired).
 func (a *Agent) Wired() bool {
+	if !managedAgent(a.ID) {
+		return false
+	}
 	if a.Native != nil {
 		return a.Native.Read().Provider == "connected"
 	}
@@ -618,8 +631,15 @@ func (a *Agent) rewired(err error) {
 // ConnectHow is Connect, saying how the model was chosen.
 func (a *Agent) ConnectHow() (c Connection, err error) {
 	defer func() { a.rewired(err) }()
+	if err := a.keepOriginal(); err != nil {
+		return Connection{}, err
+	}
 	if a.Native != nil {
-		return Connection{How: "joined"}, a.Native.Connect()
+		err := a.Native.Connect()
+		if err == nil {
+			stash(map[string]string{a.ID + ".tuzi-managed": "1"})
+		}
+		return Connection{How: "joined"}, err
 	}
 	if len(a.Fields) == 0 || a.Wired() {
 		return Connection{How: "kept"}, nil
@@ -656,6 +676,9 @@ func (a *Agent) noModelLeft() error {
 }
 
 func (a *Agent) connect() (Connection, error) {
+	if err := a.keepOriginal(); err != nil {
+		return Connection{}, err
+	}
 	forget(a.ID + disconnectedKey)
 	// what it is on now, for Disconnect to put back what it can't
 	// otherwise (Goose's own model)
@@ -826,6 +849,9 @@ func connectWas(v string, opts []Option) string {
 // each one magpie set that reads as magpie set it (an effort). What magpie
 // remembered setting is forgotten.
 func (a *Agent) Disconnect() (err error) {
+	if !managedAgent(a.ID) {
+		return nil
+	}
 	defer func() { a.rewired(err) }()
 	if a.Native != nil {
 		plan, err := a.Native.Disconnect()

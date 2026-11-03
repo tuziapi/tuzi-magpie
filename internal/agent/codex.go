@@ -265,7 +265,7 @@ func writeOwnList(path string, b []byte) error {
 func codexIn(at place) *Agent {
 	dir := at.codexHome()
 	path := filepath.Join(dir, "config.toml")
-	catalogPath := filepath.Join(dir, "magpie-models.json")
+	catalogPath := filepath.Join(dir, "tuzi-magpie-models.json")
 	get := func(k string) string { v, _ := edit.GetTOMLTop(path, k); return v }
 	// this machine's Codex reaches the gateway at the address its config
 	// gives, when that is magpie's on another host: the Codex app on
@@ -427,7 +427,7 @@ func codexIn(at place) *Agent {
 	// magpie's catalog as a provider (catalogPath, ownCatalog): Codex is
 	// on its built-in provider, with its own models from the ChatGPT
 	// backend's list as the backend sent them (CodexDesktopList).
-	deskPath := filepath.Join(dir, "magpie-desktop-models.json")
+	deskPath := filepath.Join(dir, "tuzi-magpie-desktop-models.json")
 	deskRef := at.native(deskPath)
 	if at.spell == nil && runtime.GOOS == "windows" {
 		deskRef = filepath.Base(deskPath)
@@ -2391,7 +2391,7 @@ func EndCodexFailover() (ended bool, err error) {
 		return false, err
 	}
 	a := codex(home)
-	if !a.FailingOver() {
+	if !managedAgent(a.ID) || !a.FailingOver() {
 		return false, nil
 	}
 	if err := a.EndFailover(); err != nil {
@@ -2405,6 +2405,9 @@ func EndCodexFailover() (ended bool, err error) {
 // processes running as magpie quits (codexrelay.Start), when the address
 // is this computer's own and Codex is running at all.
 func RelayOpenCodex() error {
+	if !managedAgent("codex") {
+		return nil
+	}
 	u, err := url.Parse(gateway.URL())
 	if err != nil {
 		return err

@@ -240,18 +240,18 @@ func TestClaudeDesktopExploreInheritCap(t *testing.T) {
 				}
 			}
 			if routed {
-				must(a.Field("model").Set("v/gpt"))
-				must(a.Field("model").Set("v/grok"))
+				must(a.Apply("model", "v/gpt"))
+				must(a.Apply("model", "v/grok"))
 			}
 			must(a.Sync())
 			check("", false)
 			d := claudeDesktop(home)
-			must(d.Field("provider").Set("magpie"))
+			must(d.Apply("provider", "magpie"))
 			check("1", true)
 			must(a.Sync())
 			check("1", true)
 			// A model pick goes through writeTiers, not the regular Sync.
-			must(a.Field("model").Set("v/gpt"))
+			must(a.Apply("model", "v/gpt"))
 			check("1", true)
 			if !routed {
 				must(a.Unwire())
@@ -259,16 +259,16 @@ func TestClaudeDesktopExploreInheritCap(t *testing.T) {
 				must(a.Sync())
 				check("1", true)
 			}
-			must(d.Field("provider").Set(""))
+			must(d.Apply("provider", ""))
 			check("", false)
 			must(a.Sync())
 			check("", false)
 			// Reconnecting must acquire and release ownership again.
-			must(d.Field("provider").Set("magpie"))
+			must(d.Apply("provider", "magpie"))
 			check("1", true)
-			must(a.Field("model").Set(""))
+			must(a.Apply("model", ""))
 			check("1", true)
-			must(d.Field("provider").Set(""))
+			must(d.Apply("provider", ""))
 			check("", false)
 		})
 	}
@@ -303,19 +303,19 @@ func TestClaudeDesktopExploreKeepsUserValue(t *testing.T) {
 					}
 				}
 				if changed {
-					must(d.Field("provider").Set("magpie"))
+					must(d.Apply("provider", "magpie"))
 					if got, has := edit.GetJSON(path, key); !has || got != "1" {
 						t.Fatalf("Desktop did not install Explore compatibility: %q, %v", got, has)
 					}
 				}
 				must(edit.SetJSON(path, edit.KV{Path: key, Value: mine}))
-				must(d.Field("provider").Set("magpie"))
+				must(d.Apply("provider", "magpie"))
 				check()
-				must(a.Field("model").Set("v/gpt"))
+				must(a.Apply("model", "v/gpt"))
 				check()
 				must(a.Sync())
 				check()
-				must(d.Field("provider").Set(""))
+				must(d.Apply("provider", ""))
 				check()
 				must(a.Unwire())
 				check()
@@ -392,7 +392,7 @@ func TestClaudeDesktopAloneContextWindow(t *testing.T) {
 	window := func() string { return get("env." + claudeContextEnv) }
 	desktop := func(v string) {
 		t.Helper()
-		if err := claudeDesktop(home).Field("provider").Set(v); err != nil {
+		if err := claudeDesktop(home).Apply("provider", v); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -412,10 +412,10 @@ func TestClaudeDesktopAloneContextWindow(t *testing.T) {
 		t.Fatalf("after Sync: %q %v", window(), err)
 	}
 	// Claude Code wired in and out again while Desktop stays on
-	if err := a.Field("model").Set("v/gpt"); err != nil {
+	if err := a.Apply("model", "v/gpt"); err != nil {
 		t.Fatal(err)
 	}
-	if err := a.Field("model").Set(""); err != nil {
+	if err := a.Apply("model", ""); err != nil {
 		t.Fatal(err)
 	}
 	if get("env.ANTHROPIC_BASE_URL") != "" {
@@ -460,7 +460,7 @@ func TestClaudeDesktopWSLContextWindow(t *testing.T) {
 	if err := a.Sync(); err != nil || window() != "" {
 		t.Fatalf("Desktop not on magpie: window %q %v", window(), err)
 	}
-	if err := claudeDesktop(home).Field("provider").Set("magpie"); err != nil {
+	if err := claudeDesktop(home).Apply("provider", "magpie"); err != nil {
 		t.Fatal(err)
 	}
 	if err := a.Sync(); err != nil {
@@ -478,7 +478,7 @@ func TestClaudeDesktopWSLContextWindow(t *testing.T) {
 	if w, _ := edit.GetJSON(own, "env."+claudeContextEnv); w != "1000000" {
 		t.Fatalf("Windows' own window %q", w)
 	}
-	if err := claudeDesktop(home).Field("provider").Set(""); err != nil {
+	if err := claudeDesktop(home).Apply("provider", ""); err != nil {
 		t.Fatal(err)
 	}
 	if err := a.Sync(); err != nil {

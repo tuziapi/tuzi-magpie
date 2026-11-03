@@ -144,7 +144,7 @@ func (a *Agent) startsWith() (pats []string, files []string, reads func() string
 // the sign-in (deskList).
 func codexLists(path string) (list, desk string) {
 	dir := filepath.Dir(path)
-	return filepath.Join(dir, "magpie-models.json"), filepath.Join(dir, "magpie-desktop-models.json")
+	return filepath.Join(dir, "tuzi-magpie-models.json"), filepath.Join(dir, "tuzi-magpie-desktop-models.json")
 }
 
 // codexWiring writes where Codex's config sends it, as magpie writes it:

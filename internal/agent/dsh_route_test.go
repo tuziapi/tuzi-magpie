@@ -280,7 +280,7 @@ func dshRouteFixture(ids ...string) string {
 // no such configured model until it is written again. It is written again
 // while magpie serves, and the model a session starts on stays the user's.
 func TestDshRouteIsWrittenAgainWhileServing(t *testing.T) {
-	home, dir, web := dshRouteHome(t)
+	home, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"+
 		dshRouteFixture("deepseek/pro")+
@@ -311,7 +311,7 @@ func TestDshRouteIsWrittenAgainWhileServing(t *testing.T) {
 // The loop is what runs while magpie serves: a patch list changed under it
 // is written again on the next round, not only at the next start.
 func TestKeepDshWiredWritesTheRouteAgain(t *testing.T) {
-	home, dir, web := dshRouteHome(t)
+	home, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"+
 		dshRouteFixture("deepseek/pro", "deepseek/flash")+
@@ -487,7 +487,7 @@ func TestDshFillNewProfilesFillsABareProfile(t *testing.T) {
 // the desktop app's stayed dsh's empty template. It now gets magpie's route
 // beside dsh's own models, and no start model: the user's pick stays theirs.
 func TestDshFillNewProfilesWhenTheStartIsTheUsers(t *testing.T) {
-	home, dir, web := dshRouteHome(t)
+	home, dir, web := managedDshRouteHome(t)
 	desktop := filepath.Join(dir, "profiles", "desktop", "cordis.patch.yml")
 	os.MkdirAll(filepath.Dir(desktop), 0o755)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"+
@@ -615,7 +615,7 @@ func TestDshRouteKeepsTheAPIPickedInDsh(t *testing.T) {
 // red for a loss that repairs itself), and the round writes the route back
 // beside the user's own, the start kept.
 func TestDshStrippedRouteIsWrittenBackQuietly(t *testing.T) {
-	home, dir, web := dshRouteHome(t)
+	home, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	stripped := "# Your patch layer for this dsh profile.\n" +
 		"- id: llm-pi-ai\n  name: \"@deepseek-ai/dsh-llm-pi-ai\"\n  config:\n    providers:\n" +
@@ -738,7 +738,7 @@ func TestDshHomeLayerWithoutPiRowGainsNone(t *testing.T) {
 // and a home layer that does hold one keeps what magpie writes there: the
 // route goes back beside the user's own, never a second entry.
 func TestDshHomeLayerWithPiRowGetsItsRouteBack(t *testing.T) {
-	_, dir, web := dshRouteHome(t)
+	_, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"+dshMineRow), 0o644)
 	hp := filepath.Join(dir, "cordis.patch.yml")
@@ -875,7 +875,7 @@ func TestDshPickSaysOldSessionsKeepTheirModel(t *testing.T) {
 // found none. The start moves onto the id the route lists, in each
 // profile, the desktop app's too, and in the home layer; the effort stays.
 func TestDshStartOnAFoundGroupsOldIdMovesOntoItsId(t *testing.T) {
-	_, dir, web := dshRouteHome(t)
+	_, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	// deepseek and spare both serve pro: magpie finds the group
 	if err := provider.Save(provider.Provider{ID: "spare", Name: "Spare", Key: "k", Chat: "http://127.0.0.1:1/v1", Models: []string{"pro"}}); err != nil {

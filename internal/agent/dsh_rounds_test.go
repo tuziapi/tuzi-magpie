@@ -15,7 +15,7 @@ import (
 // second finds nothing to write.
 func dshSettled(t *testing.T) (r *dshRounds, web string) {
 	t.Helper()
-	_, dir, web := dshRouteHome(t)
+	_, dir, web := managedDshRouteHome(t)
 	dshKeyFixture(dir)
 	os.WriteFile(web, []byte("# Your patch layer for this dsh profile.\n"+
 		dshRouteFixture("deepseek/pro")+

@@ -19,7 +19,7 @@ import (
 // models it gets their reasoning back.
 func TestCodexDisconnectRetiresMagpieReasoning(t *testing.T) {
 	base := gateway.URL() + gateway.CodexPath
-	home, read := codexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`,
+	home, read := managedCodexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`,
 		"model = \"gpt-5.5\"\nopenai_base_url = \""+base+"\"\n")
 	if codexLeft(home) {
 		t.Fatalf("Codex through magpie read as let go:\n%s", read())

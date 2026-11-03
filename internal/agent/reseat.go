@@ -49,7 +49,7 @@ type pick struct {
 func picks() []pick {
 	var out []pick
 	for _, a := range Detected() {
-		if len(a.Fields) == 0 {
+		if !managedAgent(a.ID) || len(a.Fields) == 0 {
 			continue
 		}
 		vals := a.Values()

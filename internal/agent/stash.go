@@ -51,7 +51,9 @@ func stashShared() map[string]string {
 func stashRead(read func(kind, path string, parse func([]byte) (map[string]string, error)) (map[string]string, error)) map[string]string {
 	m, _ := read("stash", stashPath(), func(b []byte) (map[string]string, error) {
 		out := map[string]string{}
-		json.Unmarshal(b, &out)
+		if err := json.Unmarshal(b, &out); err != nil {
+			return nil, err
+		}
 		return out, nil
 	})
 	return m

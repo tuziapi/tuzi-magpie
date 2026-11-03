@@ -38,7 +38,7 @@ func TestCodexStaleOnlyForMagpiesChange(t *testing.T) {
 	dir := filepath.Join(home, ".codex")
 	os.MkdirAll(dir, 0o755)
 	cfg := filepath.Join(dir, "config.toml")
-	list := filepath.Join(dir, "magpie-models.json")
+	list := filepath.Join(dir, "tuzi-magpie-models.json")
 	conf := "model = \"magpie/gpt-6-luna\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = \"" + tomlString(list) + "\"\n\n" +
 		"[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:3425/v1\"\n"
 	os.WriteFile(cfg, []byte(conf), 0o600)
@@ -199,9 +199,9 @@ func TestCodexDaemonHelperIsNoStaleCopy(t *testing.T) {
 // recent. Elsewhere the same last check is kept for the row, beside the
 // process list.
 func TestCodexStaleOnWindowsIsTheDaemonsLastCheck(t *testing.T) {
-	home, _ := codexHome(t, "", "")
+	home, _ := managedCodexHome(t, "", "")
 	dir := filepath.Join(home, ".codex")
-	cfg, list := filepath.Join(dir, "config.toml"), filepath.Join(dir, "magpie-models.json")
+	cfg, list := filepath.Join(dir, "config.toml"), filepath.Join(dir, "tuzi-magpie-models.json")
 	os.WriteFile(cfg, []byte("model_provider = \"magpie\"\nmodel_catalog_json = \""+tomlString(list)+"\"\n"), 0o600)
 	os.WriteFile(list, []byte(`{"models":[{"slug":"magpie/a"}]}`), 0o644)
 	wasKeep, wasRunning := keepCodexDaemon, running
@@ -260,7 +260,7 @@ func TestCodexStaleOnWindowsIsTheDaemonsLastCheck(t *testing.T) {
 // Qyburn3 on X: "为什么我每天好多次要重启" — the Codex row said 已接入 ·
 // 退出并重开 Codex 应用后生效 several times a day for a Codex app already
 // connected. Beside the ChatGPT sign-in magpie writes the app's list
-// (magpie-desktop-models.json) with the backend's entries as it sends
+// (tuzi-magpie-desktop-models.json) with the backend's entries as it sends
 // them, asked for again each hour, and every entry's details follow
 // magpie's version and models.dev; each rewrite counted as a change to
 // reopen for. Only a change in which models the lists hold (or where the
@@ -279,7 +279,7 @@ func TestCodexStaleNotForAListsDetails(t *testing.T) {
 	dir := filepath.Join(home, ".codex")
 	os.MkdirAll(dir, 0o755)
 	cfg := filepath.Join(dir, "config.toml")
-	desk := filepath.Join(dir, "magpie-desktop-models.json")
+	desk := filepath.Join(dir, "tuzi-magpie-desktop-models.json")
 	os.WriteFile(cfg, []byte("model = \"gpt-6-sol\"\nopenai_base_url = \"http://127.0.0.1:3425/backend-api/codex\"\nmodel_catalog_json = \""+tomlString(desk)+"\"\n\n"+
 		"[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:3425/v1\"\n"), 0o600)
 	entry := func(slug, vis, instr string, prio int) string {

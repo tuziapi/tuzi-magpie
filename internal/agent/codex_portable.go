@@ -29,6 +29,9 @@ const codexPortUnwire = 3 * time.Second
 // portCodexHome makes the rollouts of the Codex home dir portable, for
 // up to d; left says Codex no longer goes through magpie.
 func portCodexHome(dir string, d time.Duration, left bool) {
+	if !managedAgent("codex") {
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), d)
 	defer cancel()
 	port := sessions.PortCodexRollouts

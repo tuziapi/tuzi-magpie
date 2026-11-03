@@ -90,7 +90,8 @@ func TestCodexAppRouteFollowsOpenAIAuth(t *testing.T) {
 // be read now is no change either.
 func TestCodexAppRouteKeepsThroughListFlaps(t *testing.T) {
 	home := syncHome(t)
-	codexCat := filepath.Join(home, ".codex", "magpie-models.json")
+	setUpInMagpie("codex")
+	codexCat := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 	writeFile(t, filepath.Join(home, ".codex", "config.toml"), "model = \"relay/glm-4.6\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = '"+codexCat+"'\n")
 	writeFile(t, codexCat, `{"models":[]}`)
 	save := func(models ...string) {

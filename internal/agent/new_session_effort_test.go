@@ -39,7 +39,7 @@ func TestCodexNewSessionEffortLastsModelSwitch(t *testing.T) {
 	cx := codex(home)
 	defaults := func() map[string]string {
 		t.Helper()
-		b, _ := os.ReadFile(filepath.Join(home, ".codex", "magpie-models.json"))
+		b, _ := os.ReadFile(filepath.Join(home, ".codex", "tuzi-magpie-models.json"))
 		var cat struct {
 			Models []struct {
 				Slug    string  `json:"slug"`
@@ -109,13 +109,13 @@ func TestCodexNewSessionEffortLastsModelSwitch(t *testing.T) {
 // route is where requests go, never the list: the app reads a new list at
 // its next launch.
 func TestCodexEffortPickKeepsTheAppRunning(t *testing.T) {
-	home, read := codexHome(t, "", "model_reasoning_effort = \"xhigh\"\n")
+	home, read := managedCodexHome(t, "", "model_reasoning_effort = \"xhigh\"\n")
 	effortModels(t)
 	cx := codex(home)
-	if err := cx.Fields[0].Set("volc/all-five"); err != nil {
+	if err := cx.Apply("model", "volc/all-five"); err != nil {
 		t.Fatal(err)
 	}
-	cat := filepath.Join(home, ".codex", "magpie-models.json")
+	cat := filepath.Join(home, ".codex", "tuzi-magpie-models.json")
 	listed, _ := os.ReadFile(cat)
 	before, _, known := codexAppRoute()
 	if !known {

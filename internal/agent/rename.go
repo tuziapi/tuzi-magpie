@@ -25,6 +25,9 @@ func RenameProvider(from, to string) ([]string, error) {
 	}
 	if from != to {
 		for _, a := range Detected() {
+			if !managedAgent(a.ID) {
+				continue
+			}
 			if a.RenameRefs == nil || a.handWired() {
 				continue
 			}
@@ -74,6 +77,9 @@ func renameRefs(renamed func(ref string) (string, bool), rename func() error) ([
 	}
 	var moves []move
 	for _, a := range Detected() {
+		if !managedAgent(a.ID) {
+			continue
+		}
 		// a provider named magpie written by hand is the user's, the
 		// models it names too (handWired)
 		if a.handWired() {

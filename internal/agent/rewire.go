@@ -39,6 +39,9 @@ func OnGateway() []*Agent {
 func Rewire(as []*Agent) (moved []string, err error) {
 	var off []*Agent
 	for _, a := range as {
+		if !managedAgent(a.ID) {
+			continue
+		}
 		if d := a.Drift(); d != nil && d.Kind == "unwired" {
 			off = append(off, a)
 		}
@@ -60,6 +63,9 @@ func Rewire(as []*Agent) (moved []string, err error) {
 func Rekey(as []*Agent) (moved []string, err error) {
 	var away []*Agent
 	for _, a := range as {
+		if !managedAgent(a.ID) {
+			continue
+		}
 		if a.Gateway != nil && onAnotherMachine(a.Gateway()) {
 			away = append(away, a)
 		}
@@ -72,6 +78,9 @@ func Rekey(as []*Agent) (moved []string, err error) {
 // magpie, and says the names of those it set and what one failed with.
 func setAgain(as []*Agent) (moved []string, errs []error) {
 	for _, a := range as {
+		if !managedAgent(a.ID) {
+			continue
+		}
 		// set again on the old URL, an agent reads as not routed through
 		// magpie yet, and its set notes the old URL, magpie's token and
 		// model as what it had before magpie: what it really had is kept,

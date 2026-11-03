@@ -68,7 +68,7 @@ func TestCodexSignedInRoutesByBaseURL(t *testing.T) {
 		strings.Contains(cfg, "model_catalog_json") || !strings.Contains(cfg, "[model_providers.magpie]") {
 		t.Fatalf("magpie model:\n%s", cfg)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".codex", "magpie-models.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(home, ".codex", "tuzi-magpie-models.json")); err == nil {
 		t.Error("catalog file written")
 	}
 	if err := cx.Fields[0].Set("gpt-5.4"); err != nil {
@@ -86,7 +86,7 @@ func TestCodexSignedInRoutesByBaseURL(t *testing.T) {
 // started on it name it, and without it Codex can't open them (#129).
 func TestCodexSignedInLeavesProviderTable(t *testing.T) {
 	home, read := codexHome(t, `{"tokens":{"access_token":"x","id_token":"x.e30.x"}}`,
-		"model = \"fake/m1\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = \"/x/magpie-models.json\"\n\n[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:3425/v1\"\nwire_api = \"responses\"\n")
+		"model = \"fake/m1\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = \"/x/tuzi-magpie-models.json\"\n\n[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:3425/v1\"\nwire_api = \"responses\"\n")
 	if err := codex(home).Fields[0].Set("fake/m1"); err != nil {
 		t.Fatal(err)
 	}
@@ -141,7 +141,7 @@ func TestCodexSignedOutUsesProvider(t *testing.T) {
 		strings.Contains(cfg, "model_catalog_json") || !strings.Contains(cfg, "[model_providers.magpie]") {
 		t.Fatalf("reset:\n%s", cfg)
 	}
-	if _, err := os.Stat(filepath.Join(home, ".codex", "magpie-models.json")); err == nil {
+	if _, err := os.Stat(filepath.Join(home, ".codex", "tuzi-magpie-models.json")); err == nil {
 		t.Error("catalog file left")
 	}
 }
