@@ -9,9 +9,10 @@ first full Go run's failures; no original checkout or user data was changed.
 `settings.Migrate` is now an empty startup hook for this independent
 application. The inherited hook tried to copy old `dial` configuration to
 `Dir()` when absent and old cache to the hardcoded `magpie` cache directory.
-The normal startup creates its own config directory first, which can prevent
-the config copy, but does not make the inherited cache write safe. Neither
-old application's data belongs to this distribution's automatic migration.
+Startup's `makeDirs` creates the environment's base folders, not necessarily
+the distribution config directory, so it does not prevent config adoption or
+make the inherited cache write safe. Neither old application's data belongs
+to this distribution's automatic migration.
 
 `TestTuziMigrateLeavesOtherApplicationsAlone` creates synthetic `dial` and
 Magpie config/cache files, pins their timestamps, then verifies no extra

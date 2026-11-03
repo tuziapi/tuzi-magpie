@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/settings"
 	"github.com/yetone/magpie/internal/update"
 )
@@ -238,15 +239,14 @@ func updateCmd(args []string) error {
 			// The copy won't follow the app; the fix is the link install.sh
 			// makes. `magpie update` run from the copy can't do it (it
 			// replaces the copy with another copy), so name the real step.
-			bin := filepath.Join(app, "Contents", "MacOS", "magpie")
-			fmt.Println(muted.Render("  the `magpie` command at " + tilde(stale) + " is a copy behind this app; re-run the installer, or link it: ln -sf " + tilde(bin) + " " + tilde(stale)))
+			fmt.Println(muted.Render("  " + staleCLIAdvice(app, stale)))
 		}
 		return nil
 	}
 	// the Docker image's /magpie, run as nonroot: the image is what is
 	// updated, and a replace would only fail with "permission denied"
 	if exe, err := updateExecutable(); err == nil && !update.Writable(filepath.Dir(exe)) && !updateCanElevate() && updateInContainer() {
-		return fmt.Errorf("this magpie runs in a container and can't replace itself; pull the new image (docker pull ghcr.io/yetone/magpie:latest) and recreate the container")
+		return fmt.Errorf("this %s runs in a container and can't replace itself; use the image specified by this distribution's deployment configuration or documentation, then recreate the container", product.Name)
 	}
 	// a package manager's binary (Homebrew's, pacman's magpie-bin from
 	// the AUR, a .deb's): replaced under it, the manager's database names
@@ -265,6 +265,15 @@ func updateCmd(args []string) error {
 	return nil
 }
 
+// staleCLIAdvice names the actual executable in this distribution's bundle.
+// Quote absolute paths so the suggested command also works from a folder
+// whose name contains spaces or shell metacharacters.
+func staleCLIAdvice(app, stale string) string {
+	bin := filepath.Join(app, "Contents", "MacOS", product.Name)
+	quote := func(s string) string { return "'" + strings.ReplaceAll(s, "'", "'\"'\"'") + "'" }
+	return "the `" + product.Name + "` command at " + tilde(stale) + " is a copy behind this app; re-run the installer, or link it: ln -sf " + quote(bin) + " " + quote(stale)
+}
+
 // restartRunning asks the magpie serving the gateway at base to restart
 // into version, which this command put in (gateway.RestartPath), and
 // says what came of it. Before, the app ran on as the old version until
@@ -273,8 +282,23 @@ func updateCmd(args []string) error {
 // restarts as its own update does, handing the gateway over on a Mac or
 // Linux, so this command's own agent isn't cut short.
 var restartRunning = func(base, version string) string {
-	c := &http.Client{Timeout: 10 * time.Second}
-	res, err := c.Post(base+gateway.RestartPath, "application/json", strings.NewReader(`{"version":`+strconv.Quote(version)+`}`))
+	c := &http.Client{Timeout: 10 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	// A user can point this distribution at the original Magpie's port.
+	// Never ask that other application to restart, even when it happens
+	// to have its own pending update. Discovery is read-only and fails
+	// closed on absent, malformed or redirected identity responses.
+	res, err := c.Get(strings.TrimRight(base, "/") + "/")
+	if err != nil {
+		return "magpie isn't running; it starts as " + version + " next time"
+	}
+	var owner struct{ Name, Distribution string }
+	body, readErr := io.ReadAll(io.LimitReader(res.Body, (64<<10)+1))
+	res.Body.Close()
+	ours := readErr == nil && len(body) <= 64<<10 && res.StatusCode == http.StatusOK && json.Unmarshal(body, &owner) == nil && owner.Name == "magpie" && owner.Distribution == product.Name
+	if !ours {
+		return "the running gateway could not be verified as " + product.Name + "; no restart was requested; quit and reopen " + product.Name + " to use " + version
+	}
+	res, err = c.Post(base+gateway.RestartPath, "application/json", strings.NewReader(`{"version":`+strconv.Quote(version)+`}`))
 	if err != nil {
 		return "magpie isn't running; it starts as " + version + " next time"
 	}

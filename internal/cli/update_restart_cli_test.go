@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // magpie update tells the magpie running what it put in, and says what
@@ -18,6 +19,10 @@ func TestUpdateAsksTheRunningMagpieToRestart(t *testing.T) {
 	var reply gateway.RestartReply
 	var asked string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && r.URL.Path == "/" {
+			json.NewEncoder(w).Encode(map[string]string{"name": "magpie", "distribution": product.Name})
+			return
+		}
 		if r.Method != "POST" || r.URL.Path != gateway.RestartPath {
 			http.NotFound(w, r)
 			return
@@ -44,7 +49,13 @@ func TestUpdateAsksTheRunningMagpieToRestart(t *testing.T) {
 			t.Errorf("asked %q", asked)
 		}
 	}
-	old := httptest.NewServer(http.NotFoundHandler())
+	old := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "GET" && r.URL.Path == "/" {
+			json.NewEncoder(w).Encode(map[string]string{"name": "magpie", "distribution": product.Name})
+			return
+		}
+		http.NotFound(w, r)
+	}))
 	defer old.Close()
 	if got := restartRunning(old.URL, "v0.1.2"); !strings.Contains(got, "quit and reopen") {
 		t.Errorf("an older magpie: %q", got)

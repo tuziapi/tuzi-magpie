@@ -14,9 +14,10 @@ import (
 )
 
 // `magpie update` in the Docker image (/magpie, run as nonroot) failed with
-// the rename's "permission denied"; it now says to pull the new image.
+// the rename's "permission denied"; it now names the distribution's own
+// deployment instructions, without substituting an upstream image.
 // Outside a container it goes on to the download as before.
-func TestUpdateInContainerSaysPullTheImage(t *testing.T) {
+func TestUpdateInContainerUsesDistributionInstructions(t *testing.T) {
 	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
 		t.Skip("needs a folder this user may not write to")
 	}
@@ -44,12 +45,12 @@ func TestUpdateInContainerSaysPullTheImage(t *testing.T) {
 
 	updateInContainer = func() bool { return true }
 	err := updateCmd([]string{"update"})
-	if err == nil || !strings.Contains(err.Error(), "docker pull ghcr.io/yetone/magpie:latest") {
+	if err == nil || !strings.Contains(err.Error(), "distribution's deployment configuration or documentation") || strings.Contains(err.Error(), "ghcr.io/yetone") || strings.Contains(err.Error(), "docker pull") {
 		t.Fatalf("in a container: %v", err)
 	}
 
 	updateInContainer = func() bool { return false }
-	if err := updateCmd([]string{"update"}); err == nil || strings.Contains(err.Error(), "docker pull") {
+	if err := updateCmd([]string{"update"}); err == nil || strings.Contains(err.Error(), "deployment configuration") {
 		t.Fatalf("outside one: %v", err)
 	}
 }

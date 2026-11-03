@@ -23,6 +23,17 @@ locations, and portable state uses `tuzi-magpie-data`. A new install cannot
 inherit another application's accounts through the historical rename
 migration. `TestTuziMigrateLeavesOtherApplicationsAlone` checks this boundary.
 
+After a CLI update, `cli.restartRunning` reads the selected gateway's root
+identity before posting its restart request. Only a successful, bounded,
+complete JSON response with protocol name `magpie` and distribution
+`tuzi-magpie` authorizes that request. Missing/foreign identities, failed
+reads and redirects leave the other process alone; redirects on the restart
+request are refused too. This is the local distribution boundary, not a
+cryptographic identity claim. The copied-CLI advice links the actual
+`Contents/MacOS/tuzi-magpie` executable with quoted absolute paths. Container
+updates refer to this distribution's deployment configuration/documentation;
+no upstream image or unconfigured replacement image is suggested.
+
 | Part | Responsibility | Source |
 | --- | --- | --- |
 | Native host | `Run` starts the Wails v3 app: the tray icon, the panel, the main window, single-instance handover, `magpie://` import links and open at login. `host` implements `Windows` for the API: show and hide, open URLs and folders, copy to the clipboard, fit and tint the panel, and set the text size. A copy on Linux sets PRIMARY before CLIPBOARD, since GTK 3 serves CLIPBOARD empty when PRIMARY is set after it on a compositor with no primary selection (KDE Plasma with middle-click paste off, #1881); on Wayland the copy is read back through the compositor, and one that doesn't read back whole answers `/api/copy` with 501, so the page tries its clipboard API, then the copy command, then says the copy failed with the text to copy by hand (`copy-fallback.test.cjs`). | [`app.go`](../../internal/gui/app.go), [`clipboard_gtk3.go`](../../internal/gui/clipboard_gtk3.go), [`clipboard_gtk3.h`](../../internal/gui/clipboard_gtk3.h), [`mainwindow.go`](../../internal/gui/mainwindow.go), [`traymenu.go`](../../internal/gui/traymenu.go) |
