@@ -61,7 +61,14 @@
       return data.data;
     }
     function isConnected() { return !!state.identity && ["connected", "refreshing"].includes(state.status); }
-    function cancelRead() { clearTimeout(searchTimer); searchTimer = null; clearTimeout(timer); timer = null; serial++; controller.abort(); controller = new AbortController(); }
+    function stopReadTimers() { clearTimeout(searchTimer); searchTimer = null; clearTimeout(timer); timer = null; }
+    function cancelRead() { stopReadTimers(); serial++; controller.abort(); controller = new AbortController(); }
+    function visibilityChanged() {
+      // Hiding pauses background reads, but an explicit action or initial open
+      // must receive its result. A real page leave still cancels everything.
+      if (document.visibilityState === "hidden") { if (busy) stopReadTimers(); else cancelRead(); }
+      else if (active && !busy) { account = null; groups = []; loadTab(); }
+    }
     function clearAccount() { cancelRead(); pane?.replaceChildren(empty("Loading…")); account = null; groups = []; currentCatalog = null; currentKeys = null; unknownWrite = false; root?.querySelector("#tuziRecover")?.remove(); filters = freshFilters(); closeSheet(true); }
     function acceptState(next) {
       if (next.generation !== state.generation || next.identity?.userId !== state.identity?.userId) clearAccount();
@@ -389,7 +396,7 @@
     }
     ctx.onDispose(leave);
     ctx.slots.add("page", { key:"tuzi", title:"Tuzi account", html:'<section id="tuziConnection" class="list row tuzi-key"></section><div id="tuziTabs" class="segs tuzi-tabs"></div><p id="tuziNotice" class="tuzi-notice" role="status" hidden></p><div id="tuziShade" class="tuzi-shade" hidden></div><section id="tuziSheet" class="list tuzi-sheet tuzi-dialog" role="dialog" aria-modal="true" hidden></section><section id="tuziPane"></section>',
-      mount(main) { root = main; header = main.querySelector("#tuziConnection"); tabbar = main.querySelector("#tuziTabs"); notice = main.querySelector("#tuziNotice"); pane = main.querySelector("#tuziPane"); sheet = main.querySelector("#tuziSheet"); drawHeader(); drawTabs(); main.querySelector("#tuziShade").onclick = () => closeSheet(); main.addEventListener("keydown", (e) => { if (e.key === "Tab" && !sheet.hidden) { const focusable = [...sheet.querySelectorAll("button:not(:disabled),input:not(:disabled),textarea:not(:disabled),summary")].filter((x) => x.getClientRects().length); const first = focusable[0], last = focusable.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus({preventScroll:true}); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus({preventScroll:true}); } } if(e.key === "Escape" && !sheet.hidden) { e.preventDefault(); e.stopPropagation(); closeSheet(); } }); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") cancelRead(); else if (active && !busy) { account = null; groups = []; loadTab(); } }); },
+      mount(main) { root = main; header = main.querySelector("#tuziConnection"); tabbar = main.querySelector("#tuziTabs"); notice = main.querySelector("#tuziNotice"); pane = main.querySelector("#tuziPane"); sheet = main.querySelector("#tuziSheet"); drawHeader(); drawTabs(); main.querySelector("#tuziShade").onclick = () => closeSheet(); main.addEventListener("keydown", (e) => { if (e.key === "Tab" && !sheet.hidden) { const focusable = [...sheet.querySelectorAll("button:not(:disabled),input:not(:disabled),textarea:not(:disabled),summary")].filter((x) => x.getClientRects().length); const first = focusable[0], last = focusable.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus({preventScroll:true}); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus({preventScroll:true}); } } if(e.key === "Escape" && !sheet.hidden) { e.preventDefault(); e.stopPropagation(); closeSheet(); } }); document.addEventListener("visibilitychange", visibilityChanged); },
       open, navigate, leave, busy() { return busy; }, dirty() { return busy || !!dirtyForm?.(); }, discard() { closeSheet(true); }, refresh() { if (active && !busy) return loadTab(); }, reload() { if (active && !busy) return loadTab(); }, relang() { if (!root || busy) return; drawHeader(); drawTabs(); if (active) return loadTab(); }
     });
   });

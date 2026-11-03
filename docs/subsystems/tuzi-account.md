@@ -36,6 +36,20 @@ translated names. `header-zoom-fit.test.cjs` retains the original navigation
 as a fixture control and allows the added entry its 32px width budget.
 See [navigation evidence](../tuzi-magpie/navigation-layout-evidence.md).
 
+## Page visibility and in-flight operations
+
+The account client's `visibilityChanged` stops search and status-refresh timers
+when the desktop becomes hidden. Idle data reads are aborted and reread when the
+page becomes visible. A busy initial open, explicit connection/check, or Key
+operation keeps its response handler alive: hiding must not silently abort an
+operation after the backend has received it. No operation is replayed on return.
+A real page leave still cancels requests and removes entered/revealed secrets.
+The shared `cancelRead` and `stopReadTimers` helpers in
+[`client.js`](../../internal/gui/assets/plugins/tuzi/client.js) keep these two
+lifecycles separate. Controlled held-response cases in
+[`tuzi-account.test.cjs`](../../internal/gui/tests/tuzi-account.test.cjs) cover
+initialization, connection, Key writes, idle reads, background timers and leaving.
+
 ## Storage and mutations
 
 The dedicated `appdir.Config()/account-private/account.json` is separate from

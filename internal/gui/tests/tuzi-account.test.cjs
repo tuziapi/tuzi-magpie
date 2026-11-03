@@ -10,8 +10,8 @@ const key = () => ({id:'8',name:'Synthetic key',masked_key:'sk-••••test'
 const model = () => ({model_name:'fixture-model',aliases:null,description:'Synthetic catalog model',tags:'text',quota_type:1,model_ratio:1,completion_ratio:2,enable_groups:['default'],supported_endpoint_types:['responses'],related_pricing:null});
 function fixture(lang='en',theme='light',web=false) {
   let state={status:'disconnected',generation:1,identity:null,error:null};
-  let keys=[key()], next=9, uncertain=false, prefillGate=null, stateGate=null, checkGate=null, nextFailure=null;
-  const calls=[], modelRequests=[];
+  let keys=[key()], next=9, uncertain=false, prefillGate=null, stateGate=null, checkGate=null, nextFailure=null, requestGate=null;
+  const calls=[], modelRequests=[], heldRequests=new Set();
   const pageData = (items, page=1) => ({items,page,page_size:20,total:String(items.length),has_more:false});
   const account={user_id:'7',username:'fixture',display_name:'Synthetic account',group:'default',quota:'500000',used_quota:'200',request_count:'1',money:{quota_per_unit:'500000',display_type:'CNY',base_currency:'USD',usd_exchange_rate:'7',custom_currency_symbol:'',custom_currency_exchange_rate:'1'}};
   const summary={record_count:'2',error_count:'1',quota:'1000',refund_quota:'300',prompt_tokens:'10',completion_tokens:'20'};
@@ -24,6 +24,7 @@ function fixture(lang='en',theme='light',web=false) {
     if(u.pathname==='/api/providers')return json({providers:[],presets:[],gateway:{running:false,url:'http://127.0.0.1:18343',calls:[],groups:[]}});
     if(u.pathname.startsWith('/api/tuzi/')) {
       calls.push([u.pathname,body]);
+      if(requestGate?.match(u.pathname,body)){const held=requestGate;requestGate=null;held.enter();await held.wait;}
       if(u.pathname.endsWith('/state')){const snapshot=structuredClone(state);if(stateGate)await stateGate;return json(snapshot);}
       if(u.pathname.endsWith('/connect')){state={status:'connected',generation:state.generation+1,identity:{userId:'7',username:'fixture',displayName:'Synthetic account',connectionId:'synthetic'},error:null};return json(state);}
       if(u.pathname.endsWith('/check')){if(checkGate)await checkGate;if(state.status==='offline')state={...state,status:'connected'};return json(state);}
@@ -60,7 +61,7 @@ function fixture(lang='en',theme='light',web=false) {
     }
     return route.fulfill({body:source,contentType:{'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(file)]});
   };
-  return {handler,calls,modelRequests,setUncertain:()=>{uncertain=true;},failNext:(code,path)=>{nextFailure={code,path};},getState:()=>state,holdState:()=>{let release;stateGate=new Promise(r=>{release=r;});return release;},holdCheck:()=>{let release;checkGate=new Promise(r=>{release=r;});return release;},holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
+  return {handler,calls,modelRequests,releaseHolds:()=>{for(const release of heldRequests)release();heldRequests.clear();},holdRequest:(match)=>{let release,enter;const wait=new Promise(r=>{release=r;}),entered=new Promise(r=>{enter=r;});requestGate={match,wait,enter};heldRequests.add(release);return {release,entered};},setUncertain:()=>{uncertain=true;},failNext:(code,path)=>{nextFailure={code,path};},getState:()=>state,holdState:()=>{let release;stateGate=new Promise(r=>{release=r;});return release;},holdCheck:()=>{let release;checkGate=new Promise(r=>{release=r;});return release;},holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
 }
 async function click(page, locator){
   try {
@@ -176,4 +177,81 @@ for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webk
     await root.locator('.tuzi-metrics').waitFor();assert.equal(await root.locator('.tuzi-status').textContent(),'Connected');assert.equal(f.calls.filter(([p])=>p.endsWith('/connect')).length,restored?0:1);assert.equal(f.calls.filter(([,b])=>b?.path==='/account/account').length,1);
     await context.close();
   }
+});
+
+
+// Visibility is controlled at the DOM event boundary; HTTP responses remain
+// real Playwright requests. Each held reply proves which signal gets aborted.
+for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webkit']))test(`${engine}: account visibility preserves busy actions and cancels idle reads`,async(t)=>{
+  const browser=await(engine==='webkit'?webkit.launch():chromium.launch({channel:'chromium'}));t.after(()=>browser.close());
+  const setup=async(st,restored=false)=>{
+    const errors=[];
+    const context=await browser.newContext({viewport:{width:1100,height:850},reducedMotion:'reduce'});st.after(async()=>{f.releaseHolds();try{await page.unrouteAll({behavior:'wait'});}finally{await context.close();}assert.deepEqual(errors,[],'visibility transitions produce no page errors');});
+    const page=await context.newPage();page.setDefaultTimeout(5000);page.setDefaultNavigationTimeout(60000);page.on('pageerror',e=>errors.push(e.message));const f=fixture();
+    if(restored)f.setState({status:'connected',generation:4,identity:{userId:'7',displayName:'Synthetic account',connectionId:'synthetic'},error:null});
+    await page.addInitScript(()=>{
+      const original=window.fetch;window.visibilityRequests=[];
+      window.fetch=async(input,init)=>{
+        if(!String(input).startsWith('/api/tuzi/'))return original(input,init);
+        const body=init?.body?JSON.parse(init.body):null;
+        const record={path:String(input),operation:body?.path,method:body?.method,aborted:false,settled:false};window.visibilityRequests.push(record);
+        init?.signal?.addEventListener('abort',()=>{record.aborted=true;},{once:true});
+        try{return await original(input,init);}catch(e){record.error=e.name;throw e;}finally{record.settled=true;}
+      };
+      const set=window.setTimeout,clear=window.clearTimeout;window.performanceTimers=new Map();
+      window.setTimeout=(fn,ms,...args)=>{const id=set(fn,ms,...args);if(ms===60000&&fn.name==='loadTab')window.performanceTimers.set(id,fn);return id;};
+      window.clearTimeout=(id)=>{window.performanceTimers.delete(id);return clear(id);};
+    });
+    await page.route('**/*',f.handler);
+    const visibility=async(hidden)=>page.evaluate(hidden=>{Object.defineProperty(document,'visibilityState',{configurable:true,value:hidden?'hidden':'visible'});Object.defineProperty(document,'hidden',{configurable:true,value:hidden});document.dispatchEvent(new Event('visibilitychange'));},hidden);
+    const goto=()=>page.goto('http://magpie.test/?view=tuzi');
+    const idle=()=>page.waitForFunction(()=>document.querySelector('#view-tuzi')?.getAttribute('aria-busy')==='false'&&document.querySelector('#tuziPane')?.getAttribute('aria-busy')!=='true');
+    const last=()=>page.evaluate(()=>window.visibilityRequests.at(-1));
+    return {page,f,visibility,goto,idle,last,root:page.locator('#view-tuzi')};
+  };
+  await t.test('connect stays busy across hiding until its response is accepted',async(st)=>{
+    const {page,f,visibility,goto,idle,last,root}=await setup(st);await goto();await idle();
+    const held=f.holdRequest(p=>p.endsWith('/connect'));st.after(held.release);
+    await root.getByLabel('Account system token',{exact:true}).fill('synthetic-account-token');await click(page,root.getByRole('button',{name:'Connect account',exact:true}));await held.entered;
+    await visibility(true);await page.evaluate(()=>new Promise(r=>setTimeout(r,0)));
+    const observed={request:await last(),busy:await root.getAttribute('aria-busy'),status:await root.locator('.tuzi-status').textContent(),notice:await root.locator('#tuziNotice').textContent()};
+    console.log('visibility connect',JSON.stringify(observed));
+    assert.equal(observed.request.aborted,false,'hiding must not abort an explicit account connection');assert.equal(observed.request.settled,false,'the response is still held');assert.equal(observed.busy,'true');
+    held.release();await idle();assert.equal(await root.locator('.tuzi-status').textContent(),'Connected');await visibility(false);await root.locator('.tuzi-metrics').waitFor();
+    assert.equal(f.calls.filter(([p])=>p.endsWith('/connect')).length,1,'visibility never retries a connection');
+  });
+  await t.test('initial state remains gated while hidden and finishes once',async(st)=>{
+    const {page,f,visibility,goto,idle,last,root}=await setup(st,true);const held=f.holdRequest(p=>p.endsWith('/state'));st.after(held.release);
+    await goto();await held.entered;await visibility(true);
+    assert.equal((await last()).aborted,false,'initial state belongs to the busy opening');assert.equal(await root.getAttribute('aria-busy'),'true');
+    await visibility(false);assert.equal((await last()).aborted,false,'returning during initialization does not start a competing read');
+    held.release();await idle();assert.equal(await root.locator('.tuzi-status').textContent(),'Connected');await visibility(false);await root.locator('.tuzi-metrics').waitFor();
+    assert.equal(f.calls.filter(([p])=>p.endsWith('/state')).length,1);
+  });
+  await t.test('key write completes while hidden without a replay',async(st)=>{
+    const {page,f,visibility,goto,idle,last,root}=await setup(st,true);await goto();await idle();await root.locator('.tuzi-metrics').waitFor();
+    await click(page,root.getByRole('button',{name:'Edit',exact:true}));await root.getByLabel('Name',{exact:true}).fill('Visibility saved key');
+    const held=f.holdRequest((p,b)=>p.endsWith('/request')&&b.method==='PATCH');st.after(held.release);await click(page,root.getByRole('button',{name:'Save',exact:true}));await held.entered;
+    await visibility(true);assert.equal((await last()).aborted,false,'hiding must not abort an explicit Key write');assert.equal(await root.getAttribute('aria-busy'),'true');
+    held.release();await idle();await visibility(false);await root.getByText('Visibility saved key',{exact:true}).waitFor();
+    assert.equal(f.calls.filter(([,b])=>b?.method==='PATCH').length,1,'a hidden write is never submitted twice');assert.equal(await root.locator('#tuziRecover').count(),0);
+  });
+  await t.test('idle reads cancel, visibility resumes, and hidden polling stops',async(st)=>{
+    const {page,f,visibility,goto,idle,last,root}=await setup(st,true);await goto();await idle();await root.locator('.tuzi-metrics').waitFor();
+    const held=f.holdRequest((p,b)=>p.endsWith('/request')&&b.path==='/account/account');st.after(held.release);await click(page,root.getByRole('button',{name:'Refresh',exact:true}));await held.entered;
+    await visibility(true);assert.equal((await last()).aborted,true,'idle data reads still cancel when hidden');held.release();await visibility(false);await root.locator('.tuzi-metrics').waitFor();await idle();
+    assert.equal(f.calls.filter(([,b])=>b?.path==='/account/account').length,3,'returning starts one fresh read after the canceled one');
+    await click(page,root.getByRole('tab',{name:'Tuzi model status',exact:true}));await root.getByText('99.12%',{exact:true}).waitFor();await page.waitForFunction(()=>window.performanceTimers.size===1);
+    await visibility(true);assert.equal(await page.evaluate(()=>window.performanceTimers.size),0,'hiding clears the minute refresh timer');await visibility(false);await page.waitForFunction(()=>window.performanceTimers.size===1);
+    const checking=f.holdRequest(p=>p.endsWith('/check'));st.after(checking.release);await click(page,root.getByRole('button',{name:'Check connection',exact:true}));await checking.entered;
+    await visibility(true);assert.equal((await last()).aborted,false,'a busy connection check survives hiding');assert.equal(await page.evaluate(()=>window.performanceTimers.size),0,'busy operations still stop background refresh timers');
+    checking.release();await idle();assert.equal(await page.evaluate(()=>window.performanceTimers.size),0,'finishing hidden does not schedule background polling');await visibility(false);await page.waitForFunction(()=>window.performanceTimers.size===1);
+    await click(page,root.getByRole('tab',{name:'API keys',exact:true}));await root.locator('.tuzi-metrics').waitFor();await click(page,root.getByRole('button',{name:'Key details',exact:true}));await click(page,root.getByRole('button',{name:'Reveal key',exact:true}));await root.getByText('sk-synthetic-revealed',{exact:true}).waitFor();
+    await page.evaluate(()=>magpie.call('tuzi','leave'));assert.equal(await root.getByText('sk-synthetic-revealed',{exact:true}).count(),0,'a true page leave still erases revealed credentials');
+  });
+  await t.test('a true leave cancels connect and clears the entered token',async(st)=>{
+    const {page,f,goto,idle,last,root}=await setup(st);await goto();await idle();const held=f.holdRequest(p=>p.endsWith('/connect'));st.after(held.release);
+    await root.getByLabel('Account system token',{exact:true}).fill('synthetic-account-token');await click(page,root.getByRole('button',{name:'Connect account',exact:true}));await held.entered;
+    await page.evaluate(()=>magpie.call('tuzi','leave'));assert.equal((await last()).aborted,true);assert.equal(await root.getByLabel('Account system token',{exact:true}).inputValue(),'');held.release();
+  });
 });
