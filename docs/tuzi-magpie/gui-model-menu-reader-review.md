@@ -136,3 +136,51 @@ and git diff checks pass. F08 is closed by complete20/20-per-engine evidence.
 The F15 Chromium visible-row issue remains independent and open. The user
 also authorized necessary decisions within this finite closing scope without
 further per-item questions; this does not lower acceptance or widen scope.
+
+## F15 Chromium wheel target cause and tests-only repair
+
+The user approved the narrow F08/F15 product repairs, and root integrated them
+in its delivery checkout. The remaining Chromium few-visible-keys failure has a
+separate input cause. Evidence is preserved in
+`/Users/syd08/Documents/tuzi-magpie-evidence/gui-f15-foot-control-v2/`.
+A real-wheel preparation placed the last key at y=79.6875px. Every one of the
+original 80 fixed-pointer iterations then left the view at scrollTop=55595.
+At (700,500), the hit chain passed through `.rt-reqs.holds`: clientHeight 214,
+scrollHeight 1579, overflowY:auto, overscrollBehaviorY:contain, scrollTop 0. The
+upward wheel stayed at the inner list's edge instead of moving the outer view.
+The unmodified `foot.inSight > 5` assertion failed with three visible keys.
+The saved JSON includes preparation hit chains even if preparation fails.
+The earlier too-strict preparation failed before sending a wheel and is not
+product-failure evidence.
+
+The tests-only correction stays in `routing-many-keys.test.cjs`. Before each
+existing wheel it uses the same hit-chain point selection as `reader.wheeled`,
+then sends the original delta. It does not import that helper's extra wait or
+edit the shared reader. The two original 80-iteration limits, waits, wire
+threshold, visible-row requirement, languages, timeouts and all assertions stay
+unchanged. `scope-check.json` mechanically reconstructs the original test from
+the candidate after removing only the local helper and two call replacements.
+No product behavior, animation or styles change in this test repair.
+
+Same-start controls and complete-file validation use a frozen copy of root's
+approved d5daff2 assets under
+`/Users/syd08/Documents/tuzi-magpie-evidence/gui-f15-wheel-target/`.
+Their manifest records source and asset hashes; the original frozen full-suite
+red runs remain untouched.
+
+The five serialized jobs are now complete (`five-jobs-results.json`). With the
+same approved assets and real-wheel target y80±2, old input starts at 79.6875 and
+stays there for 80 iterations (three visible rows, original assertion fails).
+New input starts at 80.359375 and moves the view 55633→55314 with one wheel,
+ending at 399.359375 (seven visible rows, all original assertions pass).
+The actual last key's wire shifted +4px still fails the original foot wire
+assertion for `solpool2#k299`, with seven visible rows; the repaired navigation
+does not mask the wire check.
+
+The complete original file passes Chromium 3/3 (42.499s, log SHA
+1aecf9a6dd52371f8af524cecd4fa44cf05bd58e2c05b5f78b83a60ed128347a)
+and WebKit 3/3 (43.276s, log SHA
+57bcb58a36027d2ba3335e351c57db2e9032e22dbb45cd7f017f82784f56d6df),
+covering en/zh/de with zero skips/cancellations/todos. Candidate test SHA256:
+9c3ba2d51497f134fff29c9808d180f632b9acb646d22d6b10bd78aa5ea4176c.
+All five jobs cleaned their private roots; the queue was released to root.
