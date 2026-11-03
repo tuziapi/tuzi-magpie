@@ -120,6 +120,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.equal(await heads.nth(2).locator("i").textContent(), "");
         // each heading has a wire from magpie, and lights while its own answers
         assert.equal(await page.locator(".rt-wires path[d]").count(), 3 + 3 + 5);
+        // sync creates the headings; renderAll lights them on its next
+        // frame. Their presence alone does not mean that frame has run.
+        await page.waitForFunction(() => {
+          const heads = [...document.querySelectorAll(".rt-accts > li.rt-sub")];
+          return heads.length === 3 && heads.every((li) => li.classList.contains("on"));
+        });
         for (let i = 0; i < 3; i++) assert.equal(await heads.nth(i).evaluate((li) => li.classList.contains("on")), true);
 
         // the pointer on Kimi Code's row is on Kimi Code's row

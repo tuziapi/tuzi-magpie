@@ -12,6 +12,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(process.env.ASSETS || path.join(__dirname, "../assets"));
 const models = [
@@ -75,6 +76,9 @@ function serve(lang, posts) {
 // wheel to a control, as the reader would (the page keeps still for any
 // other scroll), and return where it is
 async function reach(page, loc) {
+  // Opening and saving morph the editor and the row below it. A raw
+  // coordinate press must use their final position, after that motion.
+  await settled(page);
   const height = page.viewportSize().height;
   await page.mouse.move(Math.min(550, (page.viewportSize().width / 2) | 0), 300);
   for (let i = 0; i < 30; i++) {
@@ -83,6 +87,7 @@ async function reach(page, loc) {
     await page.mouse.wheel(0, y < 80 ? -300 : 300);
     await page.waitForTimeout(150);
   }
+  await settled(page);
   return loc.boundingBox();
 }
 
@@ -148,6 +153,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const TAB = engine === "webkit" ? "Alt+Tab" : "Tab";
         ed = await openEditor(page, w);
         row = ed.locator(".rt-rule").first();
+        // Tab should move through a visible rule, after opening has settled;
+        // a pending native focus scroll would otherwise close its menu.
+        await reach(page, row.locator(".rt-model"));
         await row.locator(".rt-model").focus({ preventScroll: true });
         for (let i = 0; i < 6 && !(await row.locator(".rt-rmore").evaluate((b) => b === document.activeElement)); i++) await page.keyboard.press(TAB);
         assert(await row.locator(".rt-rmore").evaluate((b) => b === document.activeElement), "Tab reaches the rule's ⋯");

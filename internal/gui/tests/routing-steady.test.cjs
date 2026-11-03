@@ -12,6 +12,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const now = new Date();
@@ -120,7 +121,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     await page.keyboard.type(" and more");
     const typed = await name.inputValue();
     assert.equal(typed, "Opus anywhere and more");
-    await page.waitForTimeout(300);
+    // Opening the editor changes its height on a spring. Measure only
+    // once that reader-requested motion has ended.
+    await settled(page);
 
     // where things are: on the screen, and the groups' place in the page
     // (which moves as what's above them grows or shrinks)
