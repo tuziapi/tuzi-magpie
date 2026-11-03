@@ -58,7 +58,11 @@ not an automatic claim that a matching name proves success.
 query fields and body fields. PATCH sends only provided fields. Account/log/key
 responses are projected; integers stay decimal strings, no float accumulation.
 Statistics retain refund and availability semantics. Prices are catalog data,
-not personal final charges. Performance absence stays null; all groups (omitted)
+not personal final charges. Nonempty conditional-task, per-second-variant and
+per-call-variant pricing structures use the existing website fallback: a base
+price or scalar group override does not describe all task conditions. Empty
+structures keep ordinary base prices; supported linear tiers remain available
+when no unsupported task structure is present. Performance absence stays null; all groups (omitted)
 and an explicit empty selection are distinct. No request performs inference.
 
 ## Key to Provider

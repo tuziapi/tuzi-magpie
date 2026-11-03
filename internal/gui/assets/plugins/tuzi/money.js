@@ -30,8 +30,16 @@ function amountToQuota(amount, money, currency) {
 }
 
 const number = (v)=>typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : null;
+// The desktop cannot label task conditions/resolutions yet. Their base price
+// is only one variant; keep the existing website fallback for the whole plan.
+function complexTaskPrice(model) {
+    const nonempty = (v)=>Array.isArray(v) ? v.some(nonempty)
+        : v && typeof v === "object" ? Object.values(v).some(nonempty)
+        : v !== undefined && v !== null && v !== "";
+    return ["conditional_task_pricing", "conditional_task_pricing_details", "task_per_second_pricing", "per_call_variants"].some((key)=>nonempty(model[key]));
+}
 function catalogPrices(model) {
-    if (model.pricing_unavailable || model.billing_mode === "tiered_expr" || model.billing_expr) return [];
+    if (model.pricing_unavailable || complexTaskPrice(model) || model.billing_mode === "tiered_expr" || model.billing_expr) return [];
     const rows = [];
     const add = (label, amount, unit = "/ 1M tokens")=>{
         const value = number(amount);
@@ -274,7 +282,7 @@ function groupPrices(model, meta) {
             if (get("pricing_semantics") === "final_v1" && source !== "global_fallback" || record.billing_expr && source === "group_override") multiplier = 1;
         }
         if (multiplier === null && Object.keys(ratios).length === 0 && get("model_multiplier") === undefined && get("pricing_source") !== "group_multiplier") multiplier = 1;
-        const tiers = record.pricing_unavailable || multiplier === null ? [] : record.billing_expr ? priceTiers(record.billing_expr) : [
+        const tiers = record.pricing_unavailable || complexTaskPrice(record) || multiplier === null ? [] : record.billing_expr ? priceTiers(record.billing_expr) : [
             {
                 label: "Model catalog price",
                 prices: catalogPrices(record)
