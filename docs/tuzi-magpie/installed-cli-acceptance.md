@@ -3,7 +3,8 @@
 AC-09 uses `internal/agent/tuzi_cli_darwin_test.go` under `tuzi_fixture` on macOS.
 This is distinct from the desktop window acceptance: it calls the production
 account service, adds its selected model key as a provider, uses the existing
-Agent `model` field setter to write the native configuration, and runs an actual
+public Agent `Apply("model", ...)` path to write the native configuration and
+record this distribution's ownership, and runs an actual
 installed CLI against the guarded Magpie HTTP gateway and a loopback model API.
 The CLI must return `TUZI_CLI_OK` in its successful final JSON event and a model
 request must reach the synthetic upstream. The generated native config must
@@ -37,7 +38,8 @@ to descendant processes. Each command has a 60-second timeout, a process group
 killed on timeout and completion, and inherited pipes are closed by proc's
 WaitDelay. Tests close the listeners and delete temporary state.
 
-The final race run passed all 20 account projection paths (2.225s) and both
+The initial race run, before the distribution ownership guard was added,
+passed all 20 account projection paths (2.225s) and both
 actual CLIs (3.235s), each with one synthetic model request; no paid request occurred. Claude's JSON includes a locally
 calculated cost estimate from fixture token counts; it is not a charge or a
 real-service billing observation. Evidence lives in
@@ -67,7 +69,51 @@ cover stale generations, offline/invalid credentials and unknown write outcomes.
 Actual Wails window workflows, real vendor availability and user acceptance
 remain separate checks; a CLI pass does not claim them.
 
-Recovery: branch `codex/tuzi-magpie-lines`, parent lines commit `a3e8f7b`;
+Initial delivery recovery: branch `codex/tuzi-magpie-lines`, parent lines commit `a3e8f7b`;
 account contract `14e98ad` was cherry-picked locally as `10352f2` only for this
 acceptance. Integrators already carrying the account commit should pick only
 the new fixture/CLI acceptance commit. No persistent process or port remains.
+
+
+## Ownership-aware final recheck
+
+Base `639eb16e5028e600b77f7a4bb4f6c47adadff55f`, worktree
+`/Users/syd08/Documents/tuzi-magpie-lines`, branch
+`codex/tuzi-installed-codex-ownership`.
+
+The direct field setter in the old acceptance fixture bypassed the public
+explicit-application path. After the distribution ownership guard, the Codex
+config pointed to the synthetic gateway but had no local application record,
+so `Wired()` correctly rejected it. This was a fixture defect, not permission
+to weaken the ownership boundary. The fixture now uses `Agent.Apply`, which
+preserves any existing original config before writing and records the chosen
+field afterward. The original `Wired()` assertion remains unchanged. No
+production source, credential check, sandbox rule, network allowance, process
+cleanup or CLI output assertion changed.
+
+Evidence at
+`/Users/syd08/Documents/tuzi-magpie-evidence/installed-cli-ownership-02/`:
+
+- `baseline.log`: the unchanged fixture on this base reproduces Codex's
+  `native Agent wiring not active` failure; the actual Claude CLI passes.
+- `fixed.log`: the same installed-CLI runner with `-race` passes all 20 account
+  projection routes (fixture package 2.440s) and both actual CLI subtests
+  (agent package 5.048s). Codex CLI 0.154.0 reaches `/v1/responses`; official
+  Claude Code 2.1.241 reaches `/v1/messages`. Each makes exactly one synthetic
+  model request and returns the required successful `TUZI_CLI_OK` final event.
+  Generated native configs still target only the local gateway and exclude
+  both synthetic upstream credentials under the unchanged assertions.
+- `ownership-race.log`: all eight `ownership_test.go` tests pass with `-race`
+  (agent package 3.229s), covering unowned original files, malformed records,
+  explicit adoption and retained backups, failed/private backup boundaries,
+  daemon maintenance, Claude follow and rollout conversion. The run used a
+  temporary HOME with Go caches pinned before replacement; command metadata
+  is saved in `ownership-command.json`.
+- `source.json` records the base, exact fixture patch and source hash.
+
+`gofmt -l` and `git diff --check` print no errors. The full Go suite and GUI
+suite were not repeated for this fixture-only change; they remain under the
+main agent's integrated validation record. All test listeners and CLI process
+groups closed, and temporary homes were removed. No browser or persistent
+process was started. This closes the installed-CLI regression after ownership
+isolation; it does not claim real-account or paid-model testing.

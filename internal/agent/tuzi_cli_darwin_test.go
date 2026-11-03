@@ -93,7 +93,9 @@ func TestTuziInstalledCLIs(t *testing.T) {
 				path = claudePath
 				args = []string{"-p", "Return exactly TUZI_CLI_OK without using tools.", "--output-format", "json", "--max-turns", "1", "--tools", ""}
 			}
-			if err := a.Field("model").Set(out.ProviderID + "/" + model); err != nil {
+			// Use the explicit application path, which records this distribution's
+			// ownership. A field setter alone only changes the shared config.
+			if err := a.Apply("model", out.ProviderID+"/"+model); err != nil {
 				t.Fatal(err)
 			}
 			if !a.Wired() {
