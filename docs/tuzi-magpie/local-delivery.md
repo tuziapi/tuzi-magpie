@@ -1,7 +1,9 @@
 # Local delivery and acceptance
 
 Status: closing freeze. The c7238e1 candidate production build and actual
-startup pass; the complete GUI suite is running with an unresolved failure.
+startup pass; the complete GUI suite finished red and finite repairs remain.
+The approved F14 product repair at cadfb77 requires a fresh final build;
+the saved c7238e1 bundle is not that build.
 This document does not claim final acceptance. See acceptance.md
 for the current AC-01–16 matrix and recovery.md for the latest continuation.
 

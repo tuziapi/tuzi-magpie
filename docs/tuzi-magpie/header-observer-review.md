@@ -72,3 +72,16 @@ isolated delivery setup. The currently saved c723 production app predates F14;
 it must not be represented as the final build of this source. Full Go/CLI and
 synthetic account/gateway evidence remains separately attributed to its recorded
 source; F14 changes no Go or account/gateway behavior.
+
+
+## Integrated neighbor verification
+
+The six listed unchanged files completed on integrated cadfb77 assets:
+Chromium52/52 in199.23s; WebKit52/52 in210.00s; no failures, skips,
+cancellations or todo. The single-worker engine runs were serialized under
+private HOME. `header-neighbors-manifest.json` records exact file/app hashes;
+`header-neighbors-results.json` records actual exits, with full TAP logs.
+Later commits during this run only added F13/F16 test fixes and review records;
+they did not change these six files or any product assets. The approved header
+behavior is now covered by its targeted neighbor checks. Embedded-GUI budget
+checks and final production build/start remain required delivery work.
