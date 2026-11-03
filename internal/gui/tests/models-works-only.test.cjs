@@ -13,6 +13,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const fetched = new Date(Date.now() - 3600e3).toISOString();
@@ -109,14 +110,20 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const fits = await works.evaluate((b) => { const r = b.getBoundingClientRect(), e = b.closest(".editor").getBoundingClientRect(); return r.right <= e.right + 1 && r.left >= e.left - 1; });
         assert(fits, "the button runs off the editor");
 
-        // a model picked after the test: not tested, so it stays
+        // Picked only initially hides the unpicked models. Show them before
+        // picking a model after the test: not tested, so it stays.
+        await editor.locator(".mchips-rest").click();
         await editor.locator(".mchips .mchip", { hasText: "minimax-m3" }).click();
 
         // the editor's body scrolled to the buttons; the click leaves it,
         // the page and the button where they are
         await editor.locator(".ebody").evaluate((b) => { b.scrollTop += b.querySelector(".mbulk").getBoundingClientRect().top - b.getBoundingClientRect().top - 8; });
+        // The previous selection redraw, scroll and dialog transitions must
+        // finish before taking the baseline, even with reduced motion.
+        await settled(page);
         const before = await scrolled(), at = await works.evaluate((e) => Math.round(e.getBoundingClientRect().top));
         await works.click();
+        await settled(page);
         assert.deepEqual(await picks(), KEPT, "the failed picks unpicked, the rest kept");
         assert.equal(await scrolled(), before, "the page moved");
         assert.equal(await works.evaluate((e) => Math.round(e.getBoundingClientRect().top)), at, "the button moved");

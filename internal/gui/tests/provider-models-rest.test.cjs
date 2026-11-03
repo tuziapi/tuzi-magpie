@@ -66,6 +66,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const chips = editor.locator(".mchips").first();
       const names = (sel) => chips.locator(sel).evaluateAll((cs) => cs.map((c) => c.firstChild.textContent));
 
+      // Picked only starts with the ten picks. Open the unpicked models
+      // first; the long-list cap still keeps one of those behind the rest.
+      assert.equal(await chips.locator(".mchip").count(), chosen.length);
+      await chips.locator(".mchips-rest").click();
       // all ten picked are drawn, the three past 80 too; one unpicked is left out
       assert.deepEqual(await names(".mchip.on"), chosen);
       assert.equal(await chips.locator(".mchip").count(), 83);

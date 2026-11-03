@@ -152,6 +152,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           // the decision model's own address field, by its label as i18n.js has it
           for (const label of w.decide) assert.equal(await saved.locator("label", { hasText: label }).count(), 0, label);
           assert.equal(await saved.locator('input[type="url"]').count(), 1, "only the remote's address is editable");
+          // Picked only initially shows Chat. Reveal the unpicked decision
+          // models before checking the complete remote list.
+          if (decisions) await saved.locator(".mchips-rest").click();
           assert.deepEqual(await saved.locator(".mchip > span:first-child").allTextContents(),
             decisions ? ["Chat", "custom-a · judge", "custom-b · judge"] : ["Chat"]);
           if (process.env.ARTIFACT_DIR && engine === "chromium" && lang === "en") {

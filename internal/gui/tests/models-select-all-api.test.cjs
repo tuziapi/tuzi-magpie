@@ -117,6 +117,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         // Free only: the free chat model, not the free Claude
         await bulk(tr("Free only")).click();
         assert.deepEqual(await chipsOf(".on"), ["ling-3.1-flash:free"]);
+        // Free only redraws the list; drawFold hides its old expand button
+        // in a frame. Measure the next click after that layout has settled.
+        await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
         // Select all, the button scrolled into the editor's view first: the
         // click moves nothing, and the Claude models are left

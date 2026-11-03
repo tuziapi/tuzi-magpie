@@ -121,8 +121,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const ed = page.locator("#modal .editor");
       await ed.locator(".move button").click();
       await ed.locator(".move-why").waitFor({ state: "visible" });
-      // Model 1 ticked, Model 0 unticked, nothing saved
-      await ed.locator(".mchip", { hasText: "Model 1" }).first().click();
+      // Picked only initially lists Model 0; open the other models before
+      // ticking Model 1 and unticking Model 0, with nothing saved.
+      await ed.locator(".mchips-rest").click();
+      await ed.locator(".mchip", { hasText: /^Model 1$/ }).click();
       await ed.locator(".mchip.on", { hasText: "Model 0" }).click();
       await ed.locator(".move button").click();
       await page.waitForFunction(() => document.querySelector("#modal .editor .move-why")?.hidden === false);

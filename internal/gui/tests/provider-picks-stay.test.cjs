@@ -85,6 +85,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await page.locator(".row.provider", { hasText: name }).click();
         await editor.locator(".ehead b", { hasText: name }).waitFor();
         await editor.locator(".mchips .mchip").first().waitFor();
+        // The editor starts with its picks; open the rest before making
+        // another pick or comparing the providers' complete model lists.
+        await editor.locator(".mchips-rest").click();
       };
       const picks = () => editor.locator(".mchips .mchip.on").evaluateAll((cs) => cs.map((c) => c.textContent).sort());
       const button = (name) => editor.locator(".mfoot").getByRole("button", { name, exact: true });

@@ -111,6 +111,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const again = foot().getByRole("button", { name: w.again, exact: true });
         await again.waitFor();
         assert.ok(await again.isVisible(), "the button is shown after a fetch");
+        // Keep the full list open so the refreshed vendor list, including
+        // its unpicked new models, is visible after the fetch.
+        await editor.locator(".mchips-rest").click();
         await editor.locator('input[type="password"]').first().fill("sk-group-b");
         const add = foot().locator("input");
         await add.fill("my-own-model");

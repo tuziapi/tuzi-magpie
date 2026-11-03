@@ -1,6 +1,6 @@
 // Run with Node's test runner and Playwright on the module path; see README.md.
-// A key pasted over a provider's saved one is tried before a Save (the user:
-// Refresh (now Fetch models) and Test only knew the saved key, and Save closes the editor):
+// A key pasted into a saved provider with no key yet is tried before Save:
+// Fetch models and Test use the draft while the editor stays open.
 // Fetch models, Test models, a model's own test and the endpoints' Test send the
 // editor's form with typed: true, the new key with it, and the editor stays
 // open with the key still in its box; nothing is saved by them. And a new
@@ -20,8 +20,9 @@ const relay = {
   balanceToken: { takes: false, set: false }, proxy: "",
 };
 
-function serve(lang, calls) {
-  const providers = { providers: [relay], presets: [{ id: "relay", name: "Relay", icon: "generic", chat: relay.chat, added: true }], excluded: [], gateway: { running: true, window: true } };
+function serve(lang, calls, withAccounts = false) {
+  const provider = withAccounts ? relay : { ...relay, key: { set: false }, keyList: [] };
+  const providers = { providers: [provider], presets: [{ id: "relay", name: "Relay", icon: "generic", chat: relay.chat, added: true }], excluded: [], gateway: { running: true, window: true } };
   const state = { agents: [], profiles: [], settings: { lang, theme: "light" } };
   return async (route) => {
     const url = new URL(route.request().url());
@@ -34,7 +35,7 @@ function serve(lang, calls) {
     if (url.pathname.startsWith("/api/provider/")) {
       const body = route.request().postDataJSON();
       calls.push([url.pathname.slice(14), body]);
-      if (url.pathname === "/api/provider/models") return json({ count: 1, provider: relay });
+      if (url.pathname === "/api/provider/models") return json({ count: 1, provider });
       if (url.pathname === "/api/provider/test") return json({ results: body.test ? body.test.map((model) => ({ ok: true, ms: 9, model })) : [{ protocol: "chat", ok: true, ms: 9, model: "gpt-5.1" }] });
     }
     if (url.pathname.startsWith("/api/")) return json({});
@@ -67,7 +68,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       if (lang === "en") assert.deepEqual(missing, [], "every string has its Chinese");
       await page.locator(".row.provider", { hasText: "Relay" }).click();
       const ed = page.locator(".editor");
-      const key = ed.locator('input[type="password"]').first();
+      const keyHint = await page.evaluate(() => t("paste an API key"));
+      const key = ed.getByPlaceholder(keyHint, { exact: true });
       await key.fill("sk-new-typed");
       const wait = async (n) => { for (let i = 0; i < 60 && calls.length < n; i++) await page.waitForTimeout(50); };
       const form = (b) => ({ typed: b.typed, key: b.key, chat: b.chat, headers: b.headers });
@@ -79,7 +81,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.deepEqual(form(calls[0][1]), want, "Fetch models asks with the form");
       await page.waitForTimeout(200);
       assert.ok(await ed.isVisible(), "the editor stays open");
-      assert.equal(await ed.locator('input[type="password"]').first().inputValue(), "sk-new-typed", "the key stays typed");
+      assert.equal(await key.inputValue(), "sk-new-typed", "the key stays typed");
 
       await ed.locator(".mfoot").getByRole("button", { name: w.all, exact: true }).click();
       await wait(2);
@@ -98,6 +100,21 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.deepEqual(calls.map((c) => c[0]), ["models", "test", "test", "test"], "nothing saved");
       assert.ok(await ed.isVisible());
 
+      assert.deepEqual(errors, []);
+    });
+
+    test(`${engine} ${lang}: adding another saved key focuses the key and leaves its name optional`, async (t) => {
+      const browser = await (engine === "webkit" ? webkit.launch() : chromium.launch({ channel: "chromium" }));
+      t.after(() => browser.close());
+      const page = await (await browser.newContext({ viewport: { width: 900, height: 900 }, reducedMotion: "reduce" })).newPage();
+      page.setDefaultTimeout(5000);
+      page.setDefaultNavigationTimeout(60000);
+      const errors = [], calls = [];
+      page.on("pageerror", (e) => errors.push(e.message));
+      await page.route("**/*", serve(lang, calls, true));
+      await page.goto("http://magpie.test/?view=providers");
+      await page.locator(".row.provider", { hasText: "Relay" }).click();
+      const ed = page.locator(".editor");
       // a provider's new key: the key is focused, the name is optional
       await ed.getByRole("button", { name: w.addKey }).click();
       const box = page.locator(".editor .acc.adding");
@@ -108,6 +125,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const name = box.locator('input:not([type="password"])').first();
       assert.equal(await name.getAttribute("placeholder"), w.name);
       assert.ok((await name.getAttribute("placeholder")).includes(w.optional));
+      assert.deepEqual(calls, [], "opening the new key form saves nothing");
       assert.deepEqual(errors, []);
     });
   }

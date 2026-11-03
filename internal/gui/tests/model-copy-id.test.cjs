@@ -84,6 +84,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await page.goto("http://magpie.test/?view=providers");
       await page.locator(".row.provider", { hasText: "Relay" }).click();
       await page.locator(".editor .mchips .mchip").first().waitFor();
+      // Picked only leaves the unpicked model behind this existing control.
+      assert.equal(await page.locator(".editor .mchips .mchip", { hasText: "gpt-5.1" }).count(), 0);
+      await page.locator(".editor .mchips-rest").click();
       const chip = (text) => page.locator(".editor .mchips .mchip", { hasText: text });
       const menu = page.locator(".pop.row-menu");
       const picked = () => page.locator(".editor .mchips .mchip.on").count();
