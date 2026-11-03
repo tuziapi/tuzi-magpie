@@ -10,7 +10,7 @@ const key = () => ({id:'8',name:'Synthetic key',masked_key:'sk-••••test'
 const model = () => ({model_name:'fixture-model',aliases:null,description:'Synthetic catalog model',tags:'text',quota_type:1,model_ratio:1,completion_ratio:2,enable_groups:['default'],supported_endpoint_types:['responses'],related_pricing:null});
 function fixture(lang='en',theme='light',web=false) {
   let state={status:'disconnected',generation:1,identity:null,error:null};
-  let keys=[key()], next=9, uncertain=false, prefillGate=null;
+  let keys=[key()], next=9, uncertain=false, prefillGate=null, nextFailure=null;
   const calls=[], modelRequests=[];
   const pageData = (items, page=1) => ({items,page,page_size:20,total:String(items.length),has_more:false});
   const account={user_id:'7',username:'fixture',display_name:'Synthetic account',group:'default',quota:'500000',used_quota:'200',request_count:'1',money:{quota_per_unit:'500000',display_type:'CNY',base_currency:'USD',usd_exchange_rate:'7',custom_currency_symbol:'',custom_currency_exchange_rate:'1'}};
@@ -34,6 +34,7 @@ function fixture(lang='en',theme='light',web=false) {
       if(u.pathname.endsWith('/recover'))return json({success:true,data:body.acknowledge?{pending:null}:{pending:{method:'PATCH',path:'/account/keys/8',readBack:true},data:keys[0],requiresConfirmation:true}});
       const p=body.path, method=body.method, query=Object.fromEntries(body.query || []), ok=data=>json({success:true,data});
       if(body.generation!==state.generation)return json({success:false,error:{code:'stale_generation'}},409);
+      if(nextFailure?.path===p){const code=nextFailure.code;nextFailure=null;if(['invalid_token','account_disabled','identity_mismatch'].includes(code))state={...state,status:'invalid',identity:null,error:{code}};return json({success:false,error:{code}},code==='network'?503:401);}
       if(p==='/account/account')return ok(account);
       if(p==='/account/key-groups')return ok([{id:'default',label:'default'},{id:'other',label:'other'}]);
       if(p==='/account/usage/summary')return ok({...summary,call_count:'2'});
@@ -59,7 +60,7 @@ function fixture(lang='en',theme='light',web=false) {
     }
     return route.fulfill({body:source,contentType:{'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(file)]});
   };
-  return {handler,calls,modelRequests,setUncertain:()=>{uncertain=true;},getState:()=>state,holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
+  return {handler,calls,modelRequests,setUncertain:()=>{uncertain=true;},failNext:(code,path)=>{nextFailure={code,path};},getState:()=>state,holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
 }
 async function click(page, locator){
   try {
@@ -146,4 +147,17 @@ for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webk
   await click(page,(await btn(page,'Recorded call details',root)).first());await click(page,await btn(page,'Related request records',root));await root.getByText('OTHER-RECORD',{exact:true}).waitFor();assert.equal(await root.getByText('CURRENT-RECORD',{exact:true}).count(),0);await click(page,await btn(page,'Close',root));
   await click(page,root.getByRole('tab',{name:'Model marketplace',exact:true}));await root.locator('.tuzi-model').waitFor();const search=page.getByLabel('Search model catalog',{exact:true});await search.fill('11');await root.getByText('No models match these filters.',{exact:true}).waitFor();assert.equal(await search.inputValue(),'11');assert.ok(await search.evaluate(e=>e===document.activeElement));await search.fill('fixture');await search.press('Enter');await root.locator('.tuzi-model').waitFor();assert.equal(f.modelRequests.at(-1).search,'fixture');
   await click(page,await btn(page,'Model tag',root));await page.getByLabel('Search choices',{exact:true}).fill('vision');await page.getByRole('menuitemcheckbox',{name:'vision',exact:true}).click();await page.keyboard.press('Escape');await page.waitForFunction(()=>document.querySelector('#tuziPane').getAttribute('aria-busy')!=='true');assert.equal(f.modelRequests.at(-1).tag,'vision');
+});
+
+for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webkit']))test(`${engine}: authentication failures reconcile native state while network errors preserve connection`,async(t)=>{
+  const browser=await(engine==='webkit'?webkit.launch():chromium.launch(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{channel:'chromium'}));t.after(()=>browser.close());
+  const context=await browser.newContext({viewport:{width:1100,height:850},reducedMotion:'reduce'});t.after(()=>context.close());const page=await context.newPage();page.setDefaultTimeout(10000);const f=fixture();await page.route('**/*',f.handler);await page.goto('http://magpie.test/?view=tuzi');const root=page.locator('#view-tuzi');
+  const connect=async()=>{await page.getByLabel('Account system token',{exact:true}).fill('synthetic-account-token');await click(page,await btn(page,'Connect account',root));await root.locator('.tuzi-metrics').waitFor();};await connect();
+  const stateReads=f.calls.filter(([p])=>p.endsWith('/state')).length;f.failNext('network','/account/account');await click(page,await btn(page,'Refresh',root));await root.getByText('The service is unreachable. Your saved connection is kept.',{exact:true}).waitFor();assert.equal(await root.locator('.tuzi-status').textContent(),'Connected');assert.equal(await root.locator('.tuzi-metrics').count(),1);assert.equal(await root.locator('#tuziSystemToken').count(),0);assert.equal(f.calls.filter(([p])=>p.endsWith('/state')).length,stateReads);
+  for(const code of ['invalid_token','account_disabled','identity_mismatch']){
+    const originalGeneration=f.getState().generation;
+    if(code==='account_disabled'){await click(page,await btn(page,'Key details',root));f.failNext(code,'/account/keys/8/reveal');await click(page,await btn(page,'Reveal key',root));}
+    else{f.failNext(code,'/account/account');await click(page,await btn(page,'Refresh',root));}
+    await root.getByLabel('Account system token',{exact:true}).waitFor();assert.equal(f.getState().generation,originalGeneration,'invalidation does not need a generation bump');assert.equal(await root.locator('.tuzi-status').textContent(),'Invalid connection');assert.equal(await root.locator('.tuzi-metrics').count(),0);assert.equal(await root.getByRole('button',{name:'Key details',exact:true}).count(),0);assert.ok(await root.locator('#tuziSheet').isHidden());assert.equal(await root.locator('#tuziPane').getAttribute('aria-busy'),null);await connect();
+  }
 });

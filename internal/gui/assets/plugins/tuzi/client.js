@@ -26,15 +26,32 @@
       if (sheet && !sheet.hidden) { let n = sheet.querySelector(".tuzi-dialog-note"); if (!n) { n = node("p", "tuzi-notice tuzi-dialog-note"); n.setAttribute("role", "alert"); sheet.prepend(n); } n.textContent = label; n.classList.toggle("tuzi-error", error); n.hidden = !label; }
     }
     function errorText(e) {
-      const labels = { not_connected: "Connect your Tuzi account first.", invalid_token: "The system token is invalid. Connect again.", unauthorized: "The system token is invalid. Connect again.", account_disabled: "This account is disabled.", permission_denied: "This account cannot perform that operation.", forbidden: "This account cannot perform that operation.", network: "The service is unreachable. Your saved connection is kept.", network_error: "The service is unreachable. Your saved connection is kept.", network_uncertain: "The service is unreachable. Your saved connection is kept.", secure_storage_unavailable: "The account file could not be saved. The operation did not complete.", snapshot_changed: "The account changed. Refresh and try again.", provider_selection_not_qualified: "The selected key, models and protocol do not match. Review the selection.", model_list_unavailable: "The key model list is unavailable. Try again before saving.", provider_save_failed: "The provider could not be saved. Existing providers were kept.", timeout: "The service did not answer in time.", rate_limited: "Too many requests. Try again later.", logs_unavailable: "Recorded consumption is unavailable; totals are unknown.", storage_invalid: "The account file is damaged. Reconnect to recover it.", secure_storage_failed: "The account file could not be saved. The operation did not complete.", storage_failed: "The account file could not be saved. The operation did not complete.", invalid_response: "The service returned an invalid response.", stale_generation: "The account changed. Refresh and try again.", outcome_unknown: "The write may have completed. Read it back before another write.", write_blocked: "The write may have completed. Read it back before another write.", write_recovery_required: "The write may have completed. Read it back before another write.", not_found: "This key no longer exists.", conflict: "The saved provider changed. Refresh before retrying." };
+      const labels = { not_connected: "Connect your Tuzi account first.", invalid_token: "The system token is invalid. Connect again.", unauthorized: "The system token is invalid. Connect again.", identity_mismatch: "The system token is invalid. Connect again.", account_disabled: "This account is disabled.", permission_denied: "This account cannot perform that operation.", forbidden: "This account cannot perform that operation.", network: "The service is unreachable. Your saved connection is kept.", network_error: "The service is unreachable. Your saved connection is kept.", network_uncertain: "The service is unreachable. Your saved connection is kept.", secure_storage_unavailable: "The account file could not be saved. The operation did not complete.", snapshot_changed: "The account changed. Refresh and try again.", provider_selection_not_qualified: "The selected key, models and protocol do not match. Review the selection.", model_list_unavailable: "The key model list is unavailable. Try again before saving.", provider_save_failed: "The provider could not be saved. Existing providers were kept.", timeout: "The service did not answer in time.", rate_limited: "Too many requests. Try again later.", logs_unavailable: "Recorded consumption is unavailable; totals are unknown.", storage_invalid: "The account file is damaged. Reconnect to recover it.", secure_storage_failed: "The account file could not be saved. The operation did not complete.", storage_failed: "The account file could not be saved. The operation did not complete.", invalid_response: "The service returned an invalid response.", stale_generation: "The account changed. Refresh and try again.", outcome_unknown: "The write may have completed. Read it back before another write.", write_blocked: "The write may have completed. Read it back before another write.", write_recovery_required: "The write may have completed. Read it back before another write.", not_found: "This key no longer exists.", conflict: "The saved provider changed. Refresh before retrying." };
       const label = labels[e?.code];
       const message = label ? t(label) : t("The operation failed. Check the connection and try again.");
       return e?.retryAfter > 0 ? message + " " + t("Retry after {seconds} seconds.", { seconds: e.retryAfter }) : message;
     }
     async function http(path, body, signal = controller.signal) {
+      const generation = state.generation, identity = state.identity, visit = lifecycle;
       const response = await fetch("/api/tuzi/" + path, { method: body === undefined ? "GET" : "POST", headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body), signal, cache: "no-store" });
       let data; try { data = await response.json(); } catch { throw { code: "invalid_response" }; }
-      if (!response.ok || data?.success === false) throw typeof data?.error === "object" ? data.error : { code: data?.code || "request_failed" };
+      if (!response.ok || data?.success === false) {
+        const error = typeof data?.error === "object" ? data.error : { code: data?.code || "request_failed" };
+        if (path !== "state" && ["invalid_token", "account_disabled", "identity_mismatch", "not_connected"].includes(error?.code) && active && lifecycle === visit && state.generation === generation && state.identity === identity) {
+          // Native business errors can invalidate identity without changing the
+          // account generation. Read its actual state instead of keeping a
+          // Connected header or inferring invalidation from a network failure.
+          try {
+            const next = await http("state");
+            if (active && lifecycle === visit && state.generation === generation && state.identity === identity) {
+              acceptState(next); drawHeader();
+              if (!isConnected()) { pane.replaceChildren(empty("Connect your account to manage keys, records and models. Existing Magpie features work without an account.")); pane.removeAttribute("aria-busy"); }
+              note(errorText(error), true);
+            }
+          } catch {}
+        }
+        throw error;
+      }
       return data;
     }
     async function request(method, path, query = {}, body) {

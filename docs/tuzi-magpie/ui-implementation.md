@@ -79,3 +79,21 @@ Browser fixture tests do not establish native or production-service success.
   browsers are closed in test teardown. Only isolated synthetic browser data
   was used. Native E2E, integrated full suites, app build/launch and original
   page comparisons belong to the root task and are not claimed here.
+
+### Authentication invalidation repair
+
+Independent review found that a native business failure can clear the native
+identity without incrementing account generation, while the page retained its
+Connected label and cached account data. The facade error boundary now reads
+actual native state for `invalid_token`, `account_disabled`, `identity_mismatch`
+and `not_connected`. Page lifecycle, identity and generation fences prevent delayed state
+reads from affecting a newer account or a page the user left. Invalid identity
+clears the pane and any revealed-key dialog and exposes reconnection. Ordinary
+network errors retain the connection and cached display.
+
+The regression exercises native invalidation with unchanged generation through
+account reads and key reveal, plus recovery by reconnecting and network-error
+preservation. It fails on `16c93b3` waiting for the missing reconnection input
+(`/tmp/tuzi-ui-auth-red.log`), and passes after the fix
+(`/tmp/tuzi-ui-auth-green.log`). Full page checks are rerun in Chromium and WebKit
+(`/tmp/tuzi-ui-auth-full-{chromium,webkit}.log`).
