@@ -1,9 +1,44 @@
 # Current native and production evidence
 
-The latest native and production checks below ran on c7238e1. The complete
-GUI regression is still running and has an unresolved account-eye failure;
-this record does not declare the development goal complete. Earlier checks
-on 3d77be3 are retained here as historical evidence.
+The current production artifact is built from clean 079fea7; its product
+assets match d5daff2, used by the final native fixture checks. Complete GUI
+regression finished naturally; 33 of its 36 failed files have bounded repair
+evidence, with F01(side-effort), F05 and F11 still open. This record does not
+declare the development goal complete. Earlier checks below are historical.
+
+## Current final product checks (2026-11-04)
+
+All paths are under `/Users/syd08/Documents/tuzi-magpie-evidence/`.
+
+- `final-source-checks-04/source.json` records clean d5daff2 and product hashes.
+  GUI Go package checks including budgets passed (73.31s); Linux and Windows
+  builds passed (6.13s/5.11s); fixture build passed (10.30s). These supplement
+  the earlier full Go/race/vet evidence; they are not a repeated full suite.
+- `native-final-workspace-03` passes eight actual Wails/Go checks: connection,
+  four populated summaries, key create/reveal/close, Provider persistence,
+  logs, marketplace, status and real gateway-to-synthetic-model use. Gateway
+  PID24573 was verified. `native-final-lifecycle-03` passes actual restart,
+  restore/check, disconnect and retained Provider use via exact PID24899.
+  Both owned native/fixture processes were cleaned.
+- The fixture bundle is `final-source-checks-04/tuzi-magpie-fixture.app`.
+  Its hash is recorded in fixture-artifact.json; it is distinct from delivery.
+- `final-source-checks-04/artifact.json` records production-only build source
+  079fea7f635729c88f703862e5c3981cc9845ae4, exit0 in10.67s. Later changes to
+  documentation and acceptance scripts do not change embedded product code.
+- `production-start-03/result.json` passes actual LaunchServices startup,
+  exact PID25651 owning18553, HTTP404 for private account management, no
+  persisted account, unchanged source binary and restored LS registration.
+  The existing unrelated preview occupying18543 was not stopped.
+- CUA inspected the actual native Agents and four-tab disconnected account
+  pages. `production-start-03/visual-inspection.json`, agents-native.png and
+  account-native.png record this separately from the original script result.
+  `post-visual-cleanup.json` records closing only owned PID25651 afterward.
+
+Delivered production path: `/Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app`.
+Executable SHA256: `22a7ec57298045ba1e61a8a404efdb4b26787823c1783099a92fe7721b8f1e46`.
+No real credential, paid inference or off-loopback service was used.
+
+## Historical native runs
 
 The fixture build uses `production,tuzi_fixture`. Both native runs execute
 real Wails DOM actions, native Go account handlers and the real gateway.
@@ -61,7 +96,7 @@ old red remains immutable. Independent review is recorded in
 visibility-independent-review-account.md.
 
 
-## Latest integrated source: c7238e1
+## Historical integrated source: c7238e1
 
 All paths in this section are under
 `/Users/syd08/Documents/tuzi-magpie-evidence/`.
@@ -90,7 +125,7 @@ All paths in this section are under
   file is created, the original bundle hash is unchanged and registration is
   restored. The checker closes its app; `keptOpen` is false.
 
-The production artifact is
+The historical production artifact was
 `/Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app`, with executable
 SHA256 `f53209fed0866b97b610fd715ab9496de59645569e888712f8d2885e24358472`.
 The manifest is `final-source-checks-03/artifact.json`. Production window

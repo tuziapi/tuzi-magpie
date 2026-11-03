@@ -1,9 +1,9 @@
 # Local delivery and acceptance
 
-Status: closing freeze. The c7238e1 candidate production build and actual
-startup pass; the complete GUI suite finished red and finite repairs remain.
-The approved F14 product repair at cadfb77 requires a fresh final build;
-the saved c7238e1 bundle is not that build.
+Status: closing freeze. The final product source includes the approved
+F08/F14/F15 repairs. Production build, isolated startup and native window
+inspection pass. The frozen complete GUI suite finished red; three files
+still require a supported closing conclusion (see closing-blockers.md).
 This document does not claim final acceptance. See acceptance.md
 for the current AC-01–16 matrix and recovery.md for the latest continuation.
 
@@ -30,10 +30,10 @@ and `nogui`; the production startup checker enforces this before launching.
 
 From the development worktree, build with `make app TAGS=production`. The
 local Go toolchain is `/Users/syd08/.local/toolchains/go1.25.12/bin/go`, which
-selects the repository's Go1.26.8 toolchain. The current candidate is version c7238e1, source
-c7238e14891f917b67d80209857d3d1db4cb4c42, executable SHA256
-`f53209fed0866b97b610fd715ab9496de59645569e888712f8d2885e24358472`.
-Evidence is `final-source-checks-03/artifact.json` and `production-start-02`
+selects the repository's Go1.26.8 toolchain. The current candidate is version 079fea7, source
+079fea7f635729c88f703862e5c3981cc9845ae4, executable SHA256
+`22a7ec57298045ba1e61a8a404efdb4b26787823c1783099a92fe7721b8f1e46`.
+Evidence is `final-source-checks-04/artifact.json` and `production-start-03`
 under `/Users/syd08/Documents/tuzi-magpie-evidence/`. The final acceptance
 commit will also include the closing evidence and any required repairs.
 
@@ -47,14 +47,15 @@ export PATH="/Users/syd08/.local/toolchains/go1.25.12/bin:$PATH"
 python3 scripts/tuzi-magpie/native-production-launch.py \
   --app /Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app \
   --output /private/tmp/tuzi-magpie-user-acceptance-01 \
+  --port 18553 \
   --keep-open
 ```
 
 The checker starts a copied bundle through macOS LaunchServices, gives it
 private empty configuration, denies real HOME/keychain access and non-loopback
-network, and uses port18543. It checks the precise app PID owns the gateway.
-If the directory or port is already used, choose a new directory or stop only
-the recorded test process; do not stop an unrelated application. Without
+network, and uses the selected port (default18543). It checks the precise app PID owns the gateway.
+If the directory or port is already used, choose a new directory and unused
+unprivileged port; do not stop an unrelated application. Without
 `--keep-open`, only the checker's own process is closed after validation.
 
 The original user Magpie is never replaced or quit. The development bundle
@@ -80,13 +81,13 @@ then its restart flow, use fresh output directories:
 ```sh
 cd /Users/syd08/Documents/tuzi-magpie-local
 python3 scripts/tuzi-magpie/native-acceptance.py \
-  --app /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixed-build/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
+  --app /Users/syd08/Documents/tuzi-magpie-evidence/final-source-checks-04/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
   --fixture /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixture/tuzi-fixture \
   --output /Users/syd08/Documents/tuzi-magpie-evidence/native-user-workspace-01 \
   --script /Users/syd08/Documents/tuzi-magpie-local/scripts/tuzi-magpie/tests/native-workspace.js
 
 python3 scripts/tuzi-magpie/native-acceptance.py \
-  --app /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixed-build/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
+  --app /Users/syd08/Documents/tuzi-magpie-evidence/final-source-checks-04/tuzi-magpie-fixture.app/Contents/MacOS/tuzi-magpie \
   --fixture /Users/syd08/Documents/tuzi-magpie-evidence/native-visibility-fixture/tuzi-fixture \
   --output /Users/syd08/Documents/tuzi-magpie-evidence/native-user-lifecycle-01 \
   --home /Users/syd08/Documents/tuzi-magpie-evidence/native-user-workspace-01/home \
@@ -121,9 +122,14 @@ settings, rewrite upstream history, or uninstall the user's normal app.
 
 ## Known limits
 
-Production window visual inspection remains unclaimed because macOS was
-locked. Actual native DOM workflows, same-condition browser comparisons and
-production process startup are separate evidence.
+Production window inspection passed through CUA on the actual isolated native
+application: Agents and the disconnected four-tab Tuzi account page rendered.
+Screenshots and a separate visual record are in production-start-03; the
+startup checker's original uiVisuallyVerified:false remains unchanged because
+that script itself performs no visual inspection. Owned PID25651/port18553
+was closed after inspection. The unrelated preview on18543 was preserved.
+Actual native DOM workflows, same-condition browser comparisons and process
+startup remain separately recorded evidence.
 
 Provider storage detects changed files before replacement, but compare then
 rename is not a global atomic CAS against external writers that do not share

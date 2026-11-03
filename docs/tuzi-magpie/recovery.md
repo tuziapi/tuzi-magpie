@@ -1,6 +1,10 @@
 # Recovery record
 
-Updated: 2026-11-02. Active goal TM-LOCAL-1.0. Continue through M0–M3 and delivery; no milestone is the final goal.
+Updated: 2026-11-04. Active goal TM-LOCAL-1.0; closing freeze. Current source after production build:189b91e (product built at079fea7). Website pair:e2ba322b2cd57ef71dc9467ad5107be5f569bb47. Current status is this paragraph and latest continuation below; earlier entries are historical snapshots.
+
+33/36 frozen failing GUI files closed; remaining F01(side-effort), F05, F11. No new full-suite run. Final production build, exact-PID startup, actual native workspace/lifecycle and CUA production window inspection pass. Delivered production app path is /Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app; hash and replay instructions in local-delivery.md. Owned native PID25651/18553 was closed after inspection; unrelated preview PID58104/18543 is preserved. Account owns the sole browser queue for fixed finite-boundaries-04 cases; website/UI perform read-only diagnosis. Root owns documentation updates; side-effort test candidate remains only in lines worktree. No further product changes planned.
+
+## Initial state (historical)
 
 | Role | Worktree | Branch / initial HEAD |
 |---|---|---|
@@ -290,3 +294,11 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 - F05 actual RO gates both sources: held1/delivered1, no overflow before/after; no waiting fix justified. F11 two trusted-20 control reproduces old-200 replay in both sources, but original single-40 does not have proven matching event history. Explicit disposition: no product fix for that separate historical weakness under this freeze; F05/F11 remain unexplained. Evidence and limits are committed, no extra run planned.
 - UI first nine WebKit controls in `gui-f08-f15-candidates` completed and cleaned. External candidates only: F08 conditional `.ag-sum .mi` event exemption with exact unchanged-anchor geometry; F15 animationend schedules existing coalesced routing layout. Product source unchanged and neither candidate is approved. F15 old assertion red/candidate green/real+4px wire negative red. F08 basic candidates and wrong-item negative as intended, but real-view-wheel control remained open; UI is checking actual hit/scroll preconditions before any next run. Root reviewed both diffs; website is doing independent static review.
 - Browser/build/native queue currently free. UI is preparing a finite second candidate batch and must obtain root allocation before running. No app/native fixture process is active. Current app remains the old c723 production build. Original checkouts rechecked unchanged: Magpie2251ca1 with only preexisting.DS_Store, website34063ef clean, guidee2ba322 clean.
+
+## 2026-11-04 final artifact and bounded remaining checks
+
+- F08 product86fd638/test791801d and F15 product775d699/testab06b94 reviewed and integrated; F15 control/docsf99d090. F14cadfb77 neighbor files52/52 each engine. F08 two files20/20 each engine; F15 file3/3 each engine, real wrong endpoint negative fails. Frozen whole-suite red logs unchanged; three files remain, no acceptance reduction.
+- final-source-checks-04: GUI Go package/budget73.31s, Linux6.13s, Windows5.11s, fixture10.30s, production10.67s all exit0. Fixture source d5daff2; production079fea7 has same product assets. Native workspace03 eight checks and lifecycle03 three checks pass exact gateway PIDs24573/24899, cleaned.
+- production-start-03 selected18553 because existing unrelated preview58104 occupies18543. Optional --port tool changeac8f482 preserves isolation/default/range and exact ownership; syntax and invalid-port checks pass. Actual productionPID25651 passed HTTP404/noaccount/hash/LS checks; CUA saw Agents and Tuzi four tabs, screenshots and visual-inspection saved separately. OwnedPID25651 closed afterward; historical script result kept intact.
+- Independent delivery consistency review189b91e (sourcebb3d457) read and integrated; root updating outdated current summaries while retaining historical records. No product rebuild warranted by documentation/tool-only changes.
+- Account fixed finite-boundaries-04 three-case queue only; case1 target oldoverflow/newnooverflow evidence captured, after-hook guard-call error retained exit1 and its own browser cleaned. Only external optional guard call repaired before remaining two cases; no replay of case1. F01 raw protocol original cause unknown; F11 unrelated two-input weakness excluded.
