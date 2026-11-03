@@ -30,4 +30,18 @@ The integrated full-Go run in
 There was no evidence of a production cache reader, plugin loader, daemon
 parser or TLS restoration defect in these failures. The original tests remain
 the behavior regressions; the full-run failures are the pre-fix evidence.
-Verification results will be added after the serialized test queue is free.
+Verification on 2026-11-03 at `be9228c` passed:
+
+```
+go test -p 2 -tags nogui ./internal/catalog ./internal/cli -count=1 -timeout 10m
+ok internal/catalog 1.471s
+ok internal/cli 30.971s
+```
+
+The runner used a temporary HOME, pinned existing GOPATH/GOMODCACHE/GOCACHE,
+and GOMAXPROCS=4. Total wall time was 38.3 seconds. The queue was released
+immediately after completion. Full output is in
+`/Users/syd08/Documents/tuzi-magpie-evidence/lines/catalog-cli-regressions.log`.
+The existing macOS enum conversion compiler warnings remain; no test failed.
+This verifies these two packages, not the remaining integrated full-suite
+gates.
