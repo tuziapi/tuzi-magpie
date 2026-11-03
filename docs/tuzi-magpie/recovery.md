@@ -1,6 +1,6 @@
 # Recovery record
 
-Updated: 2026-11-04. Active goal TM-LOCAL-1.0; closing freeze. Code/test integration is14df3f927a8e913dda91c856bea23ff100626c5f; current evidence-document HEAD is obtained with git rev-parse HEAD and saved in /Users/syd08/Documents/tuzi-magpie-evidence/local-handoff-04.json. Product built at079fea7; later commits do not alter product code. Website pair:e2ba322b2cd57ef71dc9467ad5107be5f569bb47. Earlier entries below are historical snapshots.
+Updated: 2026-11-04. Goal TM-LOCAL-1.0 is blocked (not complete); closing freeze. Code/test integration is14df3f927a8e913dda91c856bea23ff100626c5f; current evidence-document HEAD is obtained with git rev-parse HEAD and saved in /Users/syd08/Documents/tuzi-magpie-evidence/local-handoff-04.json. Product built at079fea7; later commits do not alter product code. Website pair:e2ba322b2cd57ef71dc9467ad5107be5f569bb47. Earlier entries below are historical snapshots.
 
 34/36 frozen failing GUI files closed. Remaining: F01 side-effort separate evaluation anomaly and F11 original single-wheel anomaly, neither reproduced or attributed; no standard lowered. F01 text sampling itself is committedf157b6e; F05 is closed14df3f9, each engine5/5. Final production build, exact-PID startup, actual native workspace/lifecycle and CUA production window inspection pass. App path /Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app; exact hash/replay in local-delivery.md. Owned PID25651/18553 cleaned; unrelated preview58104/18543 preserved.
 
@@ -312,3 +312,23 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 - Independent final delivery review verified production/fixture hashes, actual native03 and production-start-03 evidence, and found only stale recovery pointers now corrected. Source audit at14df3f9 covers210 locally reachable commits,196 matches/49 prior fingerprints/no new fingerprint.
 - Original checkout2251ca1 still only preexisting.DS_Store; original website34063ef and guidee2ba322 clean. No push/PR/deployment/payment/real credential use. Original preview58104 untouched; root and diagnostic processes cleaned.
 - AC01–12/14/15 have local-scope passing evidence; AC13/16 remain blocked by the two explicitly unlocated failures. This status is not a completed local goal or an acceptance-standard adjustment.
+
+## 2026-11-04 repeated blocker audit and goal state
+
+The same two evidence gaps persisted across three consecutive goal turns,
+including the handoff turn. The handoff turn made progress; the next two
+read-only revalidations produced no new causal discriminator. All child
+agents are completed, all owned tests/native processes have exited, the main
+worktree is clean and the production hash remains22a7ec…1e46. No live job is
+being awaited. The goal tool now records **blocked**, not complete or paused.
+
+F01 needs the underlying protocol error/frame events at an actual failing
+evaluation; the original log contains only Playwright's rewritten error.
+F11 needs actual displacement and event timing at its failing single-wheel
+assertion; the original log contains only a Boolean mismatch. Bounded later
+captures pass and cannot restore the missing failure-time observations.
+Independent review found no justified further product/test correction. Resume
+only from new causal evidence or a concrete discriminator; do not automatically
+rerun the complete suite, repeat prior diagnostics, or waive AC13/16. All
+local artifacts, isolated replay instructions and original checkout/data remain
+preserved. No external service or publishing gate was claimed passed.
