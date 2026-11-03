@@ -12,6 +12,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { reach } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const models = [
@@ -93,8 +94,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.equal((await pick.textContent()).trim(), w.none);
         assert.equal(await pick.getAttribute("aria-haspopup"), "menu");
 
-        await pick.evaluate((x) => x.scrollIntoView({ block: "center" })); // as the reader would
-        await page.waitForTimeout(200);
+        // The page restores unsolicited scrollIntoView. Establish the reader's
+        // actual position with the whole button visible before taking the baseline.
+        await reach(page, pick);
         const at = () => page.evaluate(() => [...document.querySelectorAll("*")].filter((e) => e.scrollTop).map((e) => [e.id || e.className, e.scrollTop]).join(";"));
         const before = await at();
 

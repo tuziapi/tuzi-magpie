@@ -14,6 +14,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(process.env.ASSETS || path.join(__dirname, "../assets"));
 const models = [
@@ -76,6 +77,8 @@ function serve(lang, posts) {
 // wheel to a control, as the reader would (the page keeps still for any
 // other scroll), and return where it is
 async function reach(page, loc) {
+  // Read the control only after the editor's opening/closing motion ends.
+  await settled(page);
   const height = page.viewportSize().height;
   await page.mouse.move(Math.min(550, (page.viewportSize().width / 2) | 0), 300);
   for (let i = 0; i < 30; i++) {
