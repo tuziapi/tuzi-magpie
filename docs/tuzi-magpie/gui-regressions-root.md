@@ -101,3 +101,22 @@ blocking issue: node identity plus the mutation observer still catches the
 original row-movement regression, while success/content assertions reject
 a skipped update. Product assets have no changes from the recorded b2c3575
 through the reviewed d80262b integration head.
+
+## Settings redraw sweep and disabled search controls
+
+The original `segs-press-redraw` sweep provided no search provider and an
+empty search API list. `plugins/search/settings.js` intentionally disables
+Search ownership in that state. The test nonetheless expected its disabled
+button to dispatch a click after redraw. Both the fixture and search renderer
+are byte-identical to2251ca1; representative original tests fail in both
+engines with no click for `own|magpie@searchAllRow:0`.
+
+Only the sweep fixture now supplies a synthetic search provider, and an
+enabled-button precondition makes that requirement explicit. Its original
+click-once/live-target, no-save, all-controls and page-error assertions remain.
+All eight English/Chinese/Japanese/German wide/narrow sweeps pass per engine
+(124.57s Chromium,123.56s WebKit). A fixture-only mutation disables the
+existing replacement-button click fallback; both engines fail with an empty
+click list where one live Theme option click is required. No product code
+changed. Evidence: `/Users/syd08/Documents/tuzi-magpie-evidence/settings-segs-01/`,
+including tested-source.json and all baseline/fixed/negative logs.

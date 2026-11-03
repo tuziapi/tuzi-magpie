@@ -218,6 +218,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         // browser's page only) and the Omarchy bar icon (Omarchy only).
         const st = { workbuddy: true, trae: true, minimax: true, qoder: true, codexUsers: ["a@example.test", "b@example.test"],
           checkinPlugins: [{ id: "one", name: "One", on: false }, { id: "two", name: "Two", on: true }],
+          // Search ownership is disabled when no provider or API can search.
+          // Give this click sweep a capable synthetic provider.
+          searchProvider: "Fixture search provider",
           trayUsages: ["codex|a@example.test"], lan: true, lanURLs: ["http://192.168.1.2:3999"] };
         const { page, errors } = await open(engine, lang, width, "general", posted, st, t);
         // each click on an option is noted and stopped there, so no pick is
@@ -249,6 +252,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
             const opts = box.locator(":scope > .opt");
             const now = await opts.evaluateAll((os) => os.findIndex((o) => o.classList.contains("on")));
             const i = (now + 1) % await opts.count();
+            assert.equal(await opts.nth(i).isEnabled(), true, `${tab}: ${place} option ${i} must be enabled for this click test`);
             await page.mouse.move(...mid(await reveal(page, opts.nth(i))));
             await page.evaluate(() => { optClicks.length = 0; });
             await page.mouse.down();
