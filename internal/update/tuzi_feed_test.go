@@ -5,7 +5,22 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/yetone/magpie/internal/product"
 )
+
+func TestTuziConfiguredReleasePage(t *testing.T) {
+	previous := product.Repository
+	t.Cleanup(func() { product.Repository = previous })
+	product.Repository = "https://forge.example/team/tuzi-magpie/"
+	if got := ReleasePage("v1.2.3"); got != "https://forge.example/team/tuzi-magpie/releases/tag/v1.2.3" {
+		t.Fatalf("configured release page = %q", got)
+	}
+	product.Repository = "https://user:secret@forge.example/team/repo"
+	if got := ReleasePage("1.2.3"); got != "" {
+		t.Fatalf("invalid repository produced release page: %q", got)
+	}
+}
 
 func TestTuziNeverDefaultsToUpstreamUpdate(t *testing.T) {
 	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "")

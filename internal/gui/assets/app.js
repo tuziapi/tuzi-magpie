@@ -4568,7 +4568,8 @@ function updateStuck(u) {
 // their issue was fixed). Not in the tray's panel, where a dialog has no
 // room; Settings' version row opens it again, and with an update waiting,
 // that one's notes first.
-const ISSUES = "https://github.com/yetone/magpie/issues/";
+const REPOSITORY = window.bootPrefs?.repository || "https://github.com/yetone/magpie";
+const ISSUES = REPOSITORY + "/issues/";
 let whatsNewAsked = false;
 // cliBehindOnce: the terminal's magpie is a copied file rather than the
 // installer's link, so it can't follow the app's updates (#531's lesson: a
@@ -19644,7 +19645,7 @@ function renderCLI(r) {
 // Settings' Download source (#893): where an update's file is downloaded
 // from — GitHub, or a GitHub download mirror put before its URL, the same
 // setting `magpie update mirror` writes. magpie names no mirror of its
-// own; the feed and each file's SHA-256 still come from usemagpie.ai, and a
+// own; each file's SHA-256 comes from the configured update feed, and a
 // file that doesn't match is never installed. A draft and its error are
 // kept across the page being drawn again.
 let mirrorEditing = false, mirrorDraft = "", mirrorErr = "";
@@ -19660,10 +19661,10 @@ function renderUpdateMirror(r, s) {
   const sub = el("div", "sub");
   who.append(sub);
   const m = s.updateMirror || "";
-  sub.textContent = mirrorErr || (m ? t("Updates are downloaded through this mirror, each checked against usemagpie.ai's checksum")
+  sub.textContent = mirrorErr || (m ? t("Updates are downloaded through this mirror, each checked against the configured update feed's checksum")
     : t("Updates are downloaded from GitHub; a mirror can be used where GitHub is slow"));
   sub.classList.toggle("err", !!mirrorErr);
-  sub.title = t("The update and its checksum always come from usemagpie.ai; a file from the mirror that doesn't match it is not installed.");
+  sub.title = t("The update information and checksum come from the configured update feed; a file from the mirror that doesn't match it is not installed.");
   if (!mirrorEditing) {
     if (m) {
       const official = el("button", "text", t("Use GitHub"));
@@ -19906,8 +19907,8 @@ function renderSettings() {
   const repo = el("button", "github");
   repo.innerHTML = GITHUB_SVG;
   repo.append(el("span", "", "GitHub"));
-  repo.title = "github.com/yetone/magpie";
-  repo.onclick = () => api("open", { url: "https://github.com/yetone/magpie" }).catch(() => {});
+  repo.title = REPOSITORY.replace(/^https:\/\//, "");
+  repo.onclick = () => api("open", { url: REPOSITORY }).catch(() => {});
   row(t("Community"), t("questions, ideas and feedback, on Discord or GitHub"), "", join, repo);
   // magpie uninstall, from the app (Jevik_AI on X deleted magpie's folders
   // by hand and Codex kept pointing at a gateway that was gone). Never in a

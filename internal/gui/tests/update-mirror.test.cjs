@@ -17,10 +17,10 @@ const assets = path.resolve(__dirname, "../assets");
 
 const words = {
   en: { row: "Download source", use: "Use a mirror…", save: "Save", github: "Use GitHub", change: "Change", bad: "full https:// address",
-    tip: "a file from the mirror that doesn't match it is not installed",
+    tip: "configured update feed", checksum: "configured update feed's checksum",
     viaGitHub: "downloaded from GitHub", viaMirror: "through this mirror", failed: "through the mirror", official: "Download from GitHub" },
   zh: { row: "下载源", use: "使用镜像…", save: "保存", github: "恢复官方", change: "修改", bad: "完整的 https:// 地址",
-    tip: "从镜像下载的文件如果与校验和不符，magpie 不会安装它",
+    tip: "已配置的更新源", checksum: "已配置更新源的校验和",
     viaGitHub: "从官方 GitHub 下载", viaMirror: "经此镜像下载", failed: "经镜像", official: "改用官方下载" },
 };
 
@@ -31,7 +31,8 @@ function server(lang, ctl) {
     const req = route.request(), url = new URL(req.url());
     const json = (data, status) => route.fulfill({ json: data, status: status || 200 });
     const settings = () => ({ theme: "light", lang, version: "0.1.900", dir: "~/.config/magpie", gateway: "http://127.0.0.1:3425", lanURLs: [], fx: { rate: 7.2 }, ...(ctl.mirror ? { updateMirror: ctl.mirror } : {}) });
-    if (url.pathname === "/boot.js") return route.fulfill({ contentType: "text/javascript", body: `window.bootPrefs = {lang:"${lang}",theme:"light",web:false};` });
+    if (url.pathname === "/boot.js") return route.fulfill({ contentType: "text/javascript", body: `window.bootPrefs = ${JSON.stringify({lang,theme:"light",web:false,repository:ctl.repository})};` });
+    if (url.pathname === "/api/open") { ctl.posts.push(["open", req.postDataJSON()]); return json({}); }
     if (url.pathname === "/wails/runtime.js") return route.fulfill({ contentType: "text/javascript", body: "export const Window = {};" });
     if (url.pathname === "/api/state") return json({ agents: [], profiles: [], settings: settings() });
     if (url.pathname === "/api/settings/update-mirror") {
@@ -99,6 +100,21 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     t.after(() => browser.close());
     for (const lang of ["en", "zh"]) {
       const w = words[lang];
+      await t.test(lang + ": repository links use the distribution setting and retain upstream by default", async () => {
+        for (const repository of [undefined, "https://forge.example/team/tuzi-magpie"]) {
+          const ctl = { posts: [], repository }, errors = [];
+          const { page } = await open(browser, lang, ctl, errors);
+          const expected = repository || "https://github.com/yetone/magpie";
+          const repo = page.locator("#about button.github");
+          assert.equal(await repo.getAttribute("title"), expected.replace(/^https:\/\//, ""));
+          assert.equal(await page.evaluate(() => ISSUES), expected + "/issues/");
+          await showRow(page, repo);
+          await click(page, repo);
+          assert.deepEqual(ctl.posts, [["open", {url:expected}]]);
+          assert.deepEqual(errors, []);
+          await page.context().close();
+        }
+      });
       await t.test(lang + ": a mirror typed in, a bad one refused, GitHub back", async () => {
         const ctl = { posts: [] };
         const errors = [];
@@ -126,6 +142,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await row.locator("input.update-mirror-input").fill(M);
         await row.locator("input.update-mirror-input").press("Enter");
         await row.locator(".sub", { hasText: w.viaMirror }).waitFor();
+        assert.ok((await row.locator(".sub").innerText()).includes(w.checksum));
         assert.equal((await row.locator("code").innerText()).trim(), M);
         assert.deepEqual(ctl.posts, [["mirror", { mirror: "http://mirror.example/" }], ["mirror", { mirror: M }]]);
 
