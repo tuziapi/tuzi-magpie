@@ -164,6 +164,20 @@ same way.
 [`reasoning-speed.test.cjs`](../../internal/gui/tests/reasoning-speed.test.cjs)
 cover the calculation, cache round trip, translated streams and both pages.
 
+### Routing story height
+
+`holdStory` in [`plugins/routing/client.js`](../../internal/gui/assets/plugins/routing/client.js)
+keeps a live request's story as tall as the last three stories at the current
+width, then lets it shrink as the long story leaves that set. Its steps
+`ResizeObserver` coalesces width, font and height remeasurement into one
+animation frame. Clearing and restoring the observed minimum height inside
+the notification itself causes a WebKit ResizeObserver loop; the deferred
+measurement retains the same final geometry and the reader's position.
+The observer lives with the Routing page, like its stage and column observers.
+`routing-story-shrinks.test.cjs`, `routing-ctx-still.test.cjs`,
+`routing-steps-cap.test.cjs` and `routing-steady.test.cjs` cover the held
+height, shrinkage, long story bounds, focus and scroll position.
+
 ### Routing purpose filter
 
 The request heading's purpose menu in [`plugins/routing/client.js`](../../internal/gui/assets/plugins/routing/client.js)

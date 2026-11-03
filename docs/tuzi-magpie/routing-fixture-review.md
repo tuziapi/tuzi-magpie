@@ -86,7 +86,7 @@ then passes. No key is replaced by a programmatic menu action. Evidence:
 `remove-keyboard-frame-baseline.log`, `remove-keyboard-frame-reach.log`.
 The final remove test passed all ten cases in each engine.
 
-### Isolated product candidate, not yet applied
+### Approved product repair and neighboring checks
 
 After the steady fixture's spring wait is corrected, WebKit exposes an
 original product ResizeObserver error. The `steps` observer in
@@ -96,9 +96,10 @@ Runtime traces show two callbacks in one notification round with the steps
 height changing from 200 to 126px, or from 200 to 64px, followed by
 `ResizeObserver loop completed with undelivered notifications.`
 
-At the main agent's request, a candidate exists **only** in the evidence
+At the main agent's request, the candidate was first isolated in the evidence
 folder, in `story-candidate-assets/plugins/routing/client.js`, with its
-reviewable diff in `story-resize-candidate.patch`. It coalesces that callback's
+reviewable diff in `story-resize-candidate.patch`. After the explicit approval
+recorded below, that exact patch was applied to the working tree. It coalesces that callback's
 layout writes into one animation frame, as the neighboring stage and column
 observers already do. All width, font/height and header recalculation remains;
 it does not discard height notifications. Routing creates this observer once
@@ -127,3 +128,21 @@ behavior with the failing acceptance check. The user explicitly approved
 candidate; it does not authorize unrelated old-page changes. The tests commit
 contains no product code. Application and neighboring regression checks are
 recorded in a subsequent separate product-fix commit.
+
+
+After application, `story-final-chromium.log` reports 15/15 Node tests
+(including two parent tests) across `routing-ctx-still`, `routing-steady`,
+`routing-steps-cap` and `routing-story-shrinks`. WebKit passes all seven
+context scenarios, steady, and steps-cap; its four story-shrinks scenarios
+fail the held-height assertions (`story-final-webkit.log`, 10 pass, 5 fail
+including the failed parent). The same four cases fail against original
+`2251ca1` assets (`story-shrinks-original-webkit.log`). These failures are
+retained and assigned for investigation; they are not waived as pre-existing.
+The approved observer-timing repair is committed independently of this
+remaining height defect: its causal error is reproduced on the original and
+removed by the patch, with unchanged final geometry. The outstanding
+story-shrinks failure still blocks full-goal acceptance. No page error or
+geometry assertion has been filtered. The next diagnostic records the story
+width key, client/outer width and retained history, without changing the
+tracked held-height logic. Browser ownership has returned to the main agent;
+this worktree starts no process until its next slot is granted.
