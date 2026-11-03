@@ -65,6 +65,16 @@ no upstream image or unconfigured replacement image is suggested.
 
 ## Constraints and failure behavior
 
+### Header sizing
+
+The header's `fitTop` in `assets/app.js` keeps the existing brand, Update and
+tab fitting order. Size notifications from the header, brand and actions are
+coalesced into one animation-frame callback, so fitting does not resize an
+observed element inside its ResizeObserver delivery. Direct fitting calls from
+navigation and font changes remain immediate. The settled geometry is unchanged;
+a size notification can take one frame to be applied. See `header-centre.test.cjs`,
+`header-zoom-fit.test.cjs` and `header-relang.test.cjs`.
+
 ### Allowance card refreshes
 
 A card refresh applies only the requested account from the API's full

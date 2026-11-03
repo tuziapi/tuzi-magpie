@@ -23487,10 +23487,7 @@ function navInSight() {
 }
 matchMedia("(max-width: 760px), (pointer: coarse) and (max-width: 1024px)").addEventListener?.("change", () => { layoutNav(); fitTop(); navInSight(); });
 
-// A narrow window has no room for the whole header: the name goes, leaving
-// the magpie, and Update becomes its arrow; narrower still, the tabs stop
-// centring and take the room between, and at the narrowest they draw in,
-// further still when they don't fit (the 560px window at 150%).
+// Narrow headers collapse the brand and Update, then compact and reposition tabs.
 function fitTop() {
   const top = $(".top"), nav = $("#nav"), brand = $(".brand"), actions = $(".actions"), st = $(".side-top");
   st?.classList.remove("tight");
@@ -23522,7 +23519,10 @@ function fitTop() {
   top.classList.add("crowded");
   if (!fits()) top.classList.add("packed");
 }
-const topFit = new ResizeObserver(fitTop);
+let topFitFrame = 0;
+const topFit = new ResizeObserver(() => {
+  if (!topFitFrame) topFitFrame = requestAnimationFrame(() => { topFitFrame = 0; fitTop(); });
+});
 for (const e of [".top", ".brand", ".actions"]) topFit.observe($(e));
 document.fonts?.ready.then(fitTop);
 // a font picked later (Settings' Font) can still be loading when it's applied

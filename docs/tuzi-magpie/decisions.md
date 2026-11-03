@@ -70,3 +70,14 @@ in tray-lazy-summary-candidate-account.md waits for the lazy account summary
 before explicit card navigation. Its five-second expiry, real wheel
 cancellation and module-failure fallback remain. The account subagent now
 owns implementation and final neighboring regression checks.
+
+
+## F14 approved header observer scheduling
+
+User explicitly approved “采用这项最小修复及已说明差异”: coalesce only topFit's
+ResizeObserver callback to the next frame, retaining direct fitting behavior.
+The stated visual difference is two shadow pixels with maximum channel delta2
+in one of32 settled screenshot pairs; all112 measured nodes match exactly.
+See header-observer-review.md for cause, actual diff, independent review and
+pending bounded checks. This does not change AC thresholds or authorize other
+historical product repairs.
