@@ -83,7 +83,19 @@ const posted = async (lifted) => {
   for (let i = 0; i < 60 && !lifted.length; i++) await new Promise((r) => setTimeout(r, 50));
   return lifted;
 };
-const scrolled = (page) => page.evaluate(() => [window.scrollY, ...[...document.querySelectorAll("*")].filter((e) => e.scrollTop > 0).map((e) => `${e.className}:${e.scrollTop}`)].join(" "));
+// A redraw replaces the editor, and pointer movement toggles its holds class.
+// Identify each scroll container by its DOM position, keeping offsets exact.
+const scrolled = (page) => page.evaluate(() => {
+  const identity = (e) => {
+    const path = [];
+    for (; e; e = e.parentElement) {
+      if (e.id) { path.unshift("#" + e.id); break; }
+      path.unshift(e.tagName + ":" + [...(e.parentElement?.children || [])].indexOf(e));
+    }
+    return path.join(">");
+  };
+  return JSON.stringify([window.scrollY, ...[...document.querySelectorAll("*")].filter((e) => e.scrollTop > 0).map((e) => [identity(e), e.scrollTop])]);
+});
 const sideways = (page) => page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
 // a reader wheels down to it, and it is the button under the pointer
 async function reach(page, go) {
