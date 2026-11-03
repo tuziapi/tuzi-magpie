@@ -1,0 +1,68 @@
+[
+  {
+    "argv": [
+      "/usr/bin/codesign",
+      "--force",
+      "--deep",
+      "--sign",
+      "-",
+      "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+      "-f",
+      "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/open",
+      "-n",
+      "-a",
+      "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app",
+      "tuzimagpie://account/connect"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/open",
+      "-a",
+      "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app",
+      "tuzimagpie://account/connect"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+      "-u",
+      "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister",
+      "-f",
+      "/Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

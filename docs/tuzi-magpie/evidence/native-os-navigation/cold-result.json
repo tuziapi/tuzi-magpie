@@ -1,0 +1,10 @@
+{
+  "stage": "warm-ready",
+  "passed": false,
+  "checks": [
+    "cold LaunchServices URL opens native Tuzi with empty disconnected account"
+  ],
+  "errors": [],
+  "nativeOrigin": "wails://localhost",
+  "at": "2026-11-03T06:23:59.071Z"
+}

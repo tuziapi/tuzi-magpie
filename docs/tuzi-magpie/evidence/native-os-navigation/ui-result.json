@@ -1,0 +1,1 @@
+{"stage":"complete","passed":true,"checks":["cold LaunchServices URL opens native Tuzi with empty disconnected account","warm LaunchServices URL returns from Providers to Tuzi in the same native process"],"errors":[],"nativeOrigin":"wails://localhost","at":"2026-11-03T06:23:59.173Z"}

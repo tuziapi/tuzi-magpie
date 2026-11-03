@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "gatewayVerified": false,
+  "checks": [
+    "cold LaunchServices URL opens native Tuzi with empty disconnected account",
+    "warm LaunchServices URL returns from Providers to Tuzi in the same native process",
+    "same owned PID; no account persisted; no account/model service calls"
+  ],
+  "errors": [],
+  "sourceApp": "/Users/syd08/Documents/tuzi-magpie-local/tuzi-magpie.app",
+  "sourceExecutableSHA256": "5ec0da2ac2e34c8ae0ab889c71e56731df0db03e799f18622623e944cec200a8",
+  "wrapper": "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app",
+  "url": "tuzimagpie://account/connect",
+  "ports": [
+    18441,
+    18443
+  ],
+  "appPID": 76822,
+  "nativeOrigin": "wails://localhost",
+  "registrationRestored": true,
+  "keptOpen": false,
+  "cleanupComplete": true
+}

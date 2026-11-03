@@ -1,0 +1,19 @@
+{
+  "appPIDs": [
+    76822
+  ],
+  "fixturePID": 76812,
+  "cleaned": true,
+  "cleanupChecks": [
+    {
+      "pid": 76822,
+      "matchedCommand": "/private/tmp/tuzi-magpie-os-evidence/native-os-02/tuzi-magpie-os-acceptance.app/Contents/MacOS/tuzi-magpie app",
+      "signal": "SIGTERM"
+    },
+    {
+      "pid": 76812,
+      "matchedCommand": "/Users/syd08/Documents/tuzi-magpie-tools/tuzi-fixture-server -addr 127.0.0.1:18441",
+      "signal": "SIGTERM"
+    }
+  ]
+}
