@@ -239,3 +239,7 @@ Next: dispatch account/frontend using README interface, capture baseline with up
 - 主代理实际审查 F03/F04 diff、正反控及完整文件日志，集成为916c903/6ae7494。两测试文件外无产品变更；原版完整失败不改写为成功。
 - 当前唯一浏览器队列交给 UI 代理（独立 Usage worktree/codex/tuzi-f02-f06），只验证F02/F06三个文件。账户代理已释放并静态准备 F05/F07/F11；网站代理静态准备F01的17文件。root静态准备 F13/F14/F16 诊断，不与浏览器队列并跑。
 - 当前原生应用/fixture均未启动，无大型Go/build队列。产品构建仍c723来源，补测试不重建。
+
+
+- Root HEAD797df8c includes reviewedF02/F06; F03/F04 nonauthor UI staticreview pending. Only closing-blockers/recovery docs currentlyrootdirty. Root external diagnostics f13-f14-f16-diag-01 first/current+baseline ended, no processes. F13real overlap andF14observercallback delta observedoriginal; F16naturalgreen unresolved.
+- Website nowowns onlybrowserqueue for F01 all17files Chromium→WebKit, after70 controlled samplingruns. Account prepared frozen-scroll-01 scripts for F05/F07/F11, UI prepared gui-menu-routing-diagnostics scripts F08/F09/F12/F15. Both awaitqueue. Rootnext-entries.json/next-run.py holds nextsinglecase controls F13/F14/F16/F10, NOTstarted. Allproductchanges stillonlyexternalproposal assets. Frozenproductc723 unchanged.

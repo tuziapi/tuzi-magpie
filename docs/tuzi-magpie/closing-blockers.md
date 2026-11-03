@@ -71,3 +71,10 @@
 - F03：已集成 `916c903`（子分支 `39ea216`）。仅 account-eye 的脱离节点采样 helper；主代理检查实际 diff、全文件日志与受控重绘/错误 CSS 日志。Chromium、WebKit 各 15/15；旧 helper 在真实 renderQuotas 重绘后均以空样式失败，候选通过，错误 display 仍失败。原完整运行的具体样本未记录 attachment，故不反推该样本已被完全诊断。详见 account-eye-detach-review.md。
 - F04：已集成 `6ae7494`（子分支 `3d3f0c2`）。仅 key-import 成功后 state 响应门控和完成边界等待；两引擎各 6/6。受控复现新 Key 存在但添加框尚未清理；删除实际成功清框代码仍超时失败。详见 key-import-completion-review.md。
 - 两项均不改变产品代码或 AC 标准，不触发 Go/CLI/原生构建重跑。其余 F01/F02/F05～F16 保持待诊断/验证状态。
+
+- F02/F06：主代理审查三文件实际 diff、diagnostic/validation-results 和正反控日志后集成 `797df8c`（子分支81646d8）。各引擎32/32。原版与冻结源WebKit弹窗均实际可见且标题Codex，整段innerText多前导换行；两滚动快照实际offset相同，仅holds类变化。隐藏/错标题及真实1px位移负控均失败。详见gui-f02-f06-review.md。
+- F13新取证：原版及冻结源en420均在anim=[]、地图328×132时复现重叠，memory tile实际宽18px，计算宽约14.39px，其右边182.828125超出相邻free左边182.203125达0.625px；CSS水平padding共18px是待验证原因。不能以等待更久解决或降低0.5px阈值。尚未采取产品修改。
+- F14新取证：原版en125%同样复现ResizeObserver错误；观察器仪器记录fitTop在actions回调内将宽119→79px，后续tools observer只是最后回调。冻结源也复现错误。仅外部证据副本准备下一帧合并候选，尚未修改产品或取得该项授权。
+- F16自然定向跑绿（两语言），但无根因结论，继续保持阻塞。静态发现show(plugins)可在更新提示先返回时选择Installed，原测试直接假定Discover；下一步用受控启动次序证实，而非把自然绿当完成。
+
+- 独立复核：UI子代理非作者只读检查F03/F04实际diff、所有控制/完整日志及真实负控资产，未发现断言削弱、门控释放缺口或产品修改；未重复运行。F02/F06由主代理非作者审查。
