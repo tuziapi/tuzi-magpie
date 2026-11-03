@@ -280,7 +280,7 @@ The displayed phrase does not itself prove a document navigation. The next
 minimal experiment therefore captures `DEBUG=pw:protocol` before that rewrite,
 instead of adding another speculative wait.
 
-Prepared, not executed: `run-side-effort-protocol-once.py` under the F01 evidence
+Prepared at that stage: `run-side-effort-protocol-once.py` under the F01 evidence
 root runs one complete Chromium side-effort file, preserving its five languages
 and two widths, with a 90-second process limit. Its external copy only relocates
 asset/helper paths; it adds no evaluate/goto wrapper, gate, delay, retry or
@@ -289,3 +289,35 @@ opened exclusively to preserve earlier evidence. Raw CDP error replies and
 context/frame events distinguish a real frame navigation from a protocol failure
 that merely receives the same rewritten message. A green run with no such error
 still would not by itself explain or close the original symptom.
+
+## Single raw CDP capture result
+
+After explicit parent allocation, `run-side-effort-protocol-once.py` ran once
+and completed in 19.28 s with OS exit 0: all five language cases passed, zero
+cancelled or skipped. The source SHA-256 remained
+`644187b8afac69ff9a36de474d47f9f71385b8a6a96e62c510a2e5cd6e1ad8a2`.
+The 90-second limit was not reached. Child PID 14288 is absent and the temporary
+HOME was removed, as recorded by `side-effort-protocol-cleanup.json`. The
+browser queue was immediately released to the parent; no extra run followed.
+
+The complete raw `side-effort-protocol-once.log` is preserved (158,581,329
+bytes). The static parser `analyze-side-effort-protocol.py` undoes Node TAP's
+comment escaping of `#` and backslashes before decoding each JSON record.
+It parsed 23,785 protocol records with zero decoding failures and wrote the
+summary, per-refresh command/reply mapping, error correlations and context
+lifecycle records beside the log.
+
+All ten explicit GET-and-render refreshes (five languages, 1100px and 420px)
+have successful protocol replies. The 21 raw `Cannot find context with
+specified id` errors all correlate to `Runtime.releaseObject` commands issued
+after explicit `Page.navigate` calls, never to the target evaluation. There
+are 15 explicit navigate commands, 15 frame-navigated and 15 contexts-cleared
+events, zero frame-requested-navigation and zero target-crashed events. Those
+object-release errors do not explain the original failed evaluation.
+
+This bounded capture therefore did not reproduce the earlier symptom. Its
+complete-file green result is recorded but does not establish a repair or
+justify closing the original context error. No browser retry, speculative
+wait, fixture gate or product change is added. The text-sampling candidate
+remains independently motivated, and the original Chromium 154/155 batch and
+unresolved evaluation error remain preserved separately.
