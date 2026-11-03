@@ -27,7 +27,7 @@ const relay = () => ({
   ],
 });
 
-function serve(lang, posts, adds = []) {
+function serve(lang, posts, adds = [], afterAdd) {
   const p = relay();
   const providers = { providers: [p], presets: [], excluded: [], gateway: { running: true, window: true } };
   const state = { agents: [], profiles: [], settings: { lang, theme: "light" } };
@@ -36,7 +36,12 @@ function serve(lang, posts, adds = []) {
     const json = (data) => route.fulfill({ json: data });
     if (url.pathname === "/boot.js") return route.fulfill({ contentType: "text/javascript", body: `window.bootPrefs = {lang:"${lang}",theme:"light",web:true};` });
     if (url.pathname === "/wails/runtime.js") return route.fulfill({ contentType: "text/javascript", body: "export const Window = {};" });
-    if (url.pathname === "/api/state") return json(state);
+    if (url.pathname === "/api/state") {
+      if (afterAdd && p.keyList.some((k) => k.id === "eeeeeeeeee")) {
+        await afterAdd.release.p;
+      }
+      return json(state);
+    }
     if (url.pathname === "/api/providers") return json(providers);
     if (url.pathname === "/api/groups") return json({ groups: [] });
     if (url.pathname === "/api/plugins") return json({ plugins: [] });
@@ -69,7 +74,7 @@ const words = {
 for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium", "webkit"])) {
   for (const lang of ["en", "zh"]) {
     const w = words[lang];
-    const open = async (t, name, adds) => {
+    const open = async (t, name, adds, afterAdd) => {
       const browser = await (engine === "webkit" ? webkit.launch() : chromium.launch({ channel: "chromium" }));
       t.after(async () => {
         if (process.env.ARTIFACT_DIR) {
@@ -85,7 +90,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
       const posts = [];
-      await page.route("**/*", serve(lang, posts, adds));
+      await page.route("**/*", serve(lang, posts, adds, afterAdd));
       await page.goto("http://magpie.test/?view=providers");
       await page.locator(".row.provider", { hasText: "Relay" }).first().click();
       await page.locator(".editor .accts .acc.add").waitFor();
@@ -156,7 +161,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
 
     test(`${engine} ${lang}: adding one key shows it is under way`, async (t) => {
       const refused = later(), taken = later();
-      const { page, errors, posts } = await open(t, "busy", [refused.p, taken.p]);
+      const afterAdd = { release: later() };
+      const { page, errors, posts } = await open(t, "busy", [refused.p, taken.p], afterAdd);
       await page.getByRole("button", { name: w.another }).click();
       const row = page.locator(".acc.adding");
       const name = row.locator(".kf input").first(), key = row.locator("input[type=password]");
@@ -184,8 +190,18 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await add.click();
       await got(posts, 2);
       assert.equal((await add.textContent()).trim(), w.adding);
+      const refreshed = page.waitForRequest((r) => new URL(r.url()).pathname === "/api/state");
       taken.done(true);
-      await page.locator('.acc[data-account-id="eeeeeeeeee"]').waitFor();
+      try {
+        await page.locator('.acc[data-account-id="eeeeeeeeee"]').waitFor();
+        // accountAction draws the new key before its state refresh finishes.
+        // That first draw is not yet the add form's completion boundary.
+        await refreshed;
+        assert.equal(await row.count(), 1);
+      } finally {
+        afterAdd.release.done();
+      }
+      await row.waitFor({ state: "detached" });
       assert.equal(await page.locator(".acc.adding").count(), 0);
       assert.deepEqual(posts.map((b) => b.key), ["sk-bad", "sk-good"]);
       assert.deepEqual(errors, []);
