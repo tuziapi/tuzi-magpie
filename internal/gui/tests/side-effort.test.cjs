@@ -16,6 +16,15 @@ const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
 const { watchSettingsReads, settingsDrawn, reach } = require("./reader.cjs");
 
+async function waitEffort(page, selector, want) {
+  await page.waitForFunction(([selector, want]) => {
+    const label = document.querySelector(selector)?.querySelector(":scope > span:not([class])");
+    if (!label || label.textContent !== want) return false;
+    const box = label.getBoundingClientRect(), style = getComputedStyle(label);
+    return box.width > 0 && box.height > 0 && style.visibility === "visible";
+  }, [selector, want]);
+}
+
 const assets = path.resolve(__dirname, "../assets");
 const choices = [
   { id: "antigravity", name: "Antigravity", icon: "antigravity", small: "gemini-3-flash", own: true, models: [
@@ -105,7 +114,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
               wide: document.documentElement.scrollWidth - document.documentElement.clientWidth, tag: c.tagName, native: !!c.closest(".row").querySelector("select") };
           });
           assert(fit.inside && fit.beside && fit.wide <= 0 && !fit.native, `${row.name} ${width}: ${JSON.stringify(fit)}`);
-          assert.equal(await chip.innerText(), w.dflt, `${row.name}: nothing picked reads Default`);
+          const label = chip.locator(":scope > span:not([class])");
+          assert(await label.isVisible(), "the effort choice label is visible");
+          assert.equal(await label.textContent(), w.dflt, `${row.name}: nothing picked reads Default`);
           if (process.env.ARTIFACT_DIR) {
             await fs.mkdir(process.env.ARTIFACT_DIR, { recursive: true });
             await chip.locator("xpath=ancestor::div[contains(@class,'row')][1]").screenshot({ path: path.join(process.env.ARTIFACT_DIR, `${engine}-${lang}-${width}-${row.key}.png`) });
@@ -127,7 +138,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           assert(mb.x >= 0 && mb.x + mb.width <= width + 1, `menu in the window at ${width}: ${JSON.stringify(mb)}`);
           // a level picked is saved and shown
           await press(menu.locator(".pm-item").nth(3));
-          await page.waitForFunction(([sel, k]) => document.querySelector(sel)?.innerText === k, [row.chip, await tr(st[row.levels][2])]);
+          await waitEffort(page, row.chip, await tr(st[row.levels][2]));
           assert.equal(posted.at(-1)[row.key], st[row.levels][2]);
           assert.equal(await page.locator(row.chip).getAttribute("aria-expanded"), "false");
           // ticked when opened again, and Default clears it
@@ -135,7 +146,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           await menu.waitFor({ state: "visible" });
           assert.equal(await menu.locator(".pm-item.on .pm-name").innerText(), await tr(st[row.levels][2]));
           await press(menu.locator(".pm-item").first());
-          await page.waitForFunction(([sel, d]) => document.querySelector(sel)?.innerText === d, [row.chip, w.dflt]);
+          await waitEffort(page, row.chip, w.dflt);
           assert.equal(posted.at(-1)[row.key], "");
           // the chip again closes its menu, Escape too, and neither saves
           const n = posted.length;
