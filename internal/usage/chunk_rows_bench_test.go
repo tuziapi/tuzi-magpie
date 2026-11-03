@@ -77,15 +77,44 @@ func BenchmarkChunkRowsPass(b *testing.B) {
 // A pass that copies its strings decodes into the buffer passes keep, not
 // a sync.Pool's, which each collection empties: after one, the pass made
 // its decode buffer again, and grew it to the largest block (#4372). What
-// it allocates is each block's strings, one copy a block.
+// it allocates is each block's strings, one copy a block. Check the retained
+// storage directly: AllocsPerRun counts process-wide runtime/GC allocations
+// too, so collecting inside its callback can fail even with the buffer kept.
+// BenchmarkChunkRowsPass continues to report the pass's allocation cost.
 func TestCopiedPassKeepsItsDecodeBuffer(t *testing.T) {
+	ReleaseScratch()
+	t.Cleanup(ReleaseScratch)
 	chunks := benchChunks(t, 4, 2000)
-	allocs := testing.AllocsPerRun(5, func() {
+	pass := func() *rowBuffer {
+		t.Helper()
+		n := 0
+		visitBlocks(chunks, time.Time{}, func(r Record) {
+			if r.Input != n%2000 {
+				t.Fatalf("row %d read input %d", n, r.Input)
+			}
+			n++
+		})
+		if n != 8000 {
+			t.Fatalf("read %d rows, want 8000", n)
+		}
+		for i := range keptRows {
+			if b := keptRows[i].Load(); b != nil {
+				return b
+			}
+		}
+		t.Fatal("the pass kept no decode buffer")
+		return nil
+	}
+	buffer := pass()
+	if len(buffer.decoded) == 0 {
+		t.Fatal("the copied pass did not keep its decoded bytes")
+	}
+	first := &buffer.decoded[0]
+	for range 5 {
 		runtime.GC()
 		runtime.GC()
-		visitBlocks(chunks, time.Time{}, func(Record) {})
-	})
-	if allocs > float64(len(chunks)) {
-		t.Fatalf("a pass after a collection made %v allocations, want %d: one for each block's strings", allocs, len(chunks))
+		if next := pass(); next != buffer || len(next.decoded) == 0 || &next.decoded[0] != first {
+			t.Fatal("a copied pass replaced its decode buffer after a collection")
+		}
 	}
 }
