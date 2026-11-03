@@ -24,7 +24,7 @@ func TestPortableSettings(t *testing.T) {
 	t.Cleanup(func() { appdir.UseExecutable("") })
 
 	exe := filepath.Join(r, "Magpie", "magpie.exe")
-	data := filepath.Join(r, "Magpie", "data")
+	data := filepath.Join(r, "Magpie", appdir.DataName)
 	if err := os.MkdirAll(data, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestPortableSettings(t *testing.T) {
 
 	// without the data folder it's the profile again
 	appdir.UseExecutable("")
-	if got, want := Path(), filepath.Join(r, "home", ".config", "magpie", "settings.json"); got != want {
+	if got, want := Path(), filepath.Join(r, "home", ".config", "tuzi-magpie", "settings.json"); got != want {
 		t.Fatalf("installed Path() = %q, want %q", got, want)
 	}
 }

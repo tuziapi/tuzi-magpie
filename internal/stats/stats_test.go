@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yetone/magpie/internal/appdir"
 	"github.com/yetone/magpie/internal/catalog"
 	"github.com/yetone/magpie/internal/provider"
 	"github.com/yetone/magpie/internal/settings"
@@ -174,7 +175,7 @@ func TestSendPartnerCounts(t *testing.T) {
 	defer func() { usage = readUsage }()
 	counts := `{"days":{"2026-09-27":{"acme":{"shown":12,"opened":2}},"2026-09-28":{"acme":{"shown":3}}}}`
 	write := func() {
-		f := filepath.Join(home, ".cache", "magpie", "partner-counts.json")
+		f := filepath.Join(appdir.Cache(), "partner-counts.json")
 		if err := os.MkdirAll(filepath.Dir(f), 0o755); err != nil {
 			t.Fatal(err)
 		}

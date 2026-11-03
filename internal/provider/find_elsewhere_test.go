@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 // A magpie run in a shell whose XDG_CONFIG_HOME moves its files says so when
@@ -16,7 +18,7 @@ func TestFindSaysFilesAreElsewhere(t *testing.T) {
 	t.Setenv("HOME", h)
 	t.Setenv("USERPROFILE", h)
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(h, ".cache"))
-	app := filepath.Join(h, ".config", "magpie")
+	app := filepath.Join(h, ".config", product.Name)
 	if err := os.MkdirAll(app, 0o700); err != nil {
 		t.Fatal(err)
 	}

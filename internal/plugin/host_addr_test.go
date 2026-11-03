@@ -20,9 +20,11 @@ func TestHostToldTheGatewayAddress(t *testing.T) {
 	sandbox(t)
 	t.Setenv("MAGPIE_ADDR", "")
 	os.Unsetenv("MAGPIE_ADDR")
-	was := proxyLookNone
-	proxyLookNone = 0
-	t.Cleanup(func() { proxyLookNone = was })
+	// Exercise address changes immediately whether this machine supplies a
+	// proxy or not; both states normally have their own polling interval.
+	wasEvery, wasNone := proxyLookEvery, proxyLookNone
+	proxyLookEvery, proxyLookNone = 0, 0
+	t.Cleanup(func() { proxyLookEvery, proxyLookNone = wasEvery, wasNone })
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
