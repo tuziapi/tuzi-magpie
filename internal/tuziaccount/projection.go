@@ -446,6 +446,9 @@ func priceDetail(v any, depth int) any {
 }
 func pricingMeta(v map[string]any) map[string]any {
 	d := map[string]any{}
+	if group, ok := v["default_effective_group"].(string); ok {
+		d["default_effective_group"] = group
+	}
 	// These are server-projected public catalog structures, keyed by visible
 	// group/model names. Personal discounts are deliberately not copied.
 	for _, k := range []string{"usable_group", "base_group_ratio", "group_ratio"} {

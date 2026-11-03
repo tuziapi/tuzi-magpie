@@ -88,3 +88,10 @@ responses, storage failure/corruption, persistent unknown writes, integer fideli
 secret projection/backup exclusion, route constraints, protocol snapshots,
 source dedupe/conflict and desktop-only access. Native desktop-to-synthetic-server
 E2E is a separate integration check; no test here proves live service availability.
+
+Provider qualification preserves ordered fallback Key groups and resolves the
+virtual default group from server catalog metadata. The Key's own model listing
+remains the access authority. Protocol metadata rejects non-string methods or
+paths, normalizes endpoint labels, and treats absent legacy details separately
+from malformed data. `testdata/endpoint-compatibility.json` is the synthetic
+reference contract copied from tuzi-switch's tests/fixtures file on 2026-11-03.

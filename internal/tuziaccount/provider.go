@@ -65,10 +65,9 @@ func (s *Service) AddProvider(ctx context.Context, in ProviderRequest) (Provider
 	snapshot := ""
 	for offset := 0; offset < len(in.Models); offset += 3 {
 		names := in.Models[offset:min(offset+3, len(in.Models))]
-		query := [][2]string{{"page", "1"}, {"page_size", "100"}, {"group", str(key["group"])}}
-		if str(key["group"]) == "auto" {
-			query = query[:2]
-		}
+		// Exact model queries return catalog metadata; the model-key listing
+		// above is the authority for access across all the key's fallback groups.
+		query := [][2]string{{"page", "1"}, {"page_size", "100"}}
 		for _, m := range names {
 			query = append(query, [2]string{"models", m})
 		}
@@ -92,9 +91,7 @@ func (s *Service) AddProvider(ctx context.Context, in ProviderRequest) (Provider
 				if m["model_name"] != name {
 					continue
 				}
-				groups := array(m["enable_groups"])
-				groupOK := str(key["group"]) == "auto" || slices.Contains(groups, any(str(key["group"]))) || slices.Contains(groups, any("all"))
-				valid = groupOK && supportsProtocol(m, in.Protocol)
+				valid = supportsKeyGroup(key, m, object(d["pricing_meta"])) && supportsProtocol(m, in.Protocol)
 			}
 			if !valid {
 				return ProviderResult{}, problem("provider_selection_not_qualified")
@@ -142,6 +139,39 @@ func (s *Service) AddProvider(ctx context.Context, in ProviderRequest) (Provider
 	return ProviderResult{providerID, existing}, nil
 }
 
+// A key can name ordered fallback groups; default is a server-resolved virtual
+// group. Empty/auto inherit permissions already enforced by its /v1/models.
+func supportsKeyGroup(key, model, meta map[string]any) bool {
+	groups := array(model["enable_groups"])
+	if slices.Contains(groups, any("all")) {
+		return true
+	}
+	selection := strings.TrimSpace(str(key["group"]))
+	if selection == "" {
+		return len(groups) > 0
+	}
+	for _, group := range strings.Split(selection, ",") {
+		group = strings.TrimSpace(group)
+		if group == "auto" {
+			return len(groups) > 0
+		}
+		if group == "default" {
+			name := str(model["model_name"])
+			resolved := str(object(object(meta["default_resolution"])[name])["effective_group"])
+			if resolved == "" {
+				resolved = str(meta["default_effective_group"])
+			}
+			if resolved != "" {
+				group = resolved
+			}
+		}
+		if group != "" && slices.Contains(groups, any(group)) {
+			return true
+		}
+	}
+	return false
+}
+
 type protocolRule struct {
 	Aliases []string `json:"aliases"`
 	Paths   []string `json:"paths"`
@@ -164,7 +194,16 @@ func supportsProtocol(m map[string]any, protocol string) bool {
 		if !slices.Contains(rule.Aliases, strings.ToLower(strings.TrimSpace(name))) {
 			continue
 		}
-		detail := object(m["endpoints"])[name]
+		endpoints := object(m["endpoints"])
+		detail := endpoints[name]
+		if detail == nil {
+			for label, value := range endpoints {
+				if strings.EqualFold(strings.TrimSpace(label), strings.TrimSpace(name)) {
+					detail = value
+					break
+				}
+			}
+		}
 		if detail == nil {
 			return true
 		}
@@ -173,14 +212,19 @@ func supportsProtocol(m map[string]any, protocol string) bool {
 		case string:
 			path = d
 		case map[string]any:
-			method := str(d["method"])
-			if method != "" && !strings.EqualFold(method, "POST") {
+			method, methodOK := d["method"].(string)
+			if d["method"] != nil && (!methodOK || strings.TrimSpace(method) != "" && !strings.EqualFold(strings.TrimSpace(method), "POST")) {
 				continue
 			}
-			path = str(d["path"])
+			var pathOK bool
+			path, pathOK = d["path"].(string)
+			if d["path"] != nil && !pathOK {
+				continue
+			}
 		default:
 			continue
 		}
+		path = strings.TrimSpace(path)
 		if path == "" || slices.Contains(rule.Paths, strings.TrimRight(path, "/")) {
 			return true
 		}

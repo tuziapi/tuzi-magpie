@@ -546,3 +546,54 @@ func TestTuziExplicitReconnectPreservesCorruptFile(t *testing.T) {
 		t.Fatal("corrupt original changed")
 	}
 }
+
+// Contract cases from the read-only tuzi-switch reference, covering standard
+// aliases, malformed metadata, conflicting paths and unknown endpoint types.
+func TestTuziEndpointCompatibilityContract(t *testing.T) {
+	b, err := os.ReadFile("testdata/endpoint-compatibility.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var cases []struct {
+		Name      string
+		Model     map[string]any
+		Protocols []string
+	}
+	if err := json.Unmarshal(b, &cases); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range cases {
+		t.Run(c.Name, func(t *testing.T) {
+			for _, protocol := range []string{"chat", "responses", "anthropic", "gemini"} {
+				want := false
+				for _, p := range c.Protocols {
+					want = want || p == protocol
+				}
+				if got := supportsProtocol(c.Model, protocol); got != want {
+					t.Errorf("%s: got %v, want %v", protocol, got, want)
+				}
+			}
+		})
+	}
+}
+
+func TestTuziKeyGroupsUseFallbackAndDefaultResolution(t *testing.T) {
+	model := map[string]any{"model_name": "fixture-1", "enable_groups": []any{"vip"}}
+	meta := pricingMeta(map[string]any{"default_effective_group": "other", "default_resolution": map[string]any{"fixture-1": map[string]any{"effective_group": "vip"}}})
+	for _, c := range []struct {
+		group string
+		want  bool
+	}{{"default", true}, {"other, vip", true}, {"vip,other", true}, {"other", false}, {"", true}, {"auto", true}} {
+		if got := supportsKeyGroup(map[string]any{"group": c.group}, model, meta); got != c.want {
+			t.Errorf("%q: got %v want %v", c.group, got, c.want)
+		}
+	}
+	meta = pricingMeta(map[string]any{"default_effective_group": "vip"})
+	if !supportsKeyGroup(map[string]any{"group": "default"}, model, meta) {
+		t.Fatal("default fallback mapping rejected")
+	}
+	model["enable_groups"] = []any{}
+	if supportsKeyGroup(map[string]any{"group": "auto"}, model, meta) {
+		t.Fatal("empty catalog group accepted")
+	}
+}

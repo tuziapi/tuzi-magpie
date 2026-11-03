@@ -66,3 +66,20 @@ with "disconnect did not cancel provider bootstrap"; restored code passed again.
 Fixed website URLs were checked against current api-contract IF-15 and PRD: the
 current coding.tu-zi.com/reseller and gaccode.com/subscriptions URLs are retained,
 not the old reference implementation's links. No background processes remain.
+
+Qualification repair (2026-11-03): protocol validation now distinguishes missing
+legacy metadata from malformed numeric/object methods and paths, and matches
+normalized endpoint labels. The reference's complete synthetic endpoint fixture
+is vendored as testdata with source attribution. Website source confirms Key
+CSV fallback groups and virtual-default pricing resolution; qualification now
+checks each selected group and server default mapping instead of comparing the
+whole CSV/default literal. Exact pricing requests omit the irrelevant group
+filter; their stable three-name batching remains unchanged. Empty/auto groups
+still require catalog groups and the model-key listing's access check.
+
+Validation: full `go test -race -tags nogui ./internal/tuziaccount -count=1
+-timeout 2m` passed. Restoring the prior supportsProtocol implementation made
+contract cases malformed_method and malformed_path fail (accepted true instead
+of false); restored fixed implementation and protocol/group tests passed again.
+No live API calls. `git diff --check` passed. The separate non-author review
+record is docs/tuzi-magpie/non-author-review-account.md.
