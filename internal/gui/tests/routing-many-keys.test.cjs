@@ -34,6 +34,26 @@ const order = pools.flatMap(([p, name, n]) => Array.from({ length: n }, (_, i) =
 const group = { id: "sol", name: "Sol", routing: "", members: pools.map(([p]) => `${p}/${M}`) };
 const providers = pools.map(([p, name, n]) => ({ id: p, name, keyList: Array.from({ length: n }, (_, i) => ({ id: `k${String(i).padStart(3, "0")}` })) }));
 
+// Like reader.wheeled, aim at the view without an inner scrolling box.
+// Recheck each time: the request list can move under a fixed pointer and
+// contain the wheel at its edge, leaving the stage short of its target.
+async function wheelView(page, dy) {
+  const at = await page.locator("#view-routing").evaluate((v) => {
+    const r = v.getBoundingClientRect();
+    const scrolls = (e) => e.scrollHeight > e.clientHeight && /auto|scroll/.test(getComputedStyle(e).overflowY);
+    for (let fy = 0.5; fy < 1; fy += 0.1) for (const fx of [0.5, 0.15, 0.85, 0.02]) for (const s of [1, -1]) {
+      const x = r.left + r.width * fx, y = r.top + r.height * (s > 0 ? fy : 1 - fy);
+      let e = document.elementFromPoint(x, y);
+      if (!e || !v.contains(e)) continue;
+      while (e !== v && !scrolls(e)) e = e.parentElement;
+      if (e === v) return { x, y };
+    }
+  });
+  assert(at, "a wheel point reaches the view without an inner scroller");
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.wheel(0, dy);
+}
+
 // a request to the group, answered by one key after another refused it,
 // or still under way at it
 function req(id, live) {
@@ -168,13 +188,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert(rows.wires >= 800, `${rows.wires} wires: each key has one, in the list or not`);
       assert.deepEqual(rows.unwired, [], "a wire ends at each key in sight");
       // scrolled to the foot, the last key is there, drawn, with its wire
-      await page.mouse.move(700, 500);
       // by the wheel, as a reader would: on until the last key is in the
       // list, then to it
       for (let k = 0; k < 80; k++) {
         const at = await page.evaluate(() => [...document.querySelectorAll("#view-routing .rt-accts > li")].find((li) => li.title === "solpool2#k299")?.getBoundingClientRect().top);
         if (at !== undefined && Math.abs(at - 400) < 150) break;
-        await page.mouse.wheel(0, at === undefined ? 3000 : Math.max(-3000, Math.min(3000, at - 400)));
+        await wheelView(page, at === undefined ? 3000 : Math.max(-3000, Math.min(3000, at - 400)));
         await page.waitForTimeout(at === undefined ? 50 : 300);
       }
       await page.waitForTimeout(300);
@@ -189,7 +208,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       for (let k = 0; k < 80; k++) {
         const f = await fold2();
         if (f && Math.abs(f.top - 300) < 150) break;
-        await page.mouse.wheel(0, !f ? -3000 : Math.max(-3000, Math.min(3000, f.top - 300)));
+        await wheelView(page, !f ? -3000 : Math.max(-3000, Math.min(3000, f.top - 300)));
         await page.waitForTimeout(!f ? 50 : 300);
       }
       await page.waitForTimeout(300);
