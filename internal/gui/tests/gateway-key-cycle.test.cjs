@@ -126,8 +126,34 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const box = await wdays.boundingBox();
       assert(box && box.width > 100 && box.x + box.width <= 500, "the days field is squeezed");
       // the app's own narrow width (the nav's labels need more below it)
-      await page.setViewportSize({ width: 560, height: 740 });
-      await page.waitForTimeout(100);
+      await page.evaluate(() => {
+        let observer, frame = 0;
+        const cleanup = () => {
+          removeEventListener("resize", resized);
+          observer?.disconnect();
+          if (frame) cancelAnimationFrame(frame);
+        };
+        const sizing = window.__headerSizing = { done: false, cleanup };
+        const resized = () => {
+          if (innerWidth !== 560) return;
+          removeEventListener("resize", resized);
+          // The app observes this header first and applies its size notification
+          // in a frame. Our following frame sees that work, without waiting for
+          // the overflow assertion itself to become true or false.
+          observer = new ResizeObserver(() => {
+            observer.disconnect();
+            frame = requestAnimationFrame(() => { frame = 0; sizing.done = true; cleanup(); });
+          });
+          observer.observe(document.querySelector(".top"));
+        };
+        addEventListener("resize", resized);
+      });
+      try {
+        await page.setViewportSize({ width: 560, height: 740 });
+        await page.waitForFunction(() => window.__headerSizing.done);
+      } finally {
+        await page.evaluate(() => { window.__headerSizing.cleanup(); delete window.__headerSizing; });
+      }
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false, "the page overflows at 560px");
       await page.setViewportSize({ width: 1000, height: 700 });
       assert.equal(sent("limit-key").length, 0, "sent before Save");
