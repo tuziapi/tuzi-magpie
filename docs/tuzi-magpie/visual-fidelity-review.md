@@ -93,7 +93,67 @@ all native OS rendering, real account/model traffic, or a complete GUI suite.
 The full suite and actual isolated native desktop acceptance remain separate
 root tasks.
 
-Root reported that two update-source wording changes have explicit user
-approval and were not yet integrated when these assets were frozen. Recapture
-Settings under the same conditions after that commit; record those authorized
-wording differences without treating this earlier snapshot as the final binary.
+The original 64-page snapshot predates the explicitly approved update-source
+wording changes. The following supplement covers those changes at the later
+integration snapshot; neither snapshot alone represents every later binary.
+
+## Settings supplement at caa1096
+
+After root integrated the approved mirror wording and repository configuration,
+Settings was recaptured from HEAD
+`caa1096f4c916d3661cdbafb778363f2401a47fd` plus its then-current asset state.
+`settings-source-manifest.json` records the full per-asset SHA256 snapshot.
+The same pinned Chromium, two languages, two themes and two viewports were used.
+
+Eight Settings General conditions and eight Settings About conditions were
+captured from both baseline and the new frozen assets. Both trees started from
+fresh matching contexts for this supplement. General's content/layout matched
+8/8, with no whole-window difference beyond the already-approved brand/entry.
+
+About used the same synthetic configured mirror on both trees so the changed
+sentence is actually visible. All eight conditions differ only in the approved
+mirror checksum sentence and its tooltip (plus product name/new entry):
+
+- `Updates are downloaded through this mirror, each checked against
+  usemagpie.ai's checksum` becomes `Updates are downloaded through this mirror,
+  each checked against the configured update feed's checksum`.
+- The tooltip similarly names the configured update feed instead of
+  `usemagpie.ai` as the update/checksum source.
+
+Controls, bounding rectangles, fonts, colors, padding and margins remain
+identical 8/8. After excluding only the approved mirror sentence rectangle,
+brand and account entry, all eight screenshots have zero differing pixels.
+The reviewer visually inspected the English wide About heatmap. All navigation
+checks passed, with zero page script errors. No settings were written.
+
+Supplement evidence is under the same `visual-compare` directory:
+`settings-{baseline,final}/`, `settings-about-{baseline,final}/`, their
+`*-summary.json`/`*-comparison.json`/`*-diff/` files, and
+`settings-about-approved-differences.json`. The General-only initial supplement
+was compared against freshly recaptured baseline General states, avoiding a
+false highlight difference caused by the earlier multi-page run's navigation
+history.
+
+## Native navigation readiness regression
+
+`internal/gui/tests/tuzi-navigation.test.cjs` reads the actual Go raw-string
+`tuziAccountNavigateJS` and runs that injected JavaScript in Node's VM with a
+real EventTarget and synthetic `show`/`magpie` callbacks. Four tests cover:
+loading waits for DOMContentLoaded and consumes its listener once; interactive
+and complete documents navigate immediately; denied `show` transitions never
+invoke account navigation/prefill. This is a lightweight behavior test, not a
+Go/native build claim.
+
+Tests passed 4/4 against root's pending `internal/gui/tuzi_navigation.go` using
+`TUZI_NAVIGATION_SOURCE` to avoid copying business code into this worktree.
+Removing the readiness conditional in an evidence-only source copy makes the
+cold-start test fail with `loading must not enter a plugin before start.js
+mounts it`; the other three still pass. Logs: `navigation-green.log` and
+`navigation-red.log` in the evidence folder. After integration the test defaults
+to the repository's own Go file and needs no source override.
+
+Static lifecycle inspection found `start.js` calls `magpie.start()` before its
+initial `load()`, while the normal `relang` call is reached after that load's
+state response. The native early `show` route was the observed bypass.
+The separate initial-account repair also guards the Tuzi `relang` hook before
+mount and while busy, so it cannot interrupt startup or a pending write.
