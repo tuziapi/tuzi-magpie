@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/update"
 )
 
@@ -21,9 +22,9 @@ import (
 func TestRestartBySelfComesBackQuietly(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", home)
-	mark := filepath.Join(home, "magpie", quietRestartFile)
+	mark := filepath.Join(home, product.Name, quietRestartFile)
 
-	exe := filepath.Join(t.TempDir(), "magpie")
+	exe := filepath.Join(t.TempDir(), product.Name)
 	os.WriteFile(exe, []byte("old"), 0o755)
 	self, _ := os.Stat(exe)
 	os.WriteFile(exe, []byte("newer"), 0o755) // in already: install has nothing to swap

@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
@@ -19,14 +20,14 @@ import (
 // of each family), each built whole with its names and levels, for each
 // provider on every poll. What the row says is the same.
 func TestProviderInfoReadsTheListOnce(t *testing.T) {
-	h := sandboxHome(t)
+	sandboxHome(t)
 	var b strings.Builder
 	b.WriteString(`{"relayco": {"models": {`)
 	for i := range 2000 {
 		fmt.Fprintf(&b, `"m-%d": {"id":"m-%d","name":"M %d"},`, i, i, i)
 	}
 	b.WriteString(`"x": {"id":"x"}}}}`)
-	os.MkdirAll(h+"/.cache/magpie", 0o755)
+	os.MkdirAll(filepath.Dir(catalog.CachePath()), 0o755)
 	if err := os.WriteFile(catalog.CachePath(), []byte(b.String()), 0o644); err != nil {
 		t.Fatal(err)
 	}

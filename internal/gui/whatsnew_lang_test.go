@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/update"
 )
 
@@ -37,7 +38,7 @@ func TestAskedLang(t *testing.T) {
 func TestWhatsNewInPageLang(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", home)
-	dir := filepath.Join(home, "magpie")
+	dir := filepath.Join(home, product.Name)
 	os.MkdirAll(dir, 0o755)
 	os.WriteFile(filepath.Join(dir, lastRunFile), []byte("0.1.603\n"), 0o644)
 	var mu sync.Mutex
@@ -119,7 +120,7 @@ func TestUpdateNotesInPageLang(t *testing.T) {
 func TestWhatsNewAsksAgainForTranslation(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", home)
-	dir := filepath.Join(home, "magpie")
+	dir := filepath.Join(home, product.Name)
 	os.MkdirAll(dir, 0o755)
 	os.WriteFile(filepath.Join(dir, lastRunFile), []byte("0.1.603\n"), 0o644)
 	var mu sync.Mutex

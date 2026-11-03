@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 // magpie web added to an iPhone's home screen opened in Safari, with its
@@ -99,7 +101,7 @@ func TestWebAppAddsToHomeScreen(t *testing.T) {
 	}
 	var raw map[string]any
 	json.Unmarshal(rec.Body.Bytes(), &raw)
-	if raw["name"] != "magpie" || raw["display"] != "standalone" || m.StartURL == "" {
+	if raw["name"] != product.Name || raw["display"] != "standalone" || m.StartURL == "" {
 		t.Errorf("manifest: name %v, display %v, start_url %q", raw["name"], raw["display"], m.StartURL)
 	}
 	big := false

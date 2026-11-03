@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/update"
 )
 
@@ -20,6 +21,9 @@ import (
 // offer is the default. The site's list is magpie-releases' shape, with
 // 0.1.1407 never released and each note's Install section.
 func TestWhatsNewBackRanges(t *testing.T) {
+	wasRepository := product.Repository
+	product.Repository = "https://forge.example/team/tuzi-magpie"
+	t.Cleanup(func() { product.Repository = wasRepository })
 	home := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", home)
 	var list []update.Note

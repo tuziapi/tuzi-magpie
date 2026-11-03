@@ -47,6 +47,11 @@ func proxyCheckRig(t *testing.T, exit ...string) (client *http.Client, proxyURL 
 		if addr == "trace.example.invalid:80" {
 			addr = direct.Listener.Addr().String()
 		}
+		// A machine's system proxy is not part of this fixture. Even a
+		// routing regression must stay on the two synthetic listeners.
+		if addr != direct.Listener.Addr().String() && addr != proxy.Listener.Addr().String() {
+			return nil, fmt.Errorf("proxy fixture refused a non-fixture destination: %s", addr)
+		}
 		return dial(ctx, network, addr)
 	}
 	tr := netproxy.Dispatch(base)

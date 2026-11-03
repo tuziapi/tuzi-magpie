@@ -3,6 +3,8 @@ package gui
 import (
 	"encoding/json"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -66,6 +68,15 @@ func (h askingHost) AskQuit() { h.asked <- struct{}{} }
 
 // The question names the agents magpie is in, and only those.
 func TestQuitListsWiredAgents(t *testing.T) {
+	sandboxHome(t)
+	// Only explicitly adopted agents in this distribution's own state
+	// count as connected, even when another Magpie shares the protocol.
+	if err := os.MkdirAll(settings.Dir(), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(settings.Dir(), "stash.json"), []byte(`{"codex.connect.was":"{}","hermes.connect.was":"{}"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	yes := func() bool { return true }
 	got := wiredAgents([]*agent.Agent{
 		{ID: "codex", Name: "Codex", Icon: "openai", Joined: yes},

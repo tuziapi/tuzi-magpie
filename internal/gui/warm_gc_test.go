@@ -1,7 +1,10 @@
 package gui
 
 import (
+	"context"
 	"math"
+	"os"
+	"os/exec"
 	"runtime"
 	"runtime/debug"
 	"testing"
@@ -194,10 +197,28 @@ func TestSteadyGCKeepsTheUsersGOGC(t *testing.T) {
 }
 
 // TestSteadyGCRetunesAfterACollection: from the start GOGC is half, each
-// collection sets it for the heap it left (a test's heap is under the
-// room: Go's 100), a read under a tight GC still sets its tenth, and after
-// the read the next collection sets it for the heap again.
+// collection sets it for the heap it left (an isolated process keeps
+// the live heap under the room: Go's 100), a read under a tight GC still
+// sets its tenth, and after the read the next collection sets it again.
 func TestSteadyGCRetunesAfterACollection(t *testing.T) {
+	// Other GUI tests intentionally keep large model/history caches alive.
+	// The retuning assertions need a small real heap, so run this test in
+	// its own process instead of assuming the entire suite stays <32 MiB.
+	const child = "TUZI_MAGPIE_TEST_STEADY_GC"
+	if os.Getenv(child) != "1" {
+		self, err := os.Executable()
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		cmd := exec.CommandContext(ctx, self, "-test.run=^TestSteadyGCRetunesAfterACollection$", "-test.count=1")
+		cmd.Env = append(os.Environ(), child+"=1")
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("isolated steady GC: %v\n%s", err, out)
+		}
+		return
+	}
 	steadyOff(t)
 	t.Setenv("GOGC", "")
 	debug.SetGCPercent(100)

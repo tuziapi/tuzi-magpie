@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 // The window's advice about a copied `magpie` command is a bare Lstat — no
@@ -32,7 +34,7 @@ func TestCLIBehindIsLstatOnlyAndDismissible(t *testing.T) {
 
 	// a copy: the window says so without running anything (nothing here is
 	// executable — a binary would have to be run to report a version)
-	cli := filepath.Join(bin, "magpie")
+	cli := filepath.Join(bin, product.Name)
 	if err := os.WriteFile(cli, []byte("not executable"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +56,7 @@ func TestCLIBehindIsLstatOnlyAndDismissible(t *testing.T) {
 	if got := cliBehind(); got != "" {
 		t.Fatalf("cliBehind = %q after dismiss, want empty", got)
 	}
-	b, err := os.ReadFile(filepath.Join(home, "magpie", cliQuietFile))
+	b, err := os.ReadFile(filepath.Join(home, product.Name, cliQuietFile))
 	if err != nil || string(b) != Version+"\n" {
 		t.Fatalf("dismiss file = %q, %v; want this version, so the next one asks again", b, err)
 	}
@@ -77,7 +79,7 @@ func TestCLIBehindIsLstatOnlyAndDismissible(t *testing.T) {
 
 	// a link, not a copy: quiet even undismissed
 	os.Remove(cli)
-	if err := os.Symlink("/Applications/magpie.app/Contents/MacOS/magpie", cli); err != nil {
+	if err := os.Symlink("/Applications/tuzi-magpie.app/Contents/MacOS/tuzi-magpie", cli); err != nil {
 		t.Fatal(err)
 	}
 	cliBehindOnce = new(sync.Once)

@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/update"
 )
 
@@ -14,6 +15,9 @@ import (
 // and the update feed's newest without notes) is told apart from releases
 // that have none, and the page gets the release page to read them on.
 func TestWhatsNewTellsFailureFromNone(t *testing.T) {
+	wasRepository := product.Repository
+	product.Repository = "https://forge.example/team/tuzi-magpie"
+	t.Cleanup(func() { product.Repository = wasRepository })
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	down := true
 	notes := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +41,7 @@ func TestWhatsNewTellsFailureFromNone(t *testing.T) {
 	n := &whatsNew{}
 
 	j := n.get(context.Background(), true, "en")
-	if j.Error == "" || len(j.Releases) != 0 || j.URL != "https://github.com/yetone/magpie-releases/releases/tag/v0.1.737" {
+	if j.Error == "" || len(j.Releases) != 0 || j.URL != "https://forge.example/team/tuzi-magpie/releases/tag/v0.1.737" {
 		t.Fatalf("site failing: %+v", j)
 	}
 	// asked again once the site answers: no notes, and no error

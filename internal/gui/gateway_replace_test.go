@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // resetSkew forgets what the tests' fakes left of another magpie seen
@@ -68,7 +69,7 @@ func startFakeMagpie(t *testing.T, addr, v, serves string) (ended chan struct{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	name := "magpie"
+	name := product.Name
 	if runtime.GOOS == "windows" {
 		name += ".exe"
 	}

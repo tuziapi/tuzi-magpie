@@ -20,6 +20,11 @@ Network errors keep the saved token; invalid/disabled identities are marked
 invalid. Switching or disconnecting advances the generation and cancels old
 requests; every eventual reply and Provider save rechecks that generation.
 
+The Tuzi manifest scripts load after `kernel.js` and before `app.js`, as
+other built-in clients do. `integration.js` declares lazy shell callbacks;
+they use the app helpers only when invoked after startup, so declaration
+does not require those helpers to exist yet.
+
 ## Storage and mutations
 
 The dedicated `appdir.Config()/account-private/account.json` is separate from

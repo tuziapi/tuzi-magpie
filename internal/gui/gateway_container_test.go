@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/settings"
 )
 
@@ -87,7 +88,7 @@ func TestGatewayHeldByAContainer(t *testing.T) {
 	}
 
 	// a magpie of this computer's on the port: its port is set there
-	local, localEnded := start("magpie")
+	local, localEnded := start(product.Name)
 	if _, err := setPort(freePort(t)); err == nil || settings.Load().Port != from {
 		t.Fatalf("moved past a magpie of this computer's: %v", err)
 	}

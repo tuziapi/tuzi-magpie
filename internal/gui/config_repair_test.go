@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 // YouWhat on Discord: ~/.config wasn't the user's (sudo had made it), so
@@ -63,8 +65,8 @@ func TestBlockedConfigIsRepairedInOneClick(t *testing.T) {
 	if code, body := call("POST", "/api/provider/save", add); code != 200 {
 		t.Fatalf("save after repair: %d %s", code, body)
 	}
-	if _, err := os.Stat(filepath.Join(dotConfig, "magpie", "providers.json")); err != nil {
-		t.Fatalf("the provider isn't in ~/.config/magpie, where every reader looks: %v", err)
+	if _, err := os.Stat(filepath.Join(dotConfig, product.Name, "providers.json")); err != nil {
+		t.Fatalf("the provider isn't in ~/.config/tuzi-magpie, where every reader looks: %v", err)
 	}
 	_, body = call("GET", "/api/state", "")
 	s.ConfigBlocked = ""
@@ -106,12 +108,12 @@ func TestRepairOfAnotherUsersFolderAsksAnAdmin(t *testing.T) {
 	if len(scripts) != 1 || strings.Contains(scripts[0], "-R") || !strings.Contains(scripts[0], "'"+dotConfig+"'") {
 		t.Fatalf("scripts = %q; want one chown of %s alone, not -R over other apps' folders", scripts, dotConfig)
 	}
-	if _, err := os.Stat(filepath.Join(dotConfig, "magpie")); err != nil {
+	if _, err := os.Stat(filepath.Join(dotConfig, product.Name)); err != nil {
 		t.Fatalf("magpie's folder not made after repair: %v", err)
 	}
 
 	// magpie's own folder taken: given back whole
-	own := filepath.Join(dotConfig, "magpie")
+	own := filepath.Join(dotConfig, product.Name)
 	os.Chmod(own, 0o555)
 	t.Cleanup(func() { os.Chmod(own, 0o755) })
 	scripts = nil
