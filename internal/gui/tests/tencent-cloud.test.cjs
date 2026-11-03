@@ -178,7 +178,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.deepEqual(errors, []);
     });
 
-    // #1620: the strip is wider than the editor and scrolls. On a Mac the
+    // #1620: when the strip is wider than the editor and scrolls, on a Mac the
     // system's overlay bar showed over the options' lower half for a moment
     // after each scroll, and a click there went to the bar: the strip paged
     // sideways and nothing was picked (WebKit missed 39 of these 50 clicks).
@@ -192,6 +192,11 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await page.locator('#addSheet .tile[data-pick="Tencent Cloud"]').click();
       const strip = ed(page).locator(".segs.regions");
       await strip.waitFor();
+      // Editors now wrap their choices. Check that default first, then
+      // explicitly construct the overflowing strip for this scrollbar case.
+      assert.equal(await strip.evaluate((s) => getComputedStyle(s).flexWrap), "wrap");
+      assert.equal(await strip.evaluate((s) => s.scrollWidth - s.clientWidth), 0, "the default region choices wrap without horizontal overflow");
+      await strip.evaluate((s) => { s.style.flexWrap = "nowrap"; });
       const box = await strip.boundingBox();
       assert.ok(box.y + box.height <= 1200, `the strip is in the window (bottom at ${box.y + box.height})`);
       const most = await strip.evaluate((s) => s.scrollWidth - s.clientWidth);
