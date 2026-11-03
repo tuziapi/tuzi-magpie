@@ -228,7 +228,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.equal(await tree.locator(".jt-head", { has: page.locator(".jt-key", { hasText: /^"include"$/ }) }).locator(".jt-fold").count(), 0);
         await press(rows.nth(2).locator(".call"));
         assert.equal(await rows.nth(2).locator("code.jt").count(), 0);
-        assert.equal(await rows.nth(2).locator(".call-body").nth(1).locator("pre").innerText(), "not json");
+        const raw = rows.nth(2).locator(".call-body").nth(1).locator("pre > code");
+        assert(await raw.isVisible(), "the raw response body is visible");
+        assert.equal(await raw.textContent(), "not json");
 
         // a stream: each event's data, and the reply, fold the same way
         await press(rows.nth(1).locator(".call"));

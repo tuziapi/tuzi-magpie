@@ -51,7 +51,17 @@ function serve(lang) {
 }
 
 async function windows(card) {
-  return card.locator(".quota").evaluateAll((qs) => qs.map((q) => ({ n: q.querySelector(".quota-n")?.innerText ?? "", track: !!q.querySelector(".quota-track") })));
+  const windows = [];
+  for (const quota of await card.locator(".quota").all()) {
+    const count = quota.locator(".quota-n");
+    assert(await count.isVisible(), "the quota count is visible");
+    const labels = await count.locator(":scope > span").all();
+    assert(labels.length > 0, "the quota count has a text label");
+    for (const label of labels) assert(await label.isVisible(), "the quota text is visible");
+    // Keep the authored separator text node between count and share.
+    windows.push({ n: await count.textContent(), track: await quota.locator(".quota-track").count() > 0 });
+  }
+  return windows;
 }
 
 for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium", "webkit"])) {

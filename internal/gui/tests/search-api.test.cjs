@@ -136,7 +136,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       // SearXNG: its address
       await click(head.locator("button.search-vendor"));
       await click(page.locator(".proto-menu .pm-item", { hasText: "SearXNG" }));
-      assert.equal(await head.locator("button.search-vendor").innerText(), "SearXNG");
+      const vendorLabel = head.locator("button.search-vendor > span");
+      assert(await vendorLabel.isVisible(), "the search vendor label is visible");
+      assert.equal(await vendorLabel.textContent(), "SearXNG");
       assert.equal(await head.locator("input.search-url").isVisible(), true, "SearXNG asks for its address");
       await head.locator("input.search-url").fill("https://sx.example.com");
       await click(head.locator("button.text", { hasText: w.add }));
@@ -156,7 +158,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await click(head.locator("button.text", { hasText: w.add }));
       await page.waitForFunction(() => document.querySelector("#searchList .search-add .sub.err"));
       assert.equal(await head.locator(".sub").innerText(), w.refused);
-      assert.equal(await head.locator("button.search-vendor").innerText(), "Brave Search");
+      assert(await vendorLabel.isVisible(), "the search vendor label is visible");
+      assert.equal(await vendorLabel.textContent(), "Brave Search");
       assert.equal(await head.locator("input.search-key").inputValue(), "bad", "what was typed is kept");
       assert.deepEqual(await list.locator(".row.search-api .name").allInnerTexts(), ["1. Tavily", "2. SearXNG"]);
 

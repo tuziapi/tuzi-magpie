@@ -24,6 +24,21 @@ const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
 const { watchSettingsReads, settingsDrawn, reach, pickItem } = require("./reader.cjs");
 
+async function pickedText(row) {
+  const label = row.locator("button.searcher-pick > span:not([class])");
+  assert(await label.isVisible(), "the searcher choice label is visible");
+  return label.textContent();
+}
+
+async function waitPicked(page, want) {
+  await page.waitForFunction((want) => {
+    const label = document.querySelector("#searchList button.searcher-pick > span:not([class])");
+    if (!label || label.textContent !== want) return false;
+    const box = label.getBoundingClientRect(), style = getComputedStyle(label);
+    return box.width > 0 && box.height > 0 && style.visibility === "visible";
+  }, want);
+}
+
 const assets = path.resolve(__dirname, "../assets");
 const choices = [
   { id: "claude", name: "Claude", icon: "claude", small: "claude-haiku-4-5", models: [
@@ -185,7 +200,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await row.waitFor();
       await row.scrollIntoViewIfNeeded();
       assert.equal(await row.locator(".name").innerText(), w.name);
-      assert.equal(await row.locator("button.searcher-pick").innerText(), `${w.auto} · Claude · claude-haiku-4-5`);
+      assert.equal(await pickedText(row), `${w.auto} · Claude · claude-haiku-4-5`);
       assert((await row.locator(".sub").innerText()).startsWith(h.help), "costs and fallback apply to every search provider");
       assert.equal(await row.locator(".searcher-relays").innerText(), h.relays);
       assert((await row.locator(".sub").innerText()).includes(w.own), "the Kimi Code plan is said to search for its own models");
@@ -223,20 +238,20 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await click(page.locator("#list li:not(.group)", { hasText: "GPT Five Five" }));
       await page.waitForFunction(() => document.querySelector("#searchList button.searcher-pick")?.innerText.includes("GPT Five Five"));
       assert.equal(posted.at(-1).searcher, "openai/gpt-5.5");
-      assert.equal(await row.locator("button.searcher-pick").innerText(), "GPT Five Five · OpenAI");
+      assert.equal(await pickedText(row), "GPT Five Five · OpenAI");
 
       // a provider, by its small model
       await click(row.locator("button.searcher-pick"));
       await page.locator("#pop").waitFor({ state: "visible" });
       await click(page.locator("#list li:not(.group)", { hasText: w.small }));
-      await page.waitForFunction(() => document.querySelector("#searchList button.searcher-pick")?.innerText === "OpenAI · GPT-5 Mini Named");
+      await waitPicked(page, "OpenAI · GPT-5 Mini Named");
       assert.equal(posted.at(-1).searcher, "openai");
 
       // a small model saved by name ("<provider>/<small>", as the model row
       // below it once saved) is ticked as the small model, and shown by name
       st.searcher = "openai/gpt-5-mini";
       await page.evaluate(() => fetch("/api/settings").then((r) => r.json()).then((s) => { prefs = s; state.settings = s; renderSettings(); }));
-      await page.waitForFunction(() => document.querySelector("#searchList button.searcher-pick")?.innerText === "GPT-5 mini · OpenAI");
+      await waitPicked(page, "GPT-5 mini · OpenAI");
       await click(row.locator("button.searcher-pick"));
       await page.locator("#pop").waitFor({ state: "visible" });
       assert.deepEqual(await page.locator("#list li.cur").allInnerTexts().then((x) => x.map((s) => s.includes(w.small))), [true]);
@@ -249,7 +264,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const relay = page.locator("#list li:not(.group)", { hasText: "MyRelay" }).last();
       await relay.scrollIntoViewIfNeeded();
       await click(relay);
-      await page.waitForFunction(() => document.querySelector("#searchList button.searcher-pick")?.innerText === "MyRelay · claude-haiku-4-5");
+      await waitPicked(page, "MyRelay · claude-haiku-4-5");
       assert.equal(posted.at(-1).searcher, "relay");
       assert.equal(await row.locator(".searcher-relays").innerText(), h.relays);
 
@@ -262,14 +277,14 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const web = page.locator("#list li:not(.group)", { hasText: w.web });
       await web.scrollIntoViewIfNeeded();
       await click(web);
-      await page.waitForFunction((want) => document.querySelector("#searchList button.searcher-pick")?.innerText === want, `Kimi Code · ${w.web}`);
+      await waitPicked(page, `Kimi Code · ${w.web}`);
       assert.equal(posted.at(-1).searcher, "kimi");
 
       // back to a provider, by its small model
       await click(row.locator("button.searcher-pick"));
       await page.locator("#pop").waitFor({ state: "visible" });
       await click(page.locator("#list li:not(.group)", { hasText: w.small }));
-      await page.waitForFunction(() => document.querySelector("#searchList button.searcher-pick")?.innerText === "OpenAI · GPT-5 Mini Named");
+      await waitPicked(page, "OpenAI · GPT-5 Mini Named");
 
       // another setting saved keeps the pick
       const n = posted.length;
@@ -283,7 +298,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await page.evaluate(() => renderSettings && fetch("/api/settings").then((r) => r.json()).then((s) => { prefs = s; state.settings = s; renderSettings(); }));
       await page.waitForFunction(() => document.querySelector("#searchList .searcher-unused"));
       assert((await row.locator(".searcher-unused").innerText()).includes(w.unused));
-      assert.equal(await row.locator("button.searcher-pick").innerText(), `${w.auto} · Claude · claude-haiku-4-5`);
+      assert.equal(await pickedText(row), `${w.auto} · Claude · claude-haiku-4-5`);
       st.unused = "";
 
       assert.deepEqual(await where(), before, "the clicks moved nothing");
@@ -295,14 +310,14 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await click(row.locator("button.searcher-pick"));
       await page.locator("#pop").waitFor({ state: "visible" });
       await click(page.locator("#list li:not(.group)").filter({ hasText: new RegExp(`^${w.off}`) }));
-      await page.waitForFunction((off) => document.querySelector("#searchList button.searcher-pick")?.innerText === off, w.off);
+      await waitPicked(page, w.off);
       assert.equal(posted.at(-1).searcher, "off");
       await page.evaluate(() => savePrefs({ ...prefsKeep(prefs), noStats: true }));
       assert.equal(posted.at(-1).searcher, "off");
       await page.reload();
       await row.waitFor();
       await row.scrollIntoViewIfNeeded();
-      assert.equal(await row.locator("button.searcher-pick").innerText(), w.off);
+      assert.equal(await pickedText(row), w.off);
       assert.equal(await row.locator(".searcher-own, .searcher-unused, .searcher-relays, .searcher-left-out").count(), 0);
       assert.equal(await page.locator("#searchFirstRow").count(), 0);
       assert.equal(await row.locator(".sub").innerText(), lang === "zh"
@@ -354,7 +369,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           assert((await row.locator(".sub").innerText()).startsWith(h.help));
           assert.equal(await row.locator(".searcher-relays").innerText(), h.relays);
           assert.equal(await row.locator(".searcher-left-out").innerText(), h.left);
-          assert.equal(await row.locator("button.searcher-pick").innerText(), "Claude Haiku 4.5 · MyRelay");
+          assert.equal(await pickedText(row), "Claude Haiku 4.5 · MyRelay");
           const layout = await row.evaluate((r) => {
             const sub = r.querySelector(".sub");
             const b = r.querySelector("button.searcher-pick").getBoundingClientRect();

@@ -40,7 +40,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await page.locator('.sess-menu .pm-item[title="opencode"]').click();
       await page.locator("#sessStats .sess-show-history").click();
       await page.getByText("Historical conversation", { exact: true }).waitFor();
-      assert.equal(await page.locator("#sessAgent").innerText(), "OpenCode");
+      const agentLabel = page.locator("#sessAgent > span");
+      assert(await agentLabel.isVisible(), "the agent filter label is visible");
+      assert.equal(await agentLabel.textContent(), "OpenCode");
       assert.match(await page.locator("#sessAgent").getAttribute("class"), /\bset\b/);
       assert.equal(await page.locator("#sessRange .opt.on").innerText(), all);
     });

@@ -122,7 +122,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           const fold = box.locator(".ctx-fold");
           assert.equal(await box.locator(".ctx-card.shut").count(), 1, "folded, as the reader keeps it");
           assert.equal(await fold.getAttribute("aria-expanded"), "false");
-          assert.equal(await fold.innerText(), words[lang]);
+          const label = fold.locator(".ctx-title");
+          assert(await label.isVisible(), "the context fold label is visible");
+          assert.equal(await label.textContent(), words[lang]);
           assert.equal(await box.locator(".ctx-short").innerText(), "186K / 272K · 68%");
           assert.match(await box.locator(".ctx-crumbs").textContent(), /#112$/);
           // a bar of what fills the window, a part each (this prompt has no skills or memory)

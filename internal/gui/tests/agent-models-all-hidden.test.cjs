@@ -126,7 +126,11 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await page.waitForTimeout(150);
       assert.deepEqual(fx.posts.at(-1), []);
       assert.equal(await hint.count(), 0);
-      assert.equal(await row.locator(".ag-chip").innerText().then((s) => s.replace(/\s+/g, " ")), "DeepSeek 3");
+      const chip = row.locator(".ag-chip");
+      const name = chip.locator(":scope > span:not([class])"), count = chip.locator(":scope > .n");
+      assert(await name.isVisible(), "the provider name is visible");
+      assert(await count.isVisible(), "the model count is visible");
+      assert.equal(`${await name.textContent()} ${await count.textContent()}`, "DeepSeek 3");
       await page.keyboard.press("Escape");
       await pop.waitFor({ state: "detached" });
       await page.waitForTimeout(300);

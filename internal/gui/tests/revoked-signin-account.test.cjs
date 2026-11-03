@@ -86,7 +86,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           await t.test(`${lang} ${width}: ${c.name}`, async () => {
             const posts = [];
             const { page, errors, card } = await open(c.logins, posts);
-            const pill = await card.locator(".key").innerText();
+            const key = card.locator(".key");
+            assert(await key.isVisible(), "the account pill is visible");
+            const pill = await key.textContent();
             if (c.pill) assert.equal(pill, w.out, "every account in use revoked: the card says signed out");
             else assert.notEqual(pill, w.out, "another account still in use: the card isn't signed out");
             await card.click();
@@ -125,7 +127,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await t.test(`${lang} ${width}: an account its vendor serves has no Sign in again`, async () => {
           const posts = [];
           const { page, errors, card } = await open([{ user: "me@example.com", plan: "Plus", active: true, on: true }], posts);
-          assert.notEqual(await card.locator(".key").innerText(), w.out);
+          const key = card.locator(".key");
+          assert(await key.isVisible(), "the account pill is visible");
+          assert.notEqual(await key.textContent(), w.out);
           await card.click();
           const row = page.locator(".accts .acc", { hasText: "me@example.com" });
           await row.waitFor();

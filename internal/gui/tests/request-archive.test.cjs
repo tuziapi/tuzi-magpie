@@ -137,7 +137,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const sw = page.locator("#ledArchive .led-arch-sw");
       await sw.waitFor();
       assert.equal(await sw.getAttribute("role"), "switch");
-      assert.equal(await sw.innerText(), w.name);
+      const label = sw.locator(".led-arch-name");
+      assert(await label.isVisible(), "the archive switch label is visible");
+      assert.equal(await label.textContent(), w.name);
       assert.equal(await sw.getAttribute("aria-checked"), "false", "off unless turned on");
       assert.equal(await sw.getAttribute("title"), w.local, "no bucket: kept on this computer");
       const [swBox, sumBox, listBox] = await Promise.all([sw, page.locator("#ledSum"), page.locator("#ledWrap")].map((l) => l.boundingBox()));

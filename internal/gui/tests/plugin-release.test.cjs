@@ -92,12 +92,16 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const zed = view.locator(".pm-row").filter({ hasText: "Zed" });
         const chip = zed.locator(".pm-chip.moved");
         await chip.waitFor();
-        assert.equal(await chip.innerText(), w.serves);
+        const label = chip.locator(":scope > span:not(.dot)");
+        assert(await label.isVisible(), "the served-provider label is visible");
+        assert.equal(await label.textContent(), w.serves);
         assert.equal(await chip.locator(".dot").count(), 1);
         assert.notEqual(await chip.getAttribute("title"), null);
         assert.equal(await view.locator(".pm-row").filter({ hasText: "opencode-gemini-auth" }).locator(".pm-chip.moved").count(), 0);
         const two = view.locator(".pm-row").filter({ hasText: "magpie-magicrew-auth" }).locator(".pm-chip.moved");
-        assert.equal(await two.innerText(), w.two);
+        const twoLabel = two.locator(":scope > span:not(.dot)");
+        assert(await twoLabel.isVisible(), "the served-provider label is visible");
+        assert.equal(await twoLabel.textContent(), w.two);
         assert.equal(await two.getAttribute("title"), null, "nothing moved: no built-in to name");
         const top = await view.evaluate((e) => e.scrollTop);
 

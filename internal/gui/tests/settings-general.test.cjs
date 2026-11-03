@@ -118,7 +118,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const pick = page.locator("#langPick");
       assert.equal(await pick.evaluate((b) => b.tagName), "BUTTON");
       assert.equal(await page.locator("#setPage-general select").count(), 0, "no native <select>");
-      assert.equal(await pick.innerText(), names[lang]);
+      const label = pick.locator(":scope > span");
+      assert(await label.isVisible(), "the language label is visible");
+      assert.equal(await label.textContent(), names[lang]);
       const fits = await pick.evaluate((b) => { const r = b.closest(".row").getBoundingClientRect(), x = b.getBoundingClientRect(), s = b.querySelector("span"); return x.right <= r.right + 0.5 && x.left >= r.left && s.scrollWidth <= s.clientWidth + 1; });
       assert.ok(fits, "the language button doesn't fit its row");
       // the click moves nothing: the button stays under the pointer, even as

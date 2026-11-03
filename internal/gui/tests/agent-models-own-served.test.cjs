@@ -127,7 +127,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await entry.click();
         await pop.waitFor();
         const box = pop.locator(".am-own");
-        assert.equal(await box.innerText(), W[lang].show);
+        const label = box.locator(":scope > span");
+        assert(await label.isVisible(), "the switch label is visible");
+        assert.equal(await label.textContent(), W[lang].show);
         await box.locator(".lib-switch").click();
         await page.waitForTimeout(250);
         assert.deepEqual(fx.posts.at(-1), { id: "codex", ownHidden: true });

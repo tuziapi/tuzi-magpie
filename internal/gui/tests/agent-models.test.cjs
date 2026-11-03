@@ -92,7 +92,16 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await row.locator(".ag-link").click();
       const entry = row.locator(".ag-exp .ag-chips .ag-quiet");
       const hidden = async () => (await row.locator(".ag-exp .ag-chips .ag-hint").allInnerTexts()).join("").trim();
-      const chips = async () => (await row.locator(".ag-chip").allInnerTexts()).map((s) => s.replace(/\s+/g, " "));
+      const chips = async () => {
+        const texts = [];
+        for (const chip of await row.locator(".ag-chip").all()) {
+          const name = chip.locator(":scope > span:not([class])"), count = chip.locator(":scope > .n");
+          assert(await name.isVisible(), "the provider name is visible");
+          assert(await count.isVisible(), "the model count is visible");
+          texts.push(`${await name.textContent()} ${await count.textContent()}`);
+        }
+        return texts;
+      };
       await entry.waitFor();
       // the row has slid open (its slide is agent-expand-steady's)
       await page.waitForFunction(() => document.getAnimations().length === 0);
