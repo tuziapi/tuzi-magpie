@@ -409,21 +409,33 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.deepEqual(errors, []);
         await page.close();
       });
-      await t.test(lang + ": newest live route needs no return-to-live button", async () => {
+      await t.test(lang + ": newest live route needs no return-to-live button", async (st) => {
         const asked = [];
         const { page, errors } = await open(lang, "light", asked);
-        await page.route("**/api/gateway/trace?*", async route => {
-          await page.waitForTimeout(100);
-          await route.fulfill({json:{mine:true, seq:1, routes:[{id:123,time:ROWS[0].t,agent:"codex",model:"gpt-6-sol",provider:"relay",order:[],tries:[],done:true,status:200}],totals:{requests:1,rerouted:0,errors:0},now:new Date().toISOString()}}).catch(()=>{});
+        st.after(async () => {
+          await page.unrouteAll({ behavior: "wait" });
+          await page.close();
         });
-        await page.waitForTimeout(5500);
+        await page.route("**/api/gateway/trace?*", async route => {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await route.fulfill({json:{mine:true, seq:1, routes:[{id:123,time:ROWS[0].t,agent:"codex",model:"gpt-6-sol",provider:"relay",order:[],tries:[],done:true,status:200}],totals:{requests:1,rerouted:0,errors:0},now:new Date().toISOString()}});
+        });
+        // Routing pauses its trace poll while hidden. First let the reader
+        // see this live request, then follow it from the Requests ledger.
+        await page.locator('#nav [data-view="routing"]').click();
+        // The prior offline reply backs off for 5s; the first live trace
+        // also gives an empty Agents fixture up to 3s to finish discovery.
+        await page.locator(".rt-req .m", { hasText: "gpt-6-sol" }).waitFor({ timeout: 12000 });
+        await page.locator('#nav [data-view="usage"]').click();
+        const historyReads = [];
+        page.on("request", (req) => { if (new URL(req.url()).pathname === "/api/gateway/route") historyReads.push(req.url()); });
         const link = page.locator(".led tbody tr").first().getByTitle(lang === "en" ? "View routing" : "查看路由");
         await wheelTo(page, link);
         await link.click();
         await page.locator("#view-routing").waitFor({state:"visible"});
         assert.equal(await page.locator(".rt-log-head").getByText(lang === "en" ? "Back to live" : "回到实时", {exact:true}).count(), 0);
+        assert.deepEqual(historyReads, [], "an already live request needs no history lookup");
         assert.deepEqual(errors, []);
-        await page.close();
       });
 
       await t.test(lang + ": dark, and narrow", async () => {
