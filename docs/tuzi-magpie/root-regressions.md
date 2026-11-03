@@ -30,10 +30,13 @@ synthetic addresses without dialing anything. The unchanged production
 netproxy.go returns http://127.0.0.1:18191 in the red test. The original GUI
 proxy test also encounters this when the host has a system proxy.
 
-The user explicitly approved the behavior fix. For now checks the existing
-NO_PROXY host matcher after explicit application settings and before the
-environment/system proxy selection. Provider-specific choices remain earlier
-in Func. The regression checks the bypass and explicit settings precedence.
+The user explicitly approved the behavior fix. For preserves explicit
+application settings and fromEnv's proxy/error selection, then checks bypass
+before system fallback. The existing host matcher stays unchanged; standard
+IP/CIDR matching also prevents a bypass from falling through to the system.
+Provider-specific choices remain earlier in Func. The independent review and
+port/domain/CIDR regression evidence are recorded in
+[NO_PROXY compatibility review](no-proxy-review-account.md). The regression checks the bypass and explicit settings precedence.
 The red evidence is retained. Focused netproxy tests passed1.567s and all
 GUI TestProxyCheck cases passed3.302s under temporary HOME with pinned caches,
 GOMAXPROCS2 and -p1. Log: /Users/syd08/Documents/tuzi-magpie-evidence/no-proxy-green.log.

@@ -25,3 +25,11 @@ The user explicitly approved changing only the two existing mirror description/t
 ## Approved NO_PROXY system fallback correction (2026-11-03)
 
 The user explicitly approved fixing the inherited NO_PROXY fallback defect. When no application/provider proxy is explicitly selected, a matching NO_PROXY host now takes a direct route instead of falling through to the OS proxy. Explicit application/provider choices retain precedence. The existing host/domain matching helper is reused. TestNoProxyDoesNotFallBackToSystem reproduced the failure with synthetic cached system/environment proxies; focused netproxy and GUI proxy checks passed (no-proxy-green.log); the full suite remains queued. No original page layout or text changes.
+
+Independent review found that applying the host-only bypass before `fromEnv`
+would override HTTP(S)_PROXY's existing port and leading-dot domain rules.
+The correction keeps `fromEnv`'s nonnil/error result first and tests bypass
+only before system fallback. The original host helper is unchanged; a pure
+standard URL matcher additionally recognizes IP/CIDR bypass after an empty
+environment result. The synthetic matcher proxy is never dialed or returned.
+See [review and red/green evidence](no-proxy-review-account.md).

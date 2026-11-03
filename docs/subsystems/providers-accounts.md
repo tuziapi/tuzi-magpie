@@ -14,13 +14,22 @@ Plugin ownership of the deprecated built-in subscriptions is in
 keys and accounts per request is in [Gateway routing and fallback](gateway-routing.md).
 
 Outbound proxy selection in [`netproxy.For`](../../internal/netproxy/netproxy.go)
-keeps an explicit application proxy ahead of environment choices. Without
-that explicit choice, a host matched by the existing `NO_PROXY`/`no_proxy`
-matcher goes direct and cannot fall back to the system proxy. Provider-owned
-proxy choices still take precedence in `netproxy.Func`. A nonmatching host
-retains the environment-then-system selection. This distribution correction
-was approved explicitly; `TestNoProxyDoesNotFallBackToSystem` covers bypass,
-normal system fallback and explicit settings precedence.
+keeps an explicit application proxy ahead of environment choices, and keeps
+`fromEnv`'s nonempty proxy/error result before considering system fallback.
+The existing host-only `NO_PROXY`/`no_proxy` check applies after that result
+is empty, so it cannot override HTTP(S)_PROXY's port-aware/domain matching.
+A match then goes direct instead of falling back to the system proxy.
+When that host-only helper does not match, a standard `httpproxy.Config`
+matcher also recognizes IP/CIDR bypass entries before system fallback. Its
+synthetic proxy URLs are only matching sentinels and are never requested or
+returned as routes. The original `fromEnv` selection and ALL_PROXY matcher
+are unchanged. Provider-owned proxy choices still take precedence in
+`netproxy.Func`.
+This distribution correction was approved explicitly;
+`TestNoProxyDoesNotFallBackToSystem` covers bypass, normal system fallback
+and explicit settings precedence, and isolated subprocess cases in
+`TestNoProxyPreservesHTTPEnvironmentMatching` preserve HTTP(S) port and
+leading-dot domain behavior.
 
 ## Tuzi-family model-key presets
 

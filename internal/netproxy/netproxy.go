@@ -20,6 +20,8 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/http/httpproxy"
+
 	"github.com/yetone/magpie/internal/probelog"
 	"github.com/yetone/magpie/internal/settings"
 )
@@ -290,13 +292,14 @@ func For(u *url.URL) (*url.URL, error) {
 	default:
 		return Parse(s)
 	}
-	// An environment bypass is a direct route, not an absent proxy choice.
-	// Keep it ahead of system fallback, after the user's explicit setting.
-	if noProxy(u.Hostname(), envOf("NO_PROXY", "no_proxy")) {
-		return nil, nil
-	}
 	if p, err := fromEnv(u); p != nil || err != nil {
 		return p, err
+	}
+	// Keep the environment's proxy selection and HTTP(S) host/port
+	// matching intact. A bypass means direct, not an absent choice
+	// that can fall through to the system proxy.
+	if environmentBypass(u) {
+		return nil, nil
 	}
 	sys := System()
 	if sys.URL == "" || bypassed(u.Hostname(), sys.Bypass) {
@@ -459,6 +462,26 @@ func envOf(keys ...string) string {
 		}
 	}
 	return ""
+}
+
+// environmentBypass distinguishes an environment bypass from no proxy
+// configured, after fromEnv has kept its existing proxy/error precedence.
+// Keep ALL_PROXY's host-only rules, and recognize standard IP/CIDR entries
+// too. The synthetic proxies only make ProxyFunc distinguish a match from
+// an empty proxy configuration; no request is made to either address.
+func environmentBypass(u *url.URL) bool {
+	list := envOf("NO_PROXY", "no_proxy")
+	if noProxy(u.Hostname(), list) {
+		return true
+	}
+	if list == "" || u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	cfg := httpproxy.Config{
+		HTTPProxy: "http://no-proxy.invalid", HTTPSProxy: "http://no-proxy.invalid", NoProxy: list,
+	}
+	p, err := cfg.ProxyFunc()(u)
+	return err == nil && p == nil
 }
 
 // noProxy matches host against NO_PROXY as curl does: "*" for every host,
