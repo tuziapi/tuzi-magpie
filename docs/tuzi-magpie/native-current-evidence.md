@@ -2,8 +2,8 @@
 
 The current production artifact is built from clean 079fea7; its product
 assets match d5daff2, used by the final native fixture checks. Complete GUI
-regression finished naturally; 33 of its 36 failed files have bounded repair
-evidence, with F01(side-effort), F05 and F11 still open. This record does not
+regression finished naturally; 34 of its 36 failed files have closing
+evidence, with the separate F01(side-effort) evaluation anomaly and F11 still open. This record does not
 declare the development goal complete. Earlier checks below are historical.
 
 ## Current final product checks (2026-11-04)

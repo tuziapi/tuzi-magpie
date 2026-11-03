@@ -90,3 +90,14 @@ classified above; no additional fingerprint was found. The redacted report
 is `/Users/syd08/Documents/tuzi-magpie-evidence/final-audit/candidate-main.json`.
 This is a candidate scan while final regression repairs continue, not a final
 SHA claim. The original shallow-history and pattern-detection limits apply.
+
+## Closing source scan (2026-11-04)
+
+At clean14df3f927a8e913dda91c856bea23ff100626c5f, closing-main-04.json
+scanned6920 working text files (893 binary skipped),7290 historical text blobs
+(885 binary skipped),210 commits reachable from local refs.196 combined
+matches have49 unique fingerprints, exactly the previously classified set;
+no new fingerprint compared with final-main-c7238e1.json. Summary is
+`/Users/syd08/Documents/tuzi-magpie-evidence/final-audit/closing-main-04-summary.json`.
+Later handoff documentation only records these nonsecret counts/source hashes.
+The shallow-history, binary and pattern limits remain; no credential was used.

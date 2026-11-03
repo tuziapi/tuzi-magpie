@@ -80,7 +80,7 @@ records `registrationRestored: true`, `cleanupComplete: true`,
 - [No account/model calls](evidence/native-os-navigation/fixture-snapshot.json)
 - [Exact PID and cleanup checks](evidence/native-os-navigation/processes.json)
 
-Final production-bundle LaunchServices startup is a separate pending gate:
+Final production-bundle LaunchServices startup now passes separately in production-start-03:
 this run validates the actual OS URL path using the fixture-tagged artifact.
 No screenshot, Windows/Linux installation, production account, paid inference,
 push, PR, deployment or release is claimed.

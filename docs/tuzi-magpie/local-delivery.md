@@ -2,7 +2,7 @@
 
 Status: closing freeze. The final product source includes the approved
 F08/F14/F15 repairs. Production build, isolated startup and native window
-inspection pass. The frozen complete GUI suite finished red; three files
+inspection pass. The frozen complete GUI suite finished red; two files
 still require a supported closing conclusion (see closing-blockers.md).
 This document does not claim final acceptance. See acceptance.md
 for the current AC-01–16 matrix and recovery.md for the latest continuation.
@@ -12,7 +12,10 @@ for the current AC-01–16 matrix and recovery.md for the latest continuation.
 Development is delivered in `/Users/syd08/Documents/tuzi-magpie-local`, branch
 `codex/tuzi-magpie-local`. The original `/Users/syd08/Documents/tuzi-mapie`
 remains at2251ca1ce93a837aa31df1158fa9d58437268a71 with its existing .DS_Store.
-The final integrated SHA will be recorded after required checks and repairs.
+The code/test integration snapshot is14df3f927a8e913dda91c856bea23ff100626c5f.
+Later evidence-only commits are recorded by git HEAD and the external
+`/Users/syd08/Documents/tuzi-magpie-evidence/local-handoff-04.json` manifest.
+This is a runnable candidate handoff, not a claim that AC-13/16 passed.
 
 Website guide source is `/Users/syd08/Documents/tuzi/tuzi-api-magpie-guide`,
 branch `codex/tuzi-magpie-guide`, commit

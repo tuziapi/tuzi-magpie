@@ -2,6 +2,12 @@
 
 Baseline: **TM-LOCAL-1.0**, 2026-11-02 Asia/Shanghai. This folder records implementation, not production approval. The user's current instructions override historical authorizations in source documents.
 
+Current handoff: implementation and native macOS candidate are delivered locally;
+AC-13/16 remain blocked by two unlocated GUI anomalies. See
+[acceptance](acceptance.md), [finite blockers](closing-blockers.md),
+[local startup and rollback](local-delivery.md), and [recovery](recovery.md).
+M0–M3 implementation is integrated; quality acceptance is not declared complete.
+
 ## Sources and starting state
 
 Snapshots in `sources/` came from `/Users/syd08/Documents/tuzi-switch/docs/development/` on 2026-11-02. The account contract remains `system-token-v1`; verify the reference implementation and paired website before changing wire semantics.
