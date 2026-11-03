@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run required Go checks serially with isolated homes and durable stage logs."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,14 @@ args = parser.parse_args()
 root = Path(__file__).resolve().parents[2]
 output = args.output.resolve()
 output.mkdir(parents=True, exist_ok=True)
+source_diff = subprocess.check_output(['git', 'diff', 'HEAD', '--binary'], cwd=root)
+(output / 'source-diff.patch').write_bytes(source_diff)
+(output / 'source.json').write_text(json.dumps({
+    'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root).decode().strip(),
+    'status': subprocess.check_output(['git', 'status', '--short'], cwd=root).decode(),
+    'diff_sha256': hashlib.sha256(source_diff).hexdigest(),
+    'started_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+}, indent=2) + '\n')
 toolbin = '/Users/syd08/.local/toolchains/go1.25.12/bin'
 base = {'PATH': toolbin + ':' + os.environ.get('PATH', '/usr/bin:/bin'),
         'GOPATH': '/Users/syd08/go', 'GOMODCACHE': '/Users/syd08/go/pkg/mod',
@@ -28,7 +37,7 @@ stages = [
  ('build-linux', ['go','build','-tags','nogui','-o',str(output/'tuzi-magpie-linux-check'),'.'], {'GOOS':'linux','CGO_ENABLED':'0'}),
  ('build-windows', ['go','build','-o',str(output/'tuzi-magpie-windows-check.exe'),'.'], {'GOOS':'windows','CGO_ENABLED':'0'}),
  ('test-all', ['go','test','-tags','nogui','-count=1','-p','2','./...'], {}),
- ('race-tuzi', ['go','test','-race','-tags','nogui tuzi_fixture','-count=1','-p','2','-run','Tuzi|DesktopAccountFixture','./internal/tuziaccount','./internal/gateway','./internal/provider','./internal/gui','./internal/agent','./internal/tuzifixture'], {}),
+ ('race-tuzi', ['go','test','-race','-tags','nogui tuzi_fixture','-count=1','-p','2','-run','Tuzi|DesktopAccountFixture|NoProxyDoesNotFallBack|NoProxyPreservesHTTPEnvironmentMatching','./internal/tuziaccount','./internal/gateway','./internal/provider','./internal/gui','./internal/agent','./internal/tuzifixture','./internal/cli','./internal/netproxy'], {}),
 ]
 results=[]
 for name, command, extra in stages:
