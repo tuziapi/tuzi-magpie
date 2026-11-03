@@ -162,7 +162,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           // Unhide puts one back where it was in the list; the line clicked
           // under stays where it was on the screen as the row goes in above
           const back = p.locator('#usageAgentsHid .row.stat[data-id="curl"] .us-unhide');
-          await reader.inView(p, back);
+          // At the page's top, the shell deliberately stays at the top when
+          // a row comes in above a control. Exercise the scrolled hold here,
+          // even in a wide window where this button already fits on screen.
+          const viewBox = await p.locator("#view-usage").boundingBox();
+          await reader.wheelTo(p, back, viewBox.y + viewBox.height / 2);
+          assert(await top(p) > 0, "the reader has scrolled before testing the unhide hold");
           const lineAt = () => line.evaluate((e) => e.getBoundingClientRect().top);
           const was = await lineAt();
           await back.click();
