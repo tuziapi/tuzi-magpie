@@ -153,7 +153,7 @@ func (h *host) Import(link string) {
 			application.InvokeSync(func() {
 				if h.main != nil && !h.loading[h.main] {
 					h.openMain("")
-					h.main.ExecJS(`show("tuzi").then(ok => { if (ok) magpie.call("tuzi", "navigate"); });`)
+					h.main.ExecJS(tuziAccountNavigateJS)
 				} else {
 					h.openMain(mainURL("tuzi", h.query+"&tuziConnect=1"))
 				}
