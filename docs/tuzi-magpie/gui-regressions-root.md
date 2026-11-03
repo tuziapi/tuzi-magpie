@@ -2,9 +2,9 @@
 
 The complete initial Chromium run uses frozen source2a4eb24. Its raw TAP
 and source/file hashes are retained under
-/Users/syd08/Documents/tuzi-magpie-evidence/gui-suite. It has not completed
-or passed yet. Corrections are made in the integration worktree, separate
-from the frozen running worktree.
+/Users/syd08/Documents/tuzi-magpie-evidence/gui-suite. It completed with 172 failed TAP results across 46 files; the full inventory
+is in gui-full-suite-first-pass.md. Corrections are made in the integration
+worktree, separate from that preserved source.
 
 - agent-disconnect-preview and menu-scroll now expect the explicitly
   approved product title tuzi-magpie. All layout and interaction assertions
@@ -120,3 +120,20 @@ existing replacement-button click fallback; both engines fail with an empty
 click list where one live Theme option click is required. No product code
 changed. Evidence: `/Users/syd08/Documents/tuzi-magpie-evidence/settings-segs-01/`,
 including tested-source.json and all baseline/fixed/negative logs.
+
+## Native navigation, PWA identity and Provider credential fields
+
+The native sidebar list includes the approved Tuzi entry; the PWA manifest
+expects the approved tuzi-magpie name. All surrounding navigation, geometry
+and manifest checks remain. Vertex and Zhipu password selectors now exclude
+the existing `.proxy-credential` field, preserving the no-API-key Vertex
+requirement and the one-key Gemini requirement. The Zhipu test fills the
+actual API key, rather than matching both it and the proxy password.
+
+Evidence: `/Users/syd08/Documents/tuzi-magpie-evidence/nav-vertex-01/`.
+The complete four-file target batch passed Chromium33/33 (54.09s) and
+WebKit31/31 (48.33s). Original Vertex representative tests fail with
+`1 !== 0` / `no key to paste` in both engines. Original Zhipu representatives
+fail in both engines with the expected strict-mode error: the unqualified
+password selector matches both fields. Source metadata and the tested diff
+are preserved. No product implementation changed in this test repair.
