@@ -65,8 +65,8 @@ compressed to retain the existing core byte budget (net +87 bytes).
 Candidate assets, diffs, provenance, geometric observer and single-case controls
 are external at
 `/Users/syd08/Documents/tuzi-magpie-evidence/gui-f08-f15-candidates/`.
-They are not applied to product source and have not yet run. Single-case
-candidates and valid negatives must pass before any complete-file validation.
+They remain external to product source. The completed controls and subsequent
+complete-file checks are recorded below; no user approval is presumed.
 No new full-suite run: the frozen 1135-file red result remains the full result.
 
 ## F15 trace finding (separate unresolved failure)
@@ -105,3 +105,23 @@ pass with one frame for simultaneous endings and no further work in 12 idle
 frames; these isolate the stage listener, while actual rerun behavior is covered
 by the original many-keys cases. No product source was applied. Full affected-file
 validation and approval remain outstanding.
+
+## Complete-file and static visual closure of external candidates
+
+`four-jobs-manifest.json` fixes four jobs and their input hashes.
+F08's two complete files with the settled precondition pass Chromium20/20
+(49.579s, log SHA 9764633ede84307b79cdc6c27109fd9e6ab8d9f7c9c5f8733705c74a12108f26)
+and WebKit20/20 (48.833s, SHA
+21cd209fcffd8e9229cbbdfec6f17116fbc1741fc4c96eae7706922a45e8f1e5).
+Both have zero skipped/cancelled/todo. Removing only the external asset/reader
+path overrides makes these files exactly equal to the complete test candidates.
+
+F15's old/candidate resting folded and opened screenshots are pixel-identical at
+1200×800; their 5 and 41 node geometry/transform records match exactly. Folded
+image SHA is 09364b071d29a8cef37961b5f8f1ad6c774bc69913c84bcd2fa17d380d5b20a9;
+opened SHA c3756d9333cdb00ae5bdd2b848b2b4a37f529082e6c80a8824151aeff677cdaf.
+Date data was fixed for this synthetic visual fixture, with real timers and
+animations running. No animation was disabled. Candidate screenshots were also
+visually inspected. The four jobs cleaned their private roots; the browser queue
+was released. Product authorization, integration checks and the independent
+Chromium two-visible-row investigation remain outstanding.
