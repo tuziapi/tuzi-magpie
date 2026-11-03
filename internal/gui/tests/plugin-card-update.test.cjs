@@ -61,6 +61,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         page.on("pageerror", (e) => errors.push(e.message));
         await page.route("**/*", server(lang));
         await page.goto("http://magpie.test/?view=plugins");
+        // An update already read at startup opens Installed. This scenario
+        // exercises the Discover card, so choose that tab explicitly.
+        await page.locator("#view-plugins .pm-head .lib-tabs .opt").nth(1).click();
         const card = page.locator('#view-plugins .pm-card[data-pkg="opencode-copilot-auth"]').first();
         const up = card.locator("button.pm-act.pm-up");
         await up.waitFor();
