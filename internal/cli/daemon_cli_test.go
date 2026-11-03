@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/yetone/magpie/internal/daemon"
 	"github.com/yetone/magpie/internal/testenv"
 )
 
@@ -59,9 +60,9 @@ func TestParseDaemon(t *testing.T) {
 	}{
 		{nil, "status", daemonWeb{}, ""},
 		{[]string{"install"}, "install", daemonWeb{}, ""},
-		{[]string{"install", "--web"}, "install", daemonWeb{true, true, "127.0.0.1:3430"}, ""},
-		{[]string{"install", "--web", "--lan"}, "install", daemonWeb{true, true, "0.0.0.0:3430"}, ""},
-		{[]string{"install", "--lan"}, "install", daemonWeb{true, true, "0.0.0.0:3430"}, ""},
+		{[]string{"install", "--web"}, "install", daemonWeb{true, true, "127.0.0.1:3440"}, ""},
+		{[]string{"install", "--web", "--lan"}, "install", daemonWeb{true, true, "0.0.0.0:3440"}, ""},
+		{[]string{"install", "--lan"}, "install", daemonWeb{true, true, "0.0.0.0:3440"}, ""},
 		{[]string{"install", "--addr", "10.0.0.5:8080"}, "install", daemonWeb{true, true, "10.0.0.5:8080"}, ""},
 		{[]string{"install", "--web", "--addr=[::1]:3431", "--lan"}, "install", daemonWeb{true, true, "[::1]:3431"}, ""},
 		{[]string{"install", "--no-web"}, "install", daemonWeb{true, false, ""}, ""},
@@ -72,9 +73,9 @@ func TestParseDaemon(t *testing.T) {
 		{[]string{"install", "--bogus"}, "", daemonWeb{}, "unknown"},
 		{[]string{"web"}, "web", daemonWeb{}, ""},
 		{[]string{"web", "status"}, "web", daemonWeb{}, ""},
-		{[]string{"web", "on"}, "web", daemonWeb{true, true, "127.0.0.1:3430"}, ""},
-		{[]string{"web", "on", "--lan"}, "web", daemonWeb{true, true, "0.0.0.0:3430"}, ""},
-		{[]string{"web", "--lan"}, "web", daemonWeb{true, true, "0.0.0.0:3430"}, ""},
+		{[]string{"web", "on"}, "web", daemonWeb{true, true, "127.0.0.1:3440"}, ""},
+		{[]string{"web", "on", "--lan"}, "web", daemonWeb{true, true, "0.0.0.0:3440"}, ""},
+		{[]string{"web", "--lan"}, "web", daemonWeb{true, true, "0.0.0.0:3440"}, ""},
 		{[]string{"web", "off"}, "web", daemonWeb{true, false, ""}, ""},
 		{[]string{"web", "off", "--lan"}, "", daemonWeb{}, "served"},
 		{[]string{"web", "maybe"}, "", daemonWeb{}, "usage"},
@@ -141,11 +142,13 @@ func TestDaemonStatusPrintsPage(t *testing.T) {
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	t.Setenv("MAGPIE_ADDR", "127.0.0.1:1") // no gateway answers
 	const key = "0123456789abcdef0123456789abcdef"
-	file := filepath.Join(home, ".config", "systemd", "user", "magpie.service")
-	text := "ExecStart=\"/usr/bin/magpie\" serve \"--web=0.0.0.0:3430\"\nEnvironment=\"MAGPIE_WEB_KEY=" + key + "\"\n"
+	file := filepath.Join(home, ".config", "systemd", "user", daemon.Name+".service")
+	// Keep an explicitly installed non-default port: the distribution's
+	// 3440 default must not override a service's saved 3430 address.
+	text := "ExecStart=\"/usr/bin/tuzi-magpie\" serve \"--web=0.0.0.0:3430\"\nEnvironment=\"MAGPIE_WEB_KEY=" + key + "\"\n"
 	if runtime.GOOS == "darwin" {
-		file = filepath.Join(home, "Library", "LaunchAgents", "com.yetone.magpie.serve.plist")
-		text = "<array><string>/usr/bin/magpie</string><string>serve</string><string>--web=0.0.0.0:3430</string></array>\n<key>MAGPIE_WEB_KEY</key><string>" + key + "</string>\n"
+		file = filepath.Join(home, "Library", "LaunchAgents", daemon.Label+".plist")
+		text = "<array><string>/usr/bin/tuzi-magpie</string><string>serve</string><string>--web=0.0.0.0:3430</string></array>\n<key>MAGPIE_WEB_KEY</key><string>" + key + "</string>\n"
 	}
 	os.MkdirAll(filepath.Dir(file), 0o755)
 	if err := os.WriteFile(file, []byte(text), 0o600); err != nil {

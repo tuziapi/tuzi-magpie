@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/yetone/magpie/internal/daemon"
 	"github.com/yetone/magpie/internal/gateway"
 )
 
@@ -115,10 +116,10 @@ func TestDaemonReinstallKeepsTLS(t *testing.T) {
 	var file string
 	switch runtime.GOOS {
 	case "darwin":
-		file = filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", "com.yetone.magpie.serve.plist")
+		file = filepath.Join(os.Getenv("HOME"), "Library", "LaunchAgents", daemon.Label+".plist")
 	case "linux":
 		t.Setenv("XDG_CONFIG_HOME", filepath.Join(t.TempDir(), "config"))
-		file = filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "systemd", "user", "magpie.service")
+		file = filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "systemd", "user", daemon.Name+".service")
 	default:
 		t.Skip("no service on " + runtime.GOOS)
 	}
