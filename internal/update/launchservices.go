@@ -32,8 +32,8 @@ const forgotMarker = "launchservices-forgot-staging"
 
 // ForgetOldStaging has LaunchServices forget the apps updates before
 // #3965 left on its list: the new version unpacked as
-// .magpie-update/app/magpie.app and the old one moved aside to
-// .magpie-update/old.app, beside bundle or in magpie's cache. Their
+// .tuzi-magpie-update/app/magpie.app and the old one moved aside to
+// .tuzi-magpie-update/old.app, beside bundle or in magpie's cache. Their
 // folders are gone, but Spotlight listed each as another magpie. It runs
 // once, and nothing waits on it.
 func ForgetOldStaging(bundle string) {
@@ -44,12 +44,12 @@ func ForgetOldStaging(bundle string) {
 	if _, err := os.Stat(marker); err == nil {
 		return
 	}
-	dirs := []string{filepath.Join(filepath.Dir(bundle), ".magpie-update")}
+	dirs := []string{filepath.Join(filepath.Dir(bundle), ".tuzi-magpie-update")}
 	if cache, err := appdir.SystemCache(); err == nil {
 		dirs = append(dirs, filepath.Join(cache, "update"))
 	}
 	for _, d := range dirs {
-		unregister(filepath.Join(d, "app", "magpie.app"))
+		unregister(filepath.Join(d, "app", "tuzi-magpie.app"))
 		unregister(filepath.Join(d, "old.app"))
 	}
 	os.MkdirAll(filepath.Dir(marker), 0o755)

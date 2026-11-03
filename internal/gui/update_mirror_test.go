@@ -59,7 +59,7 @@ func TestUpdateMirrorSetting(t *testing.T) {
 		}})
 	}))
 	defer feed.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", feed.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", feed.URL)
 	if err := settings.Save(settings.Settings{UpdateMirror: mirror.URL + "/"}); err != nil {
 		t.Fatal(err)
 	}

@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	"github.com/yetone/magpie/internal/edit"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // Termux:Boot runs executable scripts in ~/.termux/boot after Android boots.
 func record() string {
 	home, _ := os.UserHomeDir()
-	return filepath.Join(home, ".termux", "boot", "magpie")
+	return filepath.Join(home, ".termux", "boot", product.Name)
 }
 
 func enabled() bool {

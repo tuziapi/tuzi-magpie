@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/provider"
 )
 
@@ -47,7 +48,7 @@ func stashImport(link string) string {
 // ImportLink is the link among a launch's arguments, if any.
 func ImportLink(args []string) string {
 	for _, a := range args {
-		if strings.HasPrefix(strings.ToLower(a), provider.Scheme+":") {
+		if product.AccountNavigation(a) || strings.HasPrefix(strings.ToLower(a), provider.Scheme+":") {
 			return a
 		}
 	}

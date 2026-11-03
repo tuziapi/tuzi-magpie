@@ -48,15 +48,17 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 const (
 	// DataName is the folder beside magpie that makes it portable and
 	// holds its files.
-	DataName = "data"
+	DataName = product.PortableDir
 	// MarkerName is a file beside magpie that makes it portable too, its
 	// files then going into a data folder made beside it.
-	MarkerName = ".portable"
+	MarkerName = product.PortableMarker
 )
 
 var (
@@ -212,13 +214,13 @@ func sameAny(dir string, dirs []string) bool {
 // with no home folder.
 func installed() string {
 	if x := os.Getenv("XDG_CONFIG_HOME"); rooted(x) {
-		return filepath.Join(x, "magpie")
+		return filepath.Join(x, product.Name)
 	}
 	h, err := Home()
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(h, ".config", "magpie")
+	return filepath.Join(h, ".config", product.Name)
 }
 
 // Beside is the folder a portable magpie run from exe keeps its data folder
@@ -264,9 +266,9 @@ func Config() string {
 		return p
 	}
 	if x := os.Getenv("XDG_CONFIG_HOME"); rooted(x) {
-		return Join(x, "magpie")
+		return Join(x, product.Name)
 	}
-	return Join(Join(mustHome(), ".config"), "magpie")
+	return Join(Join(mustHome(), ".config"), product.Name)
 }
 
 // Redirected is the folder magpie keeps its files in when it is opened
@@ -283,7 +285,7 @@ func Redirected() string {
 	if err != nil {
 		return ""
 	}
-	if def := filepath.Join(h, ".config", "magpie"); filepath.Clean(def) != filepath.Clean(Config()) {
+	if def := filepath.Join(h, ".config", product.Name); filepath.Clean(def) != filepath.Clean(Config()) {
 		return def
 	}
 	return ""
@@ -296,9 +298,9 @@ func Cache() string {
 		return Join(p, "cache")
 	}
 	if x := os.Getenv("XDG_CACHE_HOME"); rooted(x) {
-		return Join(x, "magpie")
+		return Join(x, product.Name)
 	}
-	return Join(Join(mustHome(), ".cache"), "magpie")
+	return Join(Join(mustHome(), ".cache"), product.Name)
 }
 
 // Logs is the folder the desktop app writes its log in, where each system
@@ -318,18 +320,18 @@ func logsOn(goos string) string {
 	}
 	switch goos {
 	case "darwin":
-		return filepath.Join(mustHome(), "Library", "Logs", "magpie")
+		return filepath.Join(mustHome(), "Library", "Logs", product.Name)
 	case "windows":
 		local := os.Getenv("LOCALAPPDATA")
 		if !rooted(local) {
 			local = filepath.Join(mustHome(), "AppData", "Local")
 		}
-		return filepath.Join(local, "magpie", "logs")
+		return filepath.Join(local, product.Name, "logs")
 	}
 	if x := os.Getenv("XDG_STATE_HOME"); rooted(x) {
-		return filepath.Join(x, "magpie")
+		return filepath.Join(x, product.Name)
 	}
-	return filepath.Join(mustHome(), ".local", "state", "magpie")
+	return filepath.Join(mustHome(), ".local", "state", product.Name)
 }
 
 // WebView is the folder the Windows webview (WebView2) keeps its profile
@@ -382,5 +384,5 @@ func SystemCache() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(d, "magpie"), nil
+	return filepath.Join(d, product.Name), nil
 }

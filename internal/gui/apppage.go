@@ -41,7 +41,7 @@ func appPageFile() string { return filepath.Join(settings.Dir(), "web-page.json"
 
 // appPageDefaultPort is magpie web's own port: a browser signed in to one
 // is signed in to the other where they share the key.
-const appPageDefaultPort = 3430
+const appPageDefaultPort = 3440
 
 // appPageConf is web-page.json: Mode "" (off), "local" or "lan"; Port 0
 // for appPageDefaultPort; Key the link's.

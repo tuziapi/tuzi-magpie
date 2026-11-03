@@ -179,7 +179,7 @@ func TestSharedFolderMovedDownloads(t *testing.T) {
 	if !sharedFolder(filepath.Join(h, "Downloads")) {
 		t.Error("home's Downloads not shared")
 	}
-	if movedFolder(filepath.Join(moved, "magpie")) || sharedFolder(filepath.Join(moved, "magpie")) {
+	if movedFolder(filepath.Join(moved, "tuzi-magpie")) || sharedFolder(filepath.Join(moved, "tuzi-magpie")) {
 		t.Error("a folder inside shared")
 	}
 }
@@ -211,7 +211,7 @@ func TestResolveMovedDownloadsKeepsData(t *testing.T) {
 	t.Cleanup(func() { userFolder = was })
 
 	exe := filepath.Join(moved, "magpie.exe")
-	data := filepath.Join(moved, "data")
+	data := filepath.Join(moved, "tuzi-magpie-data")
 	for _, p := range []string{exe, filepath.Join(data, "report.json")} {
 		os.MkdirAll(filepath.Dir(p), 0o755)
 		if err := os.WriteFile(p, []byte("x"), 0o644); err != nil {
@@ -226,8 +226,8 @@ func TestResolveMovedDownloadsKeepsData(t *testing.T) {
 		t.Errorf("nothing installed: %q, want %q", got, data)
 	}
 	// the setup of long ago, in the installed folder
-	os.MkdirAll(filepath.Join(h, ".config", "magpie"), 0o700)
-	os.WriteFile(filepath.Join(h, ".config", "magpie", "settings.json"), []byte("{}"), 0o600)
+	os.MkdirAll(filepath.Join(h, ".config", "tuzi-magpie"), 0o700)
+	os.WriteFile(filepath.Join(h, ".config", "tuzi-magpie", "settings.json"), []byte("{}"), 0o600)
 	if got := Resolve(exe); got != data {
 		t.Errorf("installed has old files: %q, want the data folder %q", got, data)
 	}

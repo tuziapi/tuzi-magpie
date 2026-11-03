@@ -64,7 +64,7 @@ func newFreshFeed(t *testing.T) *freshFeed {
 		}})
 	}))
 	t.Cleanup(f.srv.Close)
-	t.Setenv("MAGPIE_UPDATE_FEED", f.srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", f.srv.URL)
 	old := Version
 	Version = "0.1.10"
 	t.Cleanup(func() { Version = old })

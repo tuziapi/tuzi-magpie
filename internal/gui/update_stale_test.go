@@ -27,7 +27,7 @@ func TestStaleLatestIsNotUpToDate(t *testing.T) {
 		json.NewEncoder(w).Encode(update.Release{Version: newest.Load().(string)})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	oldV := Version
 	Version = "0.1.1402"
 	defer func() { Version = oldV }()

@@ -6,6 +6,7 @@ import (
 	"sync/atomic"
 
 	"github.com/yetone/magpie/internal/gateway"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/update"
 )
 
@@ -79,7 +80,7 @@ func skewOf(o gateway.Served) *gatewaySkew {
 // replaceable is whether this magpie takes the gateway over from o by
 // itself: this is the app, and o an older release of it.
 func replaceable(o gateway.Served, sk *gatewaySkew) bool {
-	return handoverHost.Load() && sk != nil && sk.Older && update.Released(o.Version) &&
+	return o.Distribution == product.Name && handoverHost.Load() && sk != nil && sk.Older && update.Released(o.Version) &&
 		(o.Serves == "app" || o.Serves == "tray") && o.Pid > 0 &&
 		replacedOlder.Load() < replaceMost
 }

@@ -103,7 +103,7 @@ func TestNotesBetween(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
 	got, err := NotesBetween(context.Background(), "0.1.600", "0.1.604", "")
 	if err != nil {
 		t.Fatal(err)
@@ -146,7 +146,7 @@ func TestNotesBack(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"releases": list})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
 	got, err := NotesBack(context.Background(), "0.1.612", 10, "zh")
 	if err != nil {
 		t.Fatal(err)

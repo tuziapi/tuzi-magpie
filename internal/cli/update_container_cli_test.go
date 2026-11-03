@@ -26,7 +26,7 @@ func TestUpdateInContainerSaysPullTheImage(t *testing.T) {
 			Assets: map[string]update.Asset{update.BinaryAsset(): {URL: "http://" + r.Host + "/asset"}}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	dir := t.TempDir()
 	exe := filepath.Join(dir, "magpie")
 	if err := os.WriteFile(exe, []byte("magpie"), 0o755); err != nil {

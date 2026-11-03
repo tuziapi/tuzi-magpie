@@ -30,8 +30,8 @@ func TestWhatsNewAfterUpgrade(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	old := Version
 	defer func() { Version = old }()
 	last := func() string {
@@ -109,8 +109,8 @@ func TestWhatsNewFromBefore(t *testing.T) {
 		json.NewEncoder(w).Encode(update.Release{Version: "0.1.604", Notes: "## Bug Fixes\n\n- four"})
 	}))
 	defer feed.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", feed.URL)
-	t.Setenv("MAGPIE_NOTES_FEED", feed.URL+"/404")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", feed.URL)
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", feed.URL+"/404")
 	old := Version
 	defer func() { Version = old }()
 	Version = "0.1.604"
@@ -136,8 +136,8 @@ func TestWhatsNewQuietAfterRestartToUpdate(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	oldV, oldToday := Version, today
 	defer func() { Version, today = oldV, oldToday }()
 	day := "2026-10-02"
@@ -272,8 +272,8 @@ func TestWhatsNewListsEveryReleaseUpToTheWaitingUpdate(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"releases": list})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	oldV, oldNews, oldUp := Version, news, updates
 	t.Cleanup(func() { Version, news, updates = oldV, oldNews, oldUp })
 	Version = "0.1.1398"

@@ -35,19 +35,20 @@ import (
 	"github.com/yetone/magpie/internal/appdir"
 	"github.com/yetone/magpie/internal/netproxy"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/source"
 )
 
 // Site is magpie's home; its /api/latest is the update feed.
-const Site = "https://usemagpie.ai"
+const Site = product.Website
 
-// Feed is where the newest release is described. MAGPIE_UPDATE_FEED points
+// Feed is where the newest release is described. TUZI_MAGPIE_UPDATE_FEED points
 // it elsewhere, for testing an update against a local server.
 func Feed() string {
-	if f := os.Getenv("MAGPIE_UPDATE_FEED"); f != "" {
+	if f := os.Getenv("TUZI_MAGPIE_UPDATE_FEED"); f != "" {
 		return f
 	}
-	return Site + "/api/latest"
+	return product.UpdateFeed
 }
 
 // Release is one published version.
@@ -84,6 +85,9 @@ func Latest(ctx context.Context) (*Release, error) { return LatestIn(ctx, "") }
 // InLang): the app's language, which What's new follows. On Settings'
 // Stable channel it is Stable's release (see Stable).
 func LatestIn(ctx context.Context, lang string) (*Release, error) {
+	if Feed() == "" {
+		return nil, errors.New("tuzi-magpie updates are not configured")
+	}
 	req, err := http.NewRequestWithContext(ctx, "GET", withChannel(withLang(Feed(), lang)), nil)
 	if err != nil {
 		return nil, err
@@ -200,11 +204,11 @@ func parse(v string) *semver {
 var GUI bool
 
 // AppAsset and BinaryAsset name the files this machine would install.
-func AppAsset() string { return "magpie-darwin-" + runtime.GOARCH + ".zip" }
+func AppAsset() string { return product.Name + "-darwin-" + runtime.GOARCH + ".zip" }
 func BinaryAsset() string {
-	name := "magpie-cli-" + runtime.GOOS + "-" + runtime.GOARCH
+	name := product.Name + "-cli-" + runtime.GOOS + "-" + runtime.GOARCH
 	if GUI && runtime.GOOS != "darwin" {
-		name = "magpie-" + runtime.GOOS + "-" + runtime.GOARCH
+		name = product.Name + "-" + runtime.GOOS + "-" + runtime.GOARCH
 	}
 	if runtime.GOOS == "windows" {
 		name += ".exe"
@@ -234,7 +238,7 @@ func Bundle() string {
 // which keeps it in its Cellar and has to be the one to upgrade it: a
 // binary replaced under it leaves brew thinking the old version is there.
 func Homebrew(exe string) bool {
-	return strings.Contains(filepath.ToSlash(exe), "/Cellar/magpie/")
+	return strings.Contains(filepath.ToSlash(exe), "/Cellar/"+product.Name+"/")
 }
 
 // Executable is the running binary, symlinks resolved.
@@ -248,7 +252,7 @@ func Executable() (string, error) {
 
 // Writable reports whether magpie may replace what lives in dir.
 func Writable(dir string) bool {
-	f, err := os.CreateTemp(dir, ".magpie-update-*")
+	f, err := os.CreateTemp(dir, ".tuzi-magpie-update-*")
 	if err != nil {
 		return false
 	}
@@ -284,7 +288,7 @@ func Stage(ctx context.Context, rel *Release, bundle string) (string, error) {
 	// the zip holds magpie.app, which leaves that name at once: a folder
 	// ending in .app beside the installed one is taken by LaunchServices
 	// for a second magpie, and Spotlight lists it after it is gone (#3965)
-	unzipped := filepath.Join(out, "magpie.app")
+	unzipped := filepath.Join(out, product.Name+".app")
 	app := filepath.Join(dir, stagedName)
 	if err := os.Rename(unzipped, app); err != nil {
 		os.RemoveAll(dir)
@@ -340,7 +344,7 @@ func stageDir(dir string) string {
 			return filepath.Join(cache, "update")
 		}
 	}
-	return filepath.Join(dir, ".magpie-update")
+	return filepath.Join(dir, ".tuzi-magpie-update")
 }
 
 // Install swaps the staged app in for bundle. The running copy keeps going
@@ -466,7 +470,7 @@ func bundleExecutable(bundle string) string {
 	if exe, err := Executable(); err == nil && filepath.Dir(exe) == filepath.Join(bundle, "Contents", "MacOS") {
 		return filepath.Base(exe)
 	}
-	return "magpie"
+	return product.Name
 }
 
 // retried is a shell command that runs command until it succeeds, sleeping
@@ -588,7 +592,7 @@ func stageBinaryFor(ctx context.Context, a Asset, exe string) (string, error) {
 
 // besideStage is the hidden folder beside the program an update is
 // downloaded into when no rename from the cache reaches the program.
-const besideStage = ".magpie-update"
+const besideStage = ".tuzi-magpie-update"
 
 // stageCache is magpie's cache folder; tests set it.
 var stageCache = appdir.SystemCache
@@ -650,7 +654,7 @@ func cacheStage(exe string) string {
 // renamesInto says whether a file in from can be renamed into dir: the
 // same volume, which a move that can't fail half way needs.
 func renamesInto(from, dir string) bool {
-	f, err := os.CreateTemp(from, ".magpie-update-*")
+	f, err := os.CreateTemp(from, ".tuzi-magpie-update-*")
 	if err != nil {
 		return false
 	}

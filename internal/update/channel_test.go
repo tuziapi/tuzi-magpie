@@ -44,7 +44,7 @@ func TestLatestAsksTheChannel(t *testing.T) {
 		json.NewEncoder(w).Encode(Release{Version: v})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL+"/api/latest")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL+"/api/latest")
 	ctx := context.Background()
 
 	for _, c := range []struct{ channel, lang, query, version string }{

@@ -43,7 +43,7 @@ func TestSettingsProxyRechecksAFailedUpdate(t *testing.T) {
 	if err := settings.Save(settings.Settings{Proxy: "direct"}); err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
 	old := updates
 	updates = &updater{}
 	defer func() { updates = old }()

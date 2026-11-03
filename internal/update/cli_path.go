@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // The `magpie` command in a terminal (PAMI on Discord: a way in the app to
@@ -211,9 +212,9 @@ func cliNames() []string {
 	if runtime.GOOS == "windows" {
 		// PATHEXT's order: magpie.com, the console program magpie writes
 		// beside the app (com.go), runs before magpie.exe
-		return []string{"magpie.com", "magpie.exe", "magpie.cmd", "magpie.bat"}
+		return []string{product.Name + ".com", product.Name + ".exe", product.Name + ".cmd", product.Name + ".bat"}
 	}
-	return []string{"magpie"}
+	return []string{product.Name}
 }
 
 // findCLI is the magpie a shell with PATH dirs runs, "" none.
@@ -352,7 +353,7 @@ func tildeHome(p string) string {
 // it replaces the program where it is, under its name.
 
 // shimName is the file a shim is written to.
-const shimName = "magpie.cmd"
+const shimName = product.Name + ".cmd"
 
 // shimText is the magpie.cmd that runs the program exe in its folder.
 func shimText(exe string) string {
@@ -363,7 +364,7 @@ func shimText(exe string) string {
 // needsShim says whether the program exe can't be run as `magpie` by its
 // own name.
 func needsShim(exe string) bool {
-	return !strings.EqualFold(filepath.Base(strings.ReplaceAll(exe, `\`, "/")), "magpie.exe")
+	return !strings.EqualFold(filepath.Base(strings.ReplaceAll(exe, `\`, "/")), product.Name+".exe")
 }
 
 // writeShim writes the magpie.cmd for exe beside it, when its name needs

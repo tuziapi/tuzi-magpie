@@ -22,7 +22,7 @@ func TestCLIShim(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if p != filepath.Join(dir, "magpie.cmd") {
+	if p != filepath.Join(dir, "tuzi-magpie.cmd") {
 		t.Fatalf("shim at %q", p)
 	}
 	b, err := os.ReadFile(p)
@@ -49,10 +49,10 @@ func TestCLIShim(t *testing.T) {
 
 	// magpie.exe is found by its own name: nothing written
 	dir2 := t.TempDir()
-	if p, err := writeShim(filepath.Join(dir2, "Magpie.exe")); err != nil || p != "" {
+	if p, err := writeShim(filepath.Join(dir2, "Tuzi-Magpie.exe")); err != nil || p != "" {
 		t.Fatalf("magpie.exe given a shim: %q, %v", p, err)
 	}
-	if _, err := os.Stat(filepath.Join(dir2, "magpie.cmd")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(dir2, "tuzi-magpie.cmd")); !os.IsNotExist(err) {
 		t.Fatal("magpie.cmd written beside magpie.exe")
 	}
 }

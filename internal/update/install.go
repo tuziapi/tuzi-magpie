@@ -166,7 +166,7 @@ func copyBeside(exe, to string) (string, error) {
 		return "", err
 	}
 	defer src.Close()
-	f, err := os.CreateTemp(filepath.Dir(to), ".magpie-install-*")
+	f, err := os.CreateTemp(filepath.Dir(to), ".tuzi-magpie-install-*")
 	if err != nil {
 		return "", err
 	}
@@ -187,7 +187,7 @@ func copyBeside(exe, to string) (string, error) {
 // once the installed one has said it. When to can't be started, this one
 // runs on.
 func Forward(from, to string) error {
-	marker := filepath.Join(os.TempDir(), fmt.Sprintf("magpie-installed-%d", os.Getpid()))
+	marker := filepath.Join(os.TempDir(), fmt.Sprintf("tuzi-magpie-installed-%d", os.Getpid()))
 	os.Remove(marker)
 	defer os.Remove(marker)
 	var env []string

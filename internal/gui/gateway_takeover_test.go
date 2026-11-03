@@ -35,7 +35,7 @@ func fakeOlderGateway(addr string) {
 		w.Header().Set("Content-Type", "application/json")
 		switch {
 		case version == "":
-			io.WriteString(w, `{"name":"magpie","version":"0.1.550","models":3}`)
+			io.WriteString(w, `{"name":"magpie","distribution":"tuzi-magpie","version":"0.1.550","models":3}`)
 		case r.URL.Path == "/stream":
 			streams.Add(1)
 			defer streams.Add(-1)
@@ -47,7 +47,7 @@ func fakeOlderGateway(addr string) {
 		case r.URL.Path == "/v1/magpie/concurrency":
 			fmt.Fprintf(w, `{"object":"concurrency","data":{},"requests":%d,"waiting":0,"tools":0,"active":[]}`, streams.Load())
 		default:
-			fmt.Fprintf(w, `{"name":"magpie","version":%q,"models":3,"pid":%d,"serves":%q}`, version, os.Getpid(), serves)
+			fmt.Fprintf(w, `{"name":"magpie","distribution":"tuzi-magpie","version":%q,"models":3,"pid":%d,"serves":%q}`, version, os.Getpid(), serves)
 		}
 	}))
 }
@@ -148,7 +148,7 @@ func TestGatewayFixQuitsOnlyAMagpie(t *testing.T) {
 	<-otherEnded
 
 	// an older magpie is quit, and this one serves at once
-	old, oldEnded := start("magpie")
+	old, oldEnded := start("tuzi-magpie")
 	_ = old
 	if g := providersState().Gateway; !g.Older || g.Mine {
 		t.Fatalf("not seen as older: %+v", g)

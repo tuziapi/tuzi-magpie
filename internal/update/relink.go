@@ -10,6 +10,7 @@ import (
 
 	"github.com/yetone/magpie/internal/appdir"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // StaleCLI is the path of a `magpie` command that is a copied file behind
@@ -63,7 +64,7 @@ func CopiedCLI() string {
 		}
 		bin = filepath.Join(home, ".local", "bin")
 	}
-	cli := filepath.Join(bin, "magpie")
+	cli := filepath.Join(bin, product.Name)
 	st, err := os.Lstat(cli)
 	if err != nil || !st.Mode().IsRegular() {
 		return "" // absent, the installer's link, or nothing to point at

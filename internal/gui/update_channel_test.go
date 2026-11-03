@@ -42,7 +42,7 @@ func TestUpdateChannelSwitch(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	oldV := Version
 	Version = "0.1.10"
 	defer func() { Version = oldV }()
@@ -138,7 +138,7 @@ func TestWhatsNewKeyedByChannel(t *testing.T) {
 	if got := notesKey("zh"); got != "zh|stable" {
 		t.Fatalf("stable: %q", got)
 	}
-	t.Setenv("MAGPIE_NOTES_FEED", "http://127.0.0.1:1/") // never the real one
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", "http://127.0.0.1:1/") // never the real one
 	oldV := Version
 	Version = "0.1.100"
 	defer func() { Version = oldV }()
@@ -186,7 +186,7 @@ func TestUpdateFeedBehindKeepsDownload(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	oldV := Version
 	Version = "0.1.10"
 	defer func() { Version = oldV }()

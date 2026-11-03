@@ -105,7 +105,7 @@ func TestSettleInstallsADownload(t *testing.T) {
 	if len(f.placed) != 1 || !samePath(f.placed[0], filepath.Dir(f.to)) {
 		t.Fatalf("PATH given %v, want the install folder once", f.placed)
 	}
-	left, _ := filepath.Glob(filepath.Join(filepath.Dir(f.to), ".magpie-install-*"))
+	left, _ := filepath.Glob(filepath.Join(filepath.Dir(f.to), ".tuzi-magpie-install-*"))
 	if len(left) != 0 {
 		t.Fatalf("staging files left: %v", left)
 	}

@@ -3,6 +3,7 @@ package proc
 import (
 	"context"
 	"errors"
+	"github.com/yetone/magpie/internal/product"
 	"path/filepath"
 	"strings"
 )
@@ -58,7 +59,7 @@ func IsMagpie(path string) bool {
 	n = strings.TrimSuffix(n, ".old")
 	n = strings.TrimSuffix(n, ".new")
 	n = strings.TrimSuffix(n, ".exe")
-	for _, name := range []string{"magpie", "dial"} {
+	for _, name := range []string{product.Name} {
 		if n == name || strings.HasPrefix(n, name+"-") || strings.HasPrefix(n, name+"_") {
 			return true
 		}

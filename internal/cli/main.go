@@ -29,6 +29,7 @@ import (
 	"github.com/yetone/magpie/internal/notices"
 	"github.com/yetone/magpie/internal/pluginrt"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/profile"
 	"github.com/yetone/magpie/internal/provider"
 	"github.com/yetone/magpie/internal/sessions"
@@ -430,6 +431,12 @@ func run(args []string) error {
 		}
 		gateway.Serves = "tui"
 		return runTUI()
+	}
+	if product.AccountNavigation(args[0]) {
+		if !hasGUI {
+			return errors.New("Tuzi account management is available in the desktop app")
+		}
+		return runGUI(true, args[0])
 	}
 	// a magpie:// link the system handed over (Windows, Linux): the app
 	// opens it for the user to confirm

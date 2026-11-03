@@ -33,10 +33,10 @@
         "info": {
           "0409": {
             "CompanyName": "magpie",
-            "FileDescription": "magpie",
+            "FileDescription": "tuzi-magpie",
             "LegalCopyright": "© 2026 yetone · MIT",
-            "OriginalFilename": "magpie.exe",
-            "ProductName": "magpie"
+            "OriginalFilename": "tuzi-magpie.exe",
+            "ProductName": "tuzi-magpie"
           }
         }
       }

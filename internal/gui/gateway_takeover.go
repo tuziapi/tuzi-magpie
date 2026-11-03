@@ -11,6 +11,7 @@ import (
 
 	"github.com/yetone/magpie/internal/gateway"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // The Gateway page's button (leslie_luo on Discord): with an older magpie
@@ -68,6 +69,9 @@ func takeOverGateway() gatewayFixJSON {
 		return gatewayFixJSON{OK: true}
 	}
 	if o := gateway.ServedBy(); o.Running {
+		if o.Distribution != product.Name {
+			return gatewayFixJSON{Reason: "other", Version: o.Version, Port: gateway.Port()}
+		}
 		if out := quitMagpieOnPort(o.Version); !out.OK {
 			return out
 		}

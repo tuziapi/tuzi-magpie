@@ -57,8 +57,8 @@ func TestWhatsNewBackRanges(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"releases": out})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	oldV, oldNews, oldUp := Version, news, updates
 	t.Cleanup(func() { Version, news, updates = oldV, oldNews, oldUp })
 	Version = "0.1.1410"

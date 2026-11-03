@@ -23,10 +23,11 @@ import (
 	"github.com/yetone/magpie/internal/autostart"
 	"github.com/yetone/magpie/internal/edit"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 )
 
 // Name is the service's name: magpie.service, com.yetone.magpie.serve.
-const Name = "magpie"
+const Name = product.Name
 
 // Status is what the system says of the service.
 type Status struct {

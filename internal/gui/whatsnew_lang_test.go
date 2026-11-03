@@ -49,8 +49,8 @@ func TestWhatsNewInPageLang(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]any{"releases": []update.Note{{Version: "0.1.604", Notes: notesBoth}}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	old := Version
 	defer func() { Version = old }()
 	Version = "0.1.604"
@@ -85,7 +85,7 @@ func TestUpdateNotesInPageLang(t *testing.T) {
 		json.NewEncoder(w).Encode(update.Release{Version: "0.1.605", Notes: notesBoth})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	u := &updater{state: "ready", latest: &update.Release{Version: "0.1.605", Notes: notesEn}, notesIn: "en"}
 	if j := u.jsonIn("en"); j.Notes != notesEn {
 		t.Fatalf("en: %q", j.Notes)
@@ -144,8 +144,8 @@ func TestWhatsNewAsksAgainForTranslation(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", srv.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	old, oldNow := Version, notesNow
 	defer func() { Version, notesNow = old, oldNow }()
 	now := time.Date(2026, 11, 2, 8, 0, 0, 0, time.UTC)

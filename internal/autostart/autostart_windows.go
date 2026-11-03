@@ -4,11 +4,13 @@ import (
 	"errors"
 
 	"golang.org/x/sys/windows/registry"
+
+	"github.com/yetone/magpie/internal/product"
 )
 
 const (
 	runKey = `Software\Microsoft\Windows\CurrentVersion\Run`
-	name   = "magpie"
+	name   = product.Name
 	// where Task Manager's Startup apps keeps an entry switched off: an odd
 	// first byte is off
 	approvedKey = `Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run`

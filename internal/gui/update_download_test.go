@@ -46,7 +46,7 @@ func TestUpdateDownloadWaitsForAClick(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	oldV := Version
 	Version = "0.1.10"
 	defer func() { Version = oldV }()

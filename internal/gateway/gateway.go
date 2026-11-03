@@ -39,6 +39,7 @@ import (
 	"github.com/yetone/magpie/internal/gwtool"
 	"github.com/yetone/magpie/internal/plugin"
 	"github.com/yetone/magpie/internal/pluginrt"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/provider"
 	"github.com/yetone/magpie/internal/redact"
 	"github.com/yetone/magpie/internal/settings"
@@ -47,7 +48,7 @@ import (
 
 // DefaultAddr is where the gateway listens unless Settings' port or
 // MAGPIE_ADDR says otherwise.
-const DefaultAddr = "127.0.0.1:3425"
+const DefaultAddr = product.GatewayAddr
 
 // Token is the bearer token agents are told to use. The gateway only
 // listens on loopback and accepts anything, but agents insist on one.
@@ -322,11 +323,12 @@ func Serving() (running, window bool) {
 // Served is what the magpie answering at the gateway's address says of
 // itself.
 type Served struct {
-	Running bool   // a magpie gateway answers
-	Window  bool   // its routing can be watched in its window (#110)
-	Version string // its version; "" from one that doesn't say
-	Pid     int    // its process id; 0 from one that doesn't say
-	Serves  string // how it was started: app, tray, web, serve or tui; "" from one that doesn't say
+	Distribution string // distribution identity; empty on original Magpie
+	Running      bool   // a magpie gateway answers
+	Window       bool   // its routing can be watched in its window (#110)
+	Version      string // its version; "" from one that doesn't say
+	Pid          int    // its process id; 0 from one that doesn't say
+	Serves       string // how it was started: app, tray, web, serve or tui; "" from one that doesn't say
 }
 
 // ServedBy asks the address which magpie answers there. Another magpie can
@@ -344,16 +346,17 @@ func ServedBy() Served {
 	defer res.Body.Close()
 	b, _ := io.ReadAll(io.LimitReader(res.Body, 64<<10))
 	var info struct {
-		Name    string `json:"name"`
-		Version string `json:"version"`
-		Window  bool   `json:"window"`
-		Pid     int    `json:"pid"`
-		Serves  string `json:"serves"`
+		Name         string `json:"name"`
+		Distribution string `json:"distribution"`
+		Version      string `json:"version"`
+		Window       bool   `json:"window"`
+		Pid          int    `json:"pid"`
+		Serves       string `json:"serves"`
 	}
 	if decodeJSON(b, &info) != nil || info.Name != "magpie" {
 		return Served{Running: bytes.Contains(b, []byte(`"magpie"`)), Window: bytes.Contains(b, []byte(`"window":true`))}
 	}
-	return Served{Running: true, Window: info.Window, Version: info.Version, Pid: info.Pid, Serves: info.Serves}
+	return Served{Running: true, Window: info.Window, Version: info.Version, Pid: info.Pid, Serves: info.Serves, Distribution: info.Distribution}
 }
 
 // ServedBusy is what the magpie serving the gateway has in flight, as its
@@ -1035,7 +1038,7 @@ func (s *Server) responsesOverHTTP(w http.ResponseWriter, r *http.Request) {
 var catalogSize stamped[struct{}, int]
 
 func (s *Server) info(w http.ResponseWriter, r *http.Request) {
-	out := map[string]any{"name": "magpie", "version": Version, "models": catalogSize.get(struct{}{}, func() int { return len(provider.Catalog()) }), "window": Window,
+	out := map[string]any{"name": "magpie", "distribution": product.Name, "version": Version, "models": catalogSize.get(struct{}{}, func() int { return len(provider.Catalog()) }), "window": Window,
 		"apis": []string{"/v1/chat/completions", "/v1/responses", "/v1/messages", "/v1/systemone", "/v1beta/models/{model}:generateContent", "/v1/images/generations", "/v1/images/edits", "/v1/videos", "/v1/embeddings", "/v1/rerank", "/v1/audio/transcriptions", "/v1/audio/translations", "/v1/audio/speech", "/v1/magpie/quotas", "/v1/magpie/quotas/history", "/v1/magpie/usage", "/v1/magpie/usage/requests", "/v1/magpie/route", "/v1/magpie/trace", OwnMCPPath, SearchMCPPath, VisionMCPPath, ImageMCPPath, BrowserMCPPath, ToolsMCPPath, HubMCPAll, HubMCPPath + "{agent}"}}
 	// which process serves, for another magpie on this computer to name it
 	// on its Routing page (#2606); not told to another machine

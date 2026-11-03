@@ -37,7 +37,7 @@ func (f *fakeBusy) get() gateway.Busy {
 
 // quick has u's waits run in milliseconds, against busy, with no feed asked.
 func quick(t *testing.T, busy *fakeBusy, u *updater) {
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/") // never the real one
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/") // never the real one
 	oldBusy, oldSettle, oldMost, oldTick, oldRecheck := gatewayBusy, idleSettle, waitMost, waitTick, waitRecheck
 	gatewayBusy, idleSettle, waitMost, waitTick = busy.get, 80*time.Millisecond, time.Minute, 5*time.Millisecond
 	waitRecheck = func(*updater, bool) {}
@@ -180,7 +180,7 @@ func TestRestartWhenIdleIntoTheNewest(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	old := Version
 	Version = "0.1.10"
 	defer func() { Version = old }()

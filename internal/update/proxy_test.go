@@ -48,7 +48,7 @@ func TestUpdateGoesThroughTheProxy(t *testing.T) {
 		t.Fatal(err)
 	}
 	// hosts that resolve nowhere: only the proxy can answer for them
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
 	rel, err := Latest(context.Background())
 	if err != nil {
 		t.Fatal(err)

@@ -65,7 +65,7 @@ func TestRelaunchStartsTheBundleWhenOpenNeverWorks(t *testing.T) {
 		args   string
 	}{{false, "tray"}, {true, "gui"}} {
 		dir := fakeOpen(t, 1000)
-		bundle, started := fakeBundle(t, "magpie")
+		bundle, started := fakeBundle(t, "tuzi-magpie")
 		log := filepath.Join(t.TempDir(), relaunchLogName)
 		if err := runAfterExit(gonePid(t), relaunchScript(bundle, c.window, false, log, shortWaits)); err != nil {
 			t.Fatal(err)
@@ -107,7 +107,7 @@ func runScript(t *testing.T, script string) error {
 // and the start it fell back to: the next report says what happened.
 func TestRelaunchLogsEachTry(t *testing.T) {
 	fakeOpen(t, 1000)
-	bundle, started := fakeBundle(t, "magpie")
+	bundle, started := fakeBundle(t, "tuzi-magpie")
 	log := filepath.Join(t.TempDir(), relaunchLogName)
 	if err := runScript(t, relaunchScript(bundle, false, false, log, shortWaits)); err != nil {
 		t.Fatalf("the shell: %v", err)
@@ -122,7 +122,7 @@ func TestRelaunchLogsEachTry(t *testing.T) {
 		"opening " + bundle,
 		"open try 1: exit 1 _LSOpenURLsWithCompletionHandler() failed for the application " + bundle + " with error -600.",
 		"open try 4: exit 1 ",
-		"open gave up after 4 tries; starting '" + filepath.Join(bundle, "Contents", "MacOS", "magpie") + "' 'tray'",
+		"open gave up after 4 tries; starting '" + filepath.Join(bundle, "Contents", "MacOS", "tuzi-magpie") + "' 'tray'",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("the log has no %q:\n%s", want, got)
@@ -134,7 +134,7 @@ func TestRelaunchLogsEachTry(t *testing.T) {
 // it as well, and the log says the open went through.
 func TestRelaunchOpenedStartsNothingElse(t *testing.T) {
 	dir := fakeOpen(t, 1)
-	bundle, started := fakeBundle(t, "magpie")
+	bundle, started := fakeBundle(t, "tuzi-magpie")
 	log := filepath.Join(t.TempDir(), relaunchLogName)
 	if err := runScript(t, relaunchScript(bundle, false, false, log, shortWaits)); err != nil {
 		t.Fatalf("opened on the second try, and the shell said %v", err)
@@ -154,8 +154,8 @@ func TestRelaunchOpenedStartsNothingElse(t *testing.T) {
 // shell that says nothing.
 func TestRelaunchNoProgramIsLogged(t *testing.T) {
 	fakeOpen(t, 1000)
-	bundle, _ := fakeBundle(t, "magpie")
-	exe := filepath.Join(bundle, "Contents", "MacOS", "magpie")
+	bundle, _ := fakeBundle(t, "tuzi-magpie")
+	exe := filepath.Join(bundle, "Contents", "MacOS", "tuzi-magpie")
 	os.Remove(exe)
 	log := filepath.Join(t.TempDir(), relaunchLogName)
 	if err := runScript(t, relaunchScript(bundle, false, false, log, shortWaits)); err == nil {
@@ -189,7 +189,7 @@ func TestRelaunchRunsTheProgramInfoPlistNames(t *testing.T) {
 func TestRelaunchLogInMagpiesFolder(t *testing.T) {
 	cfg := t.TempDir()
 	t.Setenv("XDG_CONFIG_HOME", cfg)
-	want := filepath.Join(cfg, "magpie", relaunchLogName)
+	want := filepath.Join(cfg, "tuzi-magpie", relaunchLogName)
 	if got := relaunchLog(); got != want {
 		t.Fatalf("log at %q, want %q", got, want)
 	}

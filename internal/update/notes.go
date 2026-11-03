@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/settings"
 )
 
@@ -26,18 +27,21 @@ type Note struct {
 }
 
 // NotesFeed is where the notes of past releases are listed: beside the
-// update feed, on magpie's site. MAGPIE_NOTES_FEED points it elsewhere.
+// update feed, on magpie's site. TUZI_MAGPIE_NOTES_FEED points it elsewhere.
 func NotesFeed() string {
-	if f := os.Getenv("MAGPIE_NOTES_FEED"); f != "" {
+	if f := os.Getenv("TUZI_MAGPIE_NOTES_FEED"); f != "" {
 		return f
 	}
-	return Site + "/api/notes"
+	return ""
 }
 
 // ReleasePage is version's page on GitHub, where its notes are when the
 // site can't give them (#661).
 func ReleasePage(version string) string {
-	return "https://github.com/yetone/magpie-releases/releases/tag/v" + strings.TrimPrefix(strings.TrimSpace(version), "v")
+	if product.Repository == "" {
+		return ""
+	}
+	return product.Repository + "/releases/tag/v" + strings.TrimPrefix(strings.TrimSpace(version), "v")
 }
 
 // NotesBetween asks the site for the notes of every release after after
@@ -73,6 +77,9 @@ func NotesBack(ctx context.Context, upto string, n int, lang string) ([]Note, er
 
 // askNotes is the site's list for q, each release's notes in lang.
 func askNotes(ctx context.Context, q url.Values, lang string) ([]Note, error) {
+	if NotesFeed() == "" {
+		return nil, fmt.Errorf("tuzi-magpie release notes are not configured")
+	}
 	if lang != "" {
 		q.Set("lang", lang)
 	}

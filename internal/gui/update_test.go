@@ -33,7 +33,7 @@ func TestUpdateStagedGivesWayToNewer(t *testing.T) {
 		}})
 	}))
 	defer srv.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	old := Version
 	Version = "0.1.10"
 	defer func() { Version = old }()
@@ -55,12 +55,12 @@ func TestUpdateStagedGivesWayToNewer(t *testing.T) {
 		t.Fatalf("%+v, %d downloads", j, downloads.Load())
 	}
 	// the feed down: still ready to restart into what it has
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://127.0.0.1:1/")
 	u.check()
 	if j := u.json(); j.State != "ready" || j.Latest != "0.1.11" {
 		t.Fatalf("%+v", j)
 	}
-	t.Setenv("MAGPIE_UPDATE_FEED", srv.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", srv.URL)
 	// 0.1.13 out: that is the one it restarts into
 	latest.Store("0.1.13")
 	u.recheck(false)

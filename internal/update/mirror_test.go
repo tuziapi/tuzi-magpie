@@ -58,7 +58,7 @@ func TestUpdateThroughAMirror(t *testing.T) {
 		json.NewEncoder(w).Encode(Release{Version: "9.9.9", Assets: map[string]Asset{BinaryAsset(): asset}})
 	}))
 	defer feed.Close()
-	t.Setenv("MAGPIE_UPDATE_FEED", feed.URL+"/api/latest")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", feed.URL+"/api/latest")
 
 	// none unless given: no mirror is magpie's own
 	if m := Mirror(context.Background()); m != "" {
@@ -142,7 +142,7 @@ func TestUpdateThroughAProxyGiven(t *testing.T) {
 	if err := settings.Save(settings.Settings{Proxy: "direct"}); err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", "http://feed.magpie.invalid/api/latest")
 	ctx := WithProxy(context.Background(), px.URL)
 	rel, err := Latest(ctx)
 	if err != nil {

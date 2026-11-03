@@ -29,8 +29,8 @@ func TestWhatsNewTellsFailureFromNone(t *testing.T) {
 		json.NewEncoder(w).Encode(update.Release{Version: "0.1.737"})
 	}))
 	defer feed.Close()
-	t.Setenv("MAGPIE_NOTES_FEED", notes.URL)
-	t.Setenv("MAGPIE_UPDATE_FEED", feed.URL)
+	t.Setenv("TUZI_MAGPIE_NOTES_FEED", notes.URL)
+	t.Setenv("TUZI_MAGPIE_UPDATE_FEED", feed.URL)
 	old := Version
 	defer func() { Version = old }()
 	Version = "0.1.737"

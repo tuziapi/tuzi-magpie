@@ -48,7 +48,7 @@ func TestInstallNeedsAdmin(t *testing.T) {
 	os.Chmod(apps, 0o555)
 	defer os.Chmod(apps, 0o755)
 
-	if stageDir(apps) == filepath.Join(apps, ".magpie-update") {
+	if stageDir(apps) == filepath.Join(apps, ".tuzi-magpie-update") {
 		t.Error("stageDir picked a folder it can't write to")
 	}
 	err := Install(staged, bundle)

@@ -20,10 +20,10 @@ func TestLogsOnEachSystem(t *testing.T) {
 	t.Setenv("LOCALAPPDATA", filepath.Join(r, "local"))
 	t.Setenv("XDG_STATE_HOME", filepath.Join(r, "state"))
 	for goos, want := range map[string]string{
-		"darwin":  filepath.Join(home, "Library", "Logs", "magpie"),
-		"windows": filepath.Join(r, "local", "magpie", "logs"),
-		"linux":   filepath.Join(r, "state", "magpie"),
-		"freebsd": filepath.Join(r, "state", "magpie"),
+		"darwin":  filepath.Join(home, "Library", "Logs", "tuzi-magpie"),
+		"windows": filepath.Join(r, "local", "tuzi-magpie", "logs"),
+		"linux":   filepath.Join(r, "state", "tuzi-magpie"),
+		"freebsd": filepath.Join(r, "state", "tuzi-magpie"),
 	} {
 		if got := logsOn(goos); got != want {
 			t.Errorf("%s: logs in %q, want %q", goos, got, want)
@@ -34,16 +34,16 @@ func TestLogsOnEachSystem(t *testing.T) {
 	for _, v := range []string{"", "relative"} {
 		t.Setenv("LOCALAPPDATA", v)
 		t.Setenv("XDG_STATE_HOME", v)
-		if got, want := logsOn("windows"), filepath.Join(home, "AppData", "Local", "magpie", "logs"); got != want {
+		if got, want := logsOn("windows"), filepath.Join(home, "AppData", "Local", "tuzi-magpie", "logs"); got != want {
 			t.Errorf("windows, LOCALAPPDATA %q: logs in %q, want %q", v, got, want)
 		}
-		if got, want := logsOn("linux"), filepath.Join(home, ".local", "state", "magpie"); got != want {
+		if got, want := logsOn("linux"), filepath.Join(home, ".local", "state", "tuzi-magpie"); got != want {
 			t.Errorf("linux, XDG_STATE_HOME %q: logs in %q, want %q", v, got, want)
 		}
 	}
 
-	exe := touch(t, filepath.Join(r, "port", "magpie"))
-	data := filepath.Join(r, "port", "data")
+	exe := touch(t, filepath.Join(r, "port", "tuzi-magpie"))
+	data := filepath.Join(r, "port", "tuzi-magpie-data")
 	mkdir(t, data)
 	UseExecutable(exe)
 	for _, goos := range []string{"darwin", "windows", "linux"} {
