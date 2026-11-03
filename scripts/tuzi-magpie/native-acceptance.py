@@ -10,6 +10,8 @@ import subprocess
 import time
 import urllib.request
 
+from native_isolation import require_free_ports, require_listener, sandboxed
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--app", required=True, type=Path)
 parser.add_argument("--fixture", required=True, type=Path)
@@ -29,6 +31,7 @@ args.fixture = args.fixture.resolve()
 args.output = args.output.resolve()
 if args.script:
     args.script = args.script.resolve()
+require_free_ports((18341, 18343))
 args.output.mkdir(parents=True, exist_ok=True)
 if (args.output / "processes.json").exists():
     parser.error("Use a new output directory; never replace another run's state")
@@ -67,8 +70,8 @@ logs = []
 result = {"passed": False, "checks": [], "errors": []}
 stage = "launch"
 try:
-    for name, command in (("fixture", [str(args.fixture), "-report", str(ui_result_path)]),
-                          ("app", ["/usr/bin/sandbox-exec", "-f", str(args.output/"sandbox.sb"), str(args.app), "tuzimagpie://account/connect" if args.account_link else "app"])):
+    for name, command in (("fixture", sandboxed(args.output/"sandbox.sb", args.fixture, "-report", str(ui_result_path))),
+                          ("app", sandboxed(args.output/"sandbox.sb", args.app, "tuzimagpie://account/connect" if args.account_link else "app"))):
         log = (args.output/(name+".log")).open("w")
         logs.append(log)
         p = subprocess.Popen(command, cwd=repo, env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
@@ -97,6 +100,12 @@ try:
         stage = "gateway"
         # Agent requests originate outside the webview; use the Provider ID
         # actually saved by the native page, through the actual HTTP gateway.
+        app_process = next(p for name, p in processes if name == "app")
+        if app_process.poll() is not None:
+            raise RuntimeError("The launched app exited before gateway acceptance")
+        listener = require_listener(app_process.pid, 18343)
+        (args.output/"gateway-listener.txt").write_text(listener)
+        result["gatewayPID"] = app_process.pid
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
         body = json.dumps({"model": result["providerId"] + "/gpt-5.5", "input": "Synthetic acceptance", "stream": False}).encode()
         request = urllib.request.Request("http://127.0.0.1:18343/v1/responses", data=body, headers={"Content-Type":"application/json"})
