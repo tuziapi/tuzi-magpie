@@ -88,7 +88,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     assert.equal(await attr('meta[name="apple-mobile-web-app-status-bar-style"]', "content"), "default", "the status bar keeps its own ground, the page starting under it");
     const manifest = JSON.parse(await fs.readFile(path.join(assets, await attr('link[rel="manifest"]', "href")), "utf8"));
     assert.equal(manifest.display, "standalone");
-    assert.equal(manifest.name, "magpie");
+    assert.equal(manifest.name, "tuzi-magpie");
     // the files are there (TestWebAppAddsToHomeScreen checks how they are served)
     for (const ic of [...manifest.icons, { src: await attr('link[rel="apple-touch-icon"]', "href") }]) {
       await fs.access(path.join(assets, ic.src));
