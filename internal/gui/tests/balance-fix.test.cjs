@@ -10,7 +10,7 @@ const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
 
-const assets = path.resolve(__dirname, "../assets");
+const assets = process.env.MAGPIE_BALANCE_ASSETS || path.resolve(__dirname, "../assets");
 const relay = {
   id: "relay", name: "Relay", icon: "generic", chat: "https://relay.example.com/v1", responses: "", anthropic: "", catalog: "",
   models: [{ id: "model-a", name: "Model A", on: true }], agents: [], fallback: [], headers: {},
@@ -169,7 +169,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     await page.goto("http://magpie.test/?view=providers");
     await page.locator("#providers .row.provider").first().waitFor();
     await page.evaluate(() => { adding = true; editing = { custom: true }; draft = null; renderProviders(); });
-    const tok = page.locator(".editor input[type=password]").nth(1);
+    const tokenHint = await page.evaluate(() => t("optional · the account's system access token"));
+    const tok = page.locator(".editor").getByPlaceholder(tokenHint, { exact: true });
     await page.locator(".editor input[type=url]").first().fill("https://relay.example.com/v1");
     const fix = page.locator(".editor .bal-fix");
     assert.equal(await fix.textContent(), "", "no token, no hint");
@@ -250,7 +251,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
               assert.equal(await page.locator(".editor .bal-fix").textContent(), "", "no token, no warning");
               // the account's token is under Advanced
               await page.locator(".editor details.advanced > summary").click();
-              await page.locator(".editor input[type=password]").nth(1).fill("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln");
+              const tokenHint = await page.evaluate(() => t("optional · the account's system access token"));
+              await page.locator(".editor").getByPlaceholder(tokenHint, { exact: true }).fill("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2ln");
             } else {
               await page.locator(".row.provider", { hasText: "Relay" }).click();
             }
