@@ -16912,10 +16912,10 @@ function setPanelTab(tab) {
   queueMicrotask(panelUseShown);
   fit();
 }
-// Scroll to a requested card, or resume its highlight after a redraw.
+// Reveal a requested card or resume its highlight.
 function flashCard(card, target = card, elapsed = 0) {
   if (target) {
-    // The native menu-bar click has no DOM event; permit this requested scroll.
+    // Permit the native menu-bar click's requested scroll.
     readerScrolls(1000);
     target.scrollIntoView({ block: "nearest", behavior: "instant" });
   }
@@ -16931,8 +16931,7 @@ function flashCard(card, target = card, elapsed = 0) {
   };
 }
 
-// A focus refresh rebuilds quota cards. Carry the active animation's time
-// to its replacement, preserving scroll position and the remaining duration.
+// Preserve flash progress and scroll position across quota redraws.
 function keepQuotaFlash(box) {
   const view = box.closest(".view"), scroll = view?.scrollTop;
   const flashes = [...box.querySelectorAll(".subscription-card.flash, .pq-card.flash")].flatMap((card) => {
@@ -16954,11 +16953,11 @@ function keepQuotaFlash(box) {
   };
 }
 
-// Keep the request until quota data has produced the target's DOM node.
+// Wait for the requested card's data and layout.
 function focusQuotaCard() {
   if (!quotaFocus) return;
   if (performance.now() > quotaFocusUntil) { quotaFocus = ""; return; }
-  // The account summary changes card positions when its lazy module arrives.
+  // The lazy summary shifts cards.
   if (quotaAllJS.p && !quotaAllJS.done) return;
   const box = mode === "panel" ? $("#panelQuota") : $("#subscriptionUsage");
   if (mode === "panel") setPanelTab("usage");
@@ -16966,8 +16965,7 @@ function focusQuotaCard() {
   const id = CSS.escape(quotaFocus);
   // a key's balance shown on its plan's card (keyCards): that card
   const target = box.querySelector(`[data-card="${id}"]`) || box.querySelector(`[data-bal-card="${id}"]`) || box.querySelector(`[data-provider="${id}"]`);
-  // The panel omits accounts in brief; the main window draws them short.
-  // The one asked for is opened in full.
+  // Open the requested account in full in either window.
   const quota = quotas?.find((q) => trayCardID(q) === quotaFocus);
   if (quota?.user && !usageAcctOpen(quota, quotas.filter((q) => q.user && q.provider === quota.provider))) {
     setUsageAccts([quota], true);

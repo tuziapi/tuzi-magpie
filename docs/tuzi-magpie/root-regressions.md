@@ -56,3 +56,13 @@ source.json, source-diff.patch, results.json and unedited stage logs.
 This covers that frozen source. Subsequent routing JavaScript integration
 requires its browser checks and a fresh GUI embedded-source check/build;
 these results do not claim later source or final native delivery passed.
+
+## Final embedded-script budget
+
+The complete GUI Go package at d225281 failed only TestCoreScriptBudget:
+1533983 bytes exceeded the existing1533802-byte core budget after the approved
+tray fix. Evidence is final-source-checks-01/gui-go.log. Six comments beside
+flashCard, keepQuotaFlash and focusQuotaCard were shortened, retaining their
+purpose without changing executable statements. Core scripts now total
+1533736 bytes, below the unchanged budget. Node syntax and diff checks pass;
+the complete GUI package and latest builds are rerun on this final comment edit.
