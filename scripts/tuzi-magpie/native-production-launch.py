@@ -32,7 +32,12 @@ def main():
     parser.add_argument('--output', required=True, type=Path,
                         help='New directory under /private/tmp; Documents TCC blocks LS-launched helpers')
     parser.add_argument('--keep-open', action='store_true')
+    parser.add_argument('--port', type=int, default=PORT,
+                        help='Unused loopback port for this isolated acceptance instance')
     args = parser.parse_args()
+    port = args.port
+    if not 1024 <= port <= 65535:
+        parser.error('Use an unprivileged loopback port from 1024 to 65535')
     if not args.app.is_absolute() or not args.output.is_absolute():
         parser.error('Use absolute app and output paths')
     app, out = args.app.resolve(), args.output.resolve()
@@ -48,7 +53,7 @@ def main():
     if 'production' not in tags or 'tuzi_fixture' in tags or 'nogui' in tags:
         parser.error('Requires a production GUI binary without fixture hooks')
     with socket.socket() as probe:
-        probe.bind(('127.0.0.1', PORT))
+        probe.bind(('127.0.0.1', port))
     out.mkdir(parents=True, mode=0o700)
     (out / 'build-info.txt').write_text(build)
     original_hash = hashlib.sha256(executable.read_bytes()).hexdigest()
@@ -56,7 +61,7 @@ def main():
     home.mkdir(mode=0o700)
     config = home / 'config/tuzi-magpie'
     config.mkdir(parents=True)
-    (config / 'settings.json').write_text(json.dumps({'lang': 'en', 'theme': 'light', 'port': PORT}))
+    (config / 'settings.json').write_text(json.dumps({'lang': 'en', 'theme': 'light', 'port': port}))
     wrapper = out / 'tuzi-magpie-production-acceptance.app'
     shutil.copytree(app, wrapper, symlinks=True)
     copied = wrapper / 'Contents/MacOS' / info['CFBundleExecutable']
@@ -77,7 +82,7 @@ def main():
            'XDG_CONFIG_HOME': str(home / 'config'), 'XDG_CACHE_HOME': str(home / 'cache'),
            'XDG_DATA_HOME': str(home / 'data'), 'XDG_STATE_HOME': str(home / 'state'),
            'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'TMPDIR': str(home),
-           'MAGPIE_ADDR': '127.0.0.1:' + str(PORT), 'MAGPIE_NO_INSTALL': '1'}
+           'MAGPIE_ADDR': '127.0.0.1:' + str(port), 'MAGPIE_NO_INSTALL': '1'}
     pidfile = out / 'app-pids.txt'
     command = ['/usr/bin/env', '-i', *[key + '=' + value for key, value in env.items()],
                '/usr/bin/sandbox-exec', '-f', str(profile), str(copied), 'app']
@@ -86,7 +91,7 @@ def main():
     launcher.chmod(0o700)
     result = {'passed': False, 'uiVisuallyVerified': False, 'paidInference': False,
               'checks': [], 'errors': [], 'sourceApp': str(app), 'wrapper': str(wrapper),
-              'sourceExecutableSHA256': original_hash, 'port': PORT, 'buildTags': tags}
+              'sourceExecutableSHA256': original_hash, 'port': port, 'buildTags': tags}
     commands, pids = [], set()
     registered = False
     stage = 'sign-copy'
@@ -121,7 +126,7 @@ def main():
             ids = app_pids()
             if len(ids) == 1 and alive_owned(ids[0]):
                 try:
-                    with opener.open(f'http://127.0.0.1:{PORT}/v1/models', timeout=1) as response:
+                    with opener.open(f'http://127.0.0.1:{port}/v1/models', timeout=1) as response:
                         models = json.load(response)
                     break
                 except (OSError, ValueError):
@@ -131,14 +136,14 @@ def main():
             raise RuntimeError('owned production app did not provide a valid gateway model list')
         stage = 'gateway-owner'
         listening = run(['/usr/sbin/lsof', '-nP', '-a', '-p', str(ids[0]),
-                         f'-iTCP:{PORT}', '-sTCP:LISTEN'])
+                         f'-iTCP:{port}', '-sTCP:LISTEN'])
         (out / 'gateway-listener.txt').write_text(listening)
         atomic_json(out / 'models.json', models)
         result['appPID'] = ids[0]
         result['checks'].append('LaunchServices started the non-fixture native binary; its exact PID owns the loopback gateway')
         stage = 'desktop-only-account'
         try:
-            with opener.open(f'http://127.0.0.1:{PORT}/api/tuzi/state', timeout=3) as response:
+            with opener.open(f'http://127.0.0.1:{port}/api/tuzi/state', timeout=3) as response:
                 raise RuntimeError('HTTP gateway exposed desktop account state: ' + str(response.status))
         except urllib.error.HTTPError as error:
             if error.code not in (403, 404):
