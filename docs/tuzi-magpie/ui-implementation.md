@@ -97,3 +97,23 @@ preservation. It fails on `16c93b3` waiting for the missing reconnection input
 (`/tmp/tuzi-ui-auth-red.log`), and passes after the fix
 (`/tmp/tuzi-ui-auth-green.log`). Full page checks are rerun in Chromium and WebKit
 (`/tmp/tuzi-ui-auth-full-{chromium,webkit}.log`).
+
+### Initial state / connection submission repair
+
+Native acceptance found that a user could submit Connect while `open()` still
+awaited the initial state read. Its later state application or first tab read
+could cancel the connection through the shared abort controller. Initialization
+now holds the same busy gate as account operations through initial state,
+a restored connection check and the first tab load. Rebuilt headers retain the
+gate, and `navigate()` awaits any existing initialization before prefill.
+A concurrent language refresh cannot cancel initialization or a write; an
+unmounted page ignores the hook. Root's cold `tuziConnect` URL handling is kept
+and runs after initialization, without making `open()` await its own promise.
+
+The regression holds the state/check response explicitly, verifies Connect
+and the token input stay disabled (including after `relang`), releases it, and
+then verifies one successful Connect/bootstrap or restored account load. The
+pre-fix test fails with `initialization gates connection submission`
+(`/tmp/tuzi-ui-initial-red.log`); repaired Chromium targeted testing passes
+(`/tmp/tuzi-ui-initial-green.log`). Full browser results are recorded in
+`/tmp/tuzi-ui-initial-full-{chromium,webkit}.log`.

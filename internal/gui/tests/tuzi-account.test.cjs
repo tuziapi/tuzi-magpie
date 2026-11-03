@@ -10,7 +10,7 @@ const key = () => ({id:'8',name:'Synthetic key',masked_key:'sk-••••test'
 const model = () => ({model_name:'fixture-model',aliases:null,description:'Synthetic catalog model',tags:'text',quota_type:1,model_ratio:1,completion_ratio:2,enable_groups:['default'],supported_endpoint_types:['responses'],related_pricing:null});
 function fixture(lang='en',theme='light',web=false) {
   let state={status:'disconnected',generation:1,identity:null,error:null};
-  let keys=[key()], next=9, uncertain=false, prefillGate=null, nextFailure=null;
+  let keys=[key()], next=9, uncertain=false, prefillGate=null, stateGate=null, checkGate=null, nextFailure=null;
   const calls=[], modelRequests=[];
   const pageData = (items, page=1) => ({items,page,page_size:20,total:String(items.length),has_more:false});
   const account={user_id:'7',username:'fixture',display_name:'Synthetic account',group:'default',quota:'500000',used_quota:'200',request_count:'1',money:{quota_per_unit:'500000',display_type:'CNY',base_currency:'USD',usd_exchange_rate:'7',custom_currency_symbol:'',custom_currency_exchange_rate:'1'}};
@@ -24,9 +24,9 @@ function fixture(lang='en',theme='light',web=false) {
     if(u.pathname==='/api/providers')return json({providers:[],presets:[],gateway:{running:false,url:'http://127.0.0.1:18343',calls:[],groups:[]}});
     if(u.pathname.startsWith('/api/tuzi/')) {
       calls.push([u.pathname,body]);
-      if(u.pathname.endsWith('/state'))return json(state);
+      if(u.pathname.endsWith('/state')){const snapshot=structuredClone(state);if(stateGate)await stateGate;return json(snapshot);}
       if(u.pathname.endsWith('/connect')){state={status:'connected',generation:state.generation+1,identity:{userId:'7',username:'fixture',displayName:'Synthetic account',connectionId:'synthetic'},error:null};return json(state);}
-      if(u.pathname.endsWith('/check'))return json(state);
+      if(u.pathname.endsWith('/check')){if(checkGate)await checkGate;if(state.status==='offline')state={...state,status:'connected'};return json(state);}
       if(u.pathname.endsWith('/disconnect')){state={status:'disconnected',generation:state.generation+1,identity:null,error:null};return json(state);}
       if(u.pathname.endsWith('/prefill')){if(prefillGate)await prefillGate;return json({token:'SyntheticPrefillToken12345678901'});}
       if(u.pathname.endsWith('/open'))return json({});
@@ -60,7 +60,7 @@ function fixture(lang='en',theme='light',web=false) {
     }
     return route.fulfill({body:source,contentType:{'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(file)]});
   };
-  return {handler,calls,modelRequests,setUncertain:()=>{uncertain=true;},failNext:(code,path)=>{nextFailure={code,path};},getState:()=>state,holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
+  return {handler,calls,modelRequests,setUncertain:()=>{uncertain=true;},failNext:(code,path)=>{nextFailure={code,path};},getState:()=>state,holdState:()=>{let release;stateGate=new Promise(r=>{release=r;});return release;},holdCheck:()=>{let release;checkGate=new Promise(r=>{release=r;});return release;},holdPrefill:()=>{let release;prefillGate=new Promise(r=>{release=r;});return release;},setState:(v)=>{state=v;}};
 }
 async function click(page, locator){
   try {
@@ -159,5 +159,21 @@ for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webk
     if(code==='account_disabled'){await click(page,await btn(page,'Key details',root));f.failNext(code,'/account/keys/8/reveal');await click(page,await btn(page,'Reveal key',root));}
     else{f.failNext(code,'/account/account');await click(page,await btn(page,'Refresh',root));}
     await root.getByLabel('Account system token',{exact:true}).waitFor();assert.equal(f.getState().generation,originalGeneration,'invalidation does not need a generation bump');assert.equal(await root.locator('.tuzi-status').textContent(),'Invalid connection');assert.equal(await root.locator('.tuzi-metrics').count(),0);assert.equal(await root.getByRole('button',{name:'Key details',exact:true}).count(),0);assert.ok(await root.locator('#tuziSheet').isHidden());assert.equal(await root.locator('#tuziPane').getAttribute('aria-busy'),null);await connect();
+  }
+});
+
+for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webkit']))test(`${engine}: initial account state and restored connection finish before connection controls enable`,async(t)=>{
+  const browser=await(engine==='webkit'?webkit.launch():chromium.launch(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{channel:'chromium'}));t.after(()=>browser.close());
+  for(const restored of [false,true]){
+    const context=await browser.newContext({viewport:{width:1100,height:850},reducedMotion:'reduce'});t.after(()=>context.close());const page=await context.newPage();page.setDefaultTimeout(10000);const f=fixture();
+    if(restored)f.setState({status:'offline',generation:5,identity:{userId:'7',username:'fixture',displayName:'Synthetic account'},error:null});
+    const release=restored?f.holdCheck():f.holdState();await page.route('**/*',f.handler);await page.goto('http://magpie.test/?view=tuzi'+(restored?'':'&tuziConnect=1'));const root=page.locator('#view-tuzi');await root.getByRole('tab',{name:'API keys',exact:true}).waitFor();
+    while(!f.calls.some(([p])=>p.endsWith(restored?'/check':'/state')))await page.waitForTimeout(20);
+    const connect=root.getByRole('button',{name:'Connect account',exact:true});assert.equal(await connect.isDisabled(),true,'initialization gates connection submission');assert.equal(await root.getByLabel('Account system token',{exact:true}).isDisabled(),true);
+    await connect.evaluate(e=>e.click());await page.evaluate(()=>magpie.call('tuzi','relang'));assert.equal(f.calls.filter(([p])=>p.endsWith('/connect')).length,0,'no connection starts while initial read is held');assert.equal(await root.getAttribute('aria-busy'),'true');
+    release();await page.waitForFunction(()=>document.querySelector('#view-tuzi').getAttribute('aria-busy')==='false');
+    if(!restored){await page.waitForFunction(()=>document.querySelector('#tuziSystemToken').value==='SyntheticPrefillToken12345678901');assert.ok(!page.url().includes('tuziConnect'));assert.equal(f.calls.filter(([p])=>p.endsWith('/prefill')).length,1);await root.getByLabel('Account system token',{exact:true}).fill('synthetic-account-token');await click(page,connect);}
+    await root.locator('.tuzi-metrics').waitFor();assert.equal(await root.locator('.tuzi-status').textContent(),'Connected');assert.equal(f.calls.filter(([p])=>p.endsWith('/connect')).length,restored?0:1);assert.equal(f.calls.filter(([,b])=>b?.path==='/account/account').length,1);
+    await context.close();
   }
 });

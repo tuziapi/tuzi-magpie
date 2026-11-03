@@ -9,7 +9,7 @@
     let state = { status: "disconnected", generation: 0, identity: null }, account = null, groups = [];
     let busy = false, controller = new AbortController(), timer = null, unknownWrite = false;
     let currency = "CNY", currentCatalog = null, currentKeys = null, sheetGeneration = 0;
-    let dirtyForm = null, discardPrompt = null, searchTimer = null;
+    let dirtyForm = null, discardPrompt = null, searchTimer = null, opening = null;
     let filters = freshFilters();
     try { if (localStorage.getItem("tuzi-magpie.currency") === "USD") currency = "USD"; } catch {}
     function freshFilters() {
@@ -149,6 +149,7 @@
         header.append(form);
       }
       if (state.error) note(errorText(state.error), true);
+      markBusy();
     }
     function drawTabs() {
       tabbar.replaceChildren(); tabbar.setAttribute("role", "tablist");
@@ -355,21 +356,32 @@
       if (!tuziMoney.groupPrices(m, meta).length) box.append(text("No reliable price is available. See the website for full pricing."));
       const actions = row(button("Full pricing on website", () => guarded(() => api("open", {url:"https://api.tu-zi.com/pricing"}))), button("Configure with a key", () => guarded(() => chooseKeyForModel(m)))); actions.classList.add("tuzi-detail-actions"); box.append(actions);
     }
-    async function open() {
-      if (window.bootPrefs?.web) return;
+    function open() {
+      if (window.bootPrefs?.web || busy && !opening) return Promise.resolve();
+      if (opening) return opening;
       active = true; lifecycle++; tab = "keys"; account = null; groups = []; drawTabs(); cancelRead();
-      try { await refreshState(); if (state.status === "offline" && state.identity) { acceptState(await http("check", {})); drawHeader(); } await loadTab();
-        if (params.has("tuziConnect")) {
+      // A late startup state response must never cancel a connection submitted
+      // against the temporary disconnected header. Keep controls gated through
+      // state/check and the first tab read, including headers rebuilt meanwhile.
+      opening = guarded(async () => {
+        await refreshState();
+        if (state.status === "offline" && state.identity) { acceptState(await http("check", {})); drawHeader(); }
+        await loadTab();
+      }).then(async () => {
+        opening = null;
+        if (active && params.has("tuziConnect")) {
           params.delete("tuziConnect");
           const url = new URL(location.href); url.searchParams.delete("tuziConnect"); history.replaceState(null, "", url.pathname + url.search);
           await navigate();
         }
-      } catch (e) { if (e?.name !== "AbortError") note(errorText(e), true); }
+      });
+      return opening;
     }
     function leave() { active = false; lifecycle++; cancelRead(); closeSheet(true); const token = root.querySelector("#tuziSystemToken"); if (token) token.value = ""; }
     async function navigate() {
       const visit = active ? lifecycle : lifecycle + 1;
       if (!active) await open();
+      else if (opening) await opening;
       if (!active || lifecycle !== visit) return;
       const generation = state.generation, input = root.querySelector("#tuziSystemToken");
       if (isConnected() || !input || input.value) return;
@@ -378,7 +390,7 @@
     ctx.onDispose(leave);
     ctx.slots.add("page", { key:"tuzi", title:"Tuzi account", html:'<section id="tuziConnection" class="list row tuzi-key"></section><div id="tuziTabs" class="segs tuzi-tabs"></div><p id="tuziNotice" class="tuzi-notice" role="status" hidden></p><div id="tuziShade" class="tuzi-shade" hidden></div><section id="tuziSheet" class="list tuzi-sheet tuzi-dialog" role="dialog" aria-modal="true" hidden></section><section id="tuziPane"></section>',
       mount(main) { root = main; header = main.querySelector("#tuziConnection"); tabbar = main.querySelector("#tuziTabs"); notice = main.querySelector("#tuziNotice"); pane = main.querySelector("#tuziPane"); sheet = main.querySelector("#tuziSheet"); drawHeader(); drawTabs(); main.querySelector("#tuziShade").onclick = () => closeSheet(); main.addEventListener("keydown", (e) => { if (e.key === "Tab" && !sheet.hidden) { const focusable = [...sheet.querySelectorAll("button:not(:disabled),input:not(:disabled),textarea:not(:disabled),summary")].filter((x) => x.getClientRects().length); const first = focusable[0], last = focusable.at(-1); if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus({preventScroll:true}); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus({preventScroll:true}); } } if(e.key === "Escape" && !sheet.hidden) { e.preventDefault(); e.stopPropagation(); closeSheet(); } }); document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") cancelRead(); else if (active && !busy) { account = null; groups = []; loadTab(); } }); },
-      open, navigate, leave, busy() { return busy; }, dirty() { return busy || !!dirtyForm?.(); }, discard() { closeSheet(true); }, refresh() { if (active && !busy) return loadTab(); }, reload() { if (active && !busy) return loadTab(); }, relang() { drawHeader(); drawTabs(); if (active) return loadTab(); }
+      open, navigate, leave, busy() { return busy; }, dirty() { return busy || !!dirtyForm?.(); }, discard() { closeSheet(true); }, refresh() { if (active && !busy) return loadTab(); }, reload() { if (active && !busy) return loadTab(); }, relang() { if (!root || busy) return; drawHeader(); drawTabs(); if (active) return loadTab(); }
     });
   });
 })();
