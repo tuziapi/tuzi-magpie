@@ -8038,7 +8038,12 @@ function routingPage(part) {
   // sight change #rt's height a fraction of a pixel, which WebKit reports
   // as a ResizeObserver loop (#3164)
   let stageAsked = 0;
-  new ResizeObserver(() => { if (!stageAsked) stageAsked = requestAnimationFrame(() => { stageAsked = 0; layout(); }); }).observe(stage);
+  const stageSoon = () => { if (!stageAsked) stageAsked = requestAnimationFrame(() => { stageAsked = 0; layout(); }); };
+  new ResizeObserver(stageSoon).observe(stage);
+  // A row's shake can leave a wire at the box read during the motion.
+  stage.addEventListener("animationend", (e) => {
+    if (e.animationName === "rthit" && e.target.parentElement === list) stageSoon();
+  });
   // the list is as tall as leaves the stage in sight above it: the reader
   // scrolls the list, not the page, and a request picked plays in view.
   // Its top stays where it is as it is sized, so a row just clicked does too

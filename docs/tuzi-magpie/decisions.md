@@ -96,3 +96,15 @@ The subsequent user instruction authorizes ordinary remaining decisions and
 necessary fixes within the existing finite closing scope without further
 per-item questions. It does not authorize feature expansion, unrelated history
 repairs, remote operations, real credentials or silent acceptance reductions.
+
+
+## 2026-11-04 F15 wire alignment approval
+
+The user explicitly approved “采用 F15 动画结束后连线修复”. Apply the exact
+verified stage listener: a current direct key-list child's rthit animation end
+requests the existing coalesced layout frame. No timer, animation duration,
+geometry threshold or list virtualization changes. Both engines pass the
+real request-path case and native scheduling boundaries; real wire-offset
+negative controls still fail. Folded/opened static screenshots have zero
+pixel differences and exact5/41-node geometry matches. Chromium's independent
+few-visible-rows failure remains a separate finite blocker until diagnosed.

@@ -204,6 +204,17 @@ The observer lives with the Routing page, like its stage and column observers.
 `routing-steps-cap.test.cjs` and `routing-steady.test.cjs` cover the held
 height, shrinkage, long story bounds, focus and scroll position.
 
+### Routing wires after a row animation
+
+The Routing stage uses the same `stageAsked` animation-frame slot for resize
+notifications and the end of a live list row's `rthit` animation. The latter
+refreshes wire endpoints after the row returns to its resting position instead
+of leaving an endpoint captured during the shake until the next refresh.
+Only `animationend` from a current direct child of the key list requests this
+work. Multiple endings coalesce; animation starts, cancellation and removed
+rows do not request another layout through this listener. The existing
+`routing-many-keys.test.cjs` checks endpoint alignment and virtualized rows.
+
 ### Routing purpose filter
 
 The request heading's purpose menu in [`plugins/routing/client.js`](../../internal/gui/assets/plugins/routing/client.js)
