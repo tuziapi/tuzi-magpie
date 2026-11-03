@@ -75,7 +75,20 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     const scrolled = (page) => page.evaluate(() => [window.scrollY, ...[...document.querySelectorAll("*")].filter((e) => e.scrollTop > 0).map((e) => `${e.className}:${e.scrollTop}`)].join(" "));
     const wide = (page) => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     const stripes = (page, sel) => page.evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => getComputedStyle(e).borderLeftWidth).filter((b) => parseFloat(b) > 1), sel);
-    const opacity = (loc) => loc.evaluate((e) => getComputedStyle(e).display === "none" ? "none" : getComputedStyle(e).opacity);
+    const opacity = async (loc) => {
+      // A quota redraw can replace the eye between resolving the locator and
+      // reading its style. Reselect only detached nodes; a connected node's
+      // actual display/opacity must still satisfy the original assertion.
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const value = await loc.evaluate((e) => {
+          if (!e.isConnected) return null;
+          const style = getComputedStyle(e);
+          return style.display === "none" ? "none" : style.opacity;
+        });
+        if (value !== null) return value;
+      }
+      assert.fail("the account eye was replaced during every style read");
+    };
     // what of an element is in sight: its text and every tooltip in it
     const seen = (loc) => loc.evaluate((e) => [e.textContent, ...[e, ...e.querySelectorAll("[title]")].map((x) => x.title || "")].join(" | "));
     // a sentence and a tooltip elsewhere in the window naming both accounts
