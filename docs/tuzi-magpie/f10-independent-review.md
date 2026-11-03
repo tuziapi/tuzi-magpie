@@ -3,8 +3,8 @@
 Reviewed 2026-11-03 by the website agent, not the implementer. Actual root
 HEAD `1bd36fa966ae0e91475915123c341e6a7f2d3165` plus its two pending test edits.
 Read-only review; no F10 browser run performed by this reviewer. No blocking
-static finding. Full candidate and negative-control execution remains pending
-at this review snapshot, so this is not F10 closure evidence.
+static finding. Full candidate and negative-control execution was pending at the initial
+review; the completed evidence review follows at the end of this document.
 
 ## Diff and runtime path
 
@@ -68,3 +68,24 @@ closing F10; this review does not claim them.
 
 - `internal/gui/tests/codex-auto-reset.test.cjs`: `8bca4648b6a7b2e5690667b2138e12ba52840199bc184fccafeaf8cf219861c8`
 - `internal/gui/tests/warm-now.test.cjs`: `ef43b200f196b6612831266cb8a928d0def724508df49f520254b0a9dac13602`
+
+## Completed verification review — 2026-11-04
+
+Independently read all six completed `f10-verify-results.json` entries and
+actual log footers after the root-owned run. Both source file hashes and the
+product app.js hash still match `f10-verify-manifest.json`; no candidate source
+changed during verification.
+
+| Engine | Complete two-file suite | Reset wrong-account control | Warm wrong-account control |
+| --- | --- | --- | --- |
+| Chromium | 21/21 pass, exit 0 | Exact posted body fails, exit 1 | Exact selected-account request fails, exit 1 |
+| WebKit | 21/21 pass, exit 0 | Exact posted body fails, exit 1 | Exact selected-account request fails, exit 1 |
+
+Each negative log is `ERR_ASSERTION` / `deepStrictEqual`, not a timeout:
+reset expected `Me@example.com` but received `wrong@example.com`; warm
+expected `B@Example.com` but received `wrong@example.com`. All six runs have
+zero cancelled and skipped tests. This confirms that reading and leaving the
+notice and reaching the new button preserve the underlying account-selection
+assertions. No blocking finding remains for these two reviewed F10 test
+repairs. This conclusion does not extend to unresolved F01 or other items,
+and is not a full-repository suite claim.
