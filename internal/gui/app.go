@@ -26,6 +26,7 @@ import (
 	"github.com/yetone/magpie/internal/library"
 	"github.com/yetone/magpie/internal/omarchy"
 	"github.com/yetone/magpie/internal/proc"
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/settings"
 	"github.com/yetone/magpie/internal/shortcut"
 	"github.com/yetone/magpie/internal/stats"
@@ -147,6 +148,19 @@ func (h *host) MainShown() bool { return application.InvokeSyncWithResult(h.main
 
 // Import opens the window on an import link, for the user to confirm.
 func (h *host) Import(link string) {
+	if product.AccountNavigation(link) {
+		h.whenReady(func() {
+			application.InvokeSync(func() {
+				if h.main != nil && !h.loading[h.main] {
+					h.openMain("")
+					h.main.ExecJS(`show("tuzi").then(ok => { if (ok) magpie.call("tuzi", "navigate"); });`)
+				} else {
+					h.openMain(mainURL("tuzi", h.query+"&tuziConnect=1"))
+				}
+			})
+		})
+		return
+	}
 	id := stash(link)
 	h.whenReady(func() {
 		application.InvokeSync(func() { h.openMain("/?view=providers&import=" + id + h.query) })
@@ -408,10 +422,10 @@ func Run(version string, showMain bool, link string) error {
 		// second launch); it hands its arguments to the running one and quits.
 		// The Mac sends the link to the running app itself.
 		SingleInstance: singleInstance(h),
-		Name:           "magpie",
+		Name:           product.Name,
 		Description:    "one place to pick every agent's model",
 		Icon:           appIconFor(),
-		Assets:         application.AssetOptions{Handler: ownWindow(handler)},
+		Assets:         application.AssetOptions{Handler: tuziFixtureAssets(ownWindow(handler))},
 		Mac:            application.MacOptions{ActivationPolicy: policy},
 		Windows:        windowsOptions(),
 		Linux:          linuxOptions(),
@@ -574,7 +588,7 @@ func Run(version string, showMain bool, link string) error {
 		h.tray.SetLabel("magpie")
 		go dropTrayName()
 	}
-	h.tray.SetTooltip("magpie")
+	h.tray.SetTooltip(product.Name)
 	if icon, template := trayIconFor(runtime.GOOS, traySchemeLight()); template {
 		h.tray.SetTemplateIcon(icon)
 	} else {
@@ -711,7 +725,7 @@ func singleInstance(h *host) *application.SingleInstanceOptions {
 	}
 	sum := sha256.Sum256([]byte(settings.Dir()))
 	return &application.SingleInstanceOptions{
-		UniqueID: "ai.usemagpie.app.i" + hex.EncodeToString(sum[:6]),
+		UniqueID: product.BundleID + ".i" + hex.EncodeToString(sum[:6]),
 		OnSecondInstanceLaunch: func(d application.SecondInstanceData) {
 			args := d.Args
 			if len(args) > 0 {
@@ -780,7 +794,7 @@ func (h *host) setBird(b []byte) {
 func panelOptions(goos, theme string) application.WebviewWindowOptions {
 	o := application.WebviewWindowOptions{
 		Name:            "panel",
-		Title:           "magpie",
+		Title:           product.Name,
 		URL:             "/?mode=panel" + theme,
 		Width:           panelWidth,
 		Height:          520,

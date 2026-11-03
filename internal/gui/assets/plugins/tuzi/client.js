@@ -358,7 +358,13 @@
     async function open() {
       if (window.bootPrefs?.web) return;
       active = true; lifecycle++; tab = "keys"; account = null; groups = []; drawTabs(); cancelRead();
-      try { await refreshState(); if (state.status === "offline" && state.identity) { acceptState(await http("check", {})); drawHeader(); } await loadTab(); } catch (e) { if (e?.name !== "AbortError") note(errorText(e), true); }
+      try { await refreshState(); if (state.status === "offline" && state.identity) { acceptState(await http("check", {})); drawHeader(); } await loadTab();
+        if (params.has("tuziConnect")) {
+          params.delete("tuziConnect");
+          const url = new URL(location.href); url.searchParams.delete("tuziConnect"); history.replaceState(null, "", url.pathname + url.search);
+          await navigate();
+        }
+      } catch (e) { if (e?.name !== "AbortError") note(errorText(e), true); }
     }
     function leave() { active = false; lifecycle++; cancelRead(); closeSheet(true); const token = root.querySelector("#tuziSystemToken"); if (token) token.value = ""; }
     async function navigate() {

@@ -1,0 +1,9 @@
+go build -tags "production tuzi_fixture" -trimpath -ldflags="-s -w -X main.version=0.1.0-tuzi-local-fixture" -o tuzi-magpie .
+# github.com/yetone/magpie/internal/gui
+internal/gui/trayimage_darwin.go:131:67: warning: implicit conversion from enumeration type 'enum CGImageAlphaInfo' to different enumeration type 'CGBitmapInfo' (aka 'enum CGBitmapInfo') [-Wimplicit-enum-enum-cast]
+# github.com/yetone/magpie/internal/gui
+internal/gui/dockflap_darwin.go:42:77: warning: implicit conversion from enumeration type 'enum CGImageAlphaInfo' to different enumeration type 'CGBitmapInfo' (aka 'enum CGBitmapInfo') [-Wimplicit-enum-enum-cast]
+internal/gui/dockflap_darwin.go:68:76: warning: implicit conversion from enumeration type 'enum CGImageAlphaInfo' to different enumeration type 'CGBitmapInfo' (aka 'enum CGBitmapInfo') [-Wimplicit-enum-enum-cast]
+# github.com/yetone/magpie
+ld: warning: ignoring duplicate libraries: '-lobjc'
+  tuzi-magpie.app

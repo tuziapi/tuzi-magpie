@@ -1,0 +1,615 @@
+{
+  "assets": "/Users/syd08/Documents/tuzi-magpie-baseline/internal/gui/assets",
+  "fixture": {
+    "providers": [
+      {
+        "id": "synthetic",
+        "name": "Synthetic provider",
+        "icon": "generic",
+        "chat": "http://127.0.0.1:18342/v1",
+        "key": {
+          "set": true,
+          "masked": "sk-…fixture"
+        },
+        "host": "127.0.0.1:18342",
+        "models": [
+          {
+            "id": "synthetic-model",
+            "name": "Synthetic model",
+            "on": true
+          }
+        ],
+        "agents": []
+      }
+    ],
+    "presets": [],
+    "excluded": [],
+    "discovered": [],
+    "gateway": {
+      "running": false,
+      "window": true,
+      "mine": true,
+      "url": "http://127.0.0.1:18343",
+      "calls": [],
+      "groups": []
+    }
+  },
+  "results": [
+    {
+      "name": "chromium-en-light-1100-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-1100-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "en",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-light-440-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-light-440-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "en",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-1100-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-1100-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "en",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-en-dark-440-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-en-dark-440-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "en",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-1100-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-1100-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "zh",
+      "theme": "light",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-light-440-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-light-440-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "zh",
+      "theme": "light",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-1100-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-1100-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 1100
+    },
+    {
+      "name": "chromium-zh-dark-440-agents",
+      "errors": [],
+      "title": "magpie",
+      "view": "agents",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-providers",
+      "errors": [],
+      "title": "magpie",
+      "view": "providers",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-routing",
+      "errors": [],
+      "title": "magpie",
+      "view": "routing",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-library",
+      "errors": [],
+      "title": "magpie",
+      "view": "library",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-usage",
+      "errors": [],
+      "title": "magpie",
+      "view": "usage",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-sessions",
+      "errors": [],
+      "title": "magpie",
+      "view": "sessions",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-plugins",
+      "errors": [],
+      "title": "magpie",
+      "view": "plugins",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    },
+    {
+      "name": "chromium-zh-dark-440-settings",
+      "errors": [],
+      "title": "magpie",
+      "view": "settings",
+      "lang": "zh",
+      "theme": "dark",
+      "width": 440
+    }
+  ]
+}

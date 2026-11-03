@@ -17,6 +17,7 @@ These pages describe current responsibilities, runtime paths, state, and contrac
 | Instructions, MCP servers, skills and RTK written into agents | [Library](library.md) |
 | One MCP server, magpie, given to every agent in place of the Library's servers | [MCP router](mcp-router.md) |
 | Tray, panel, window, `magpie web` and the page's JSON API | [GUI app shell](gui-shell.md) |
+| Tuzi desktop account, private connection, business facade and Provider provenance | [Tuzi account](tuzi-account.md) |
 | Encrypted backups and setup synchronization over WebDAV, S3 or GitHub | [Sync and backup](sync-backup.md) |
 
 A subsystem can span several packages or repositories. Its reference describes the behavior those parts provide together; it does not need to list every function.

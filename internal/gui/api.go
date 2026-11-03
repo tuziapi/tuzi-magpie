@@ -1349,6 +1349,7 @@ func Handler(w Windows, gw *gateway.Server) http.Handler {
 	gatewayFixRoutes(mux)
 	gatewayModeRoutes(mux)
 	if !isWeb(w) {
+		tuziAccountRoutes(mux, w)
 		appPageRoutes(mux)
 	}
 	privacyModelRoutes(mux)

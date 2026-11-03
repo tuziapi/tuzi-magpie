@@ -1,0 +1,5 @@
+--- FAIL: TestTuziNeverDefaultsToUpstreamUpdate (0.00s)
+    tuzi_feed_test.go:14: unconfigured distribution has update feed "https://api.tu-zi.com/api/latest"
+FAIL
+FAIL	github.com/yetone/magpie/internal/update	1.412s
+FAIL

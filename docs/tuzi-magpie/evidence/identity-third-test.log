@@ -1,0 +1,7 @@
+ok  	github.com/yetone/magpie/internal/product	(cached)
+ok  	github.com/yetone/magpie/internal/appdir	2.036s
+ok  	github.com/yetone/magpie/internal/autostart	3.282s
+ok  	github.com/yetone/magpie/internal/daemon	8.426s
+ok  	github.com/yetone/magpie/internal/update	19.970s
+ok  	github.com/yetone/magpie/internal/shortcut	(cached)
+ok  	github.com/yetone/magpie/internal/uninstall	2.290s

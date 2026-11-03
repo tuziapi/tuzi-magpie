@@ -105,7 +105,7 @@ func keepWebData() {
 		return
 	}
 	old := filepath.Base(exe)
-	if old == programName || old == "." || old == string(filepath.Separator) {
+	if old == programName || !strings.HasPrefix(old, product.Name+"-") {
 		return
 	}
 	data := dataHome()

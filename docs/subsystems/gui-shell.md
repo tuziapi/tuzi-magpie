@@ -890,3 +890,18 @@ still follows the existing Not set up folding rules. The dialog explains that
 restoring visibility does not pin an unconfigured agent into the main list.
 See `agent-bulk-visibility.test.cjs` for persistence, partial selection, failed
 saves, narrow layouts and all five languages in Chromium and WebKit.
+
+## tuzi-magpie distribution
+
+This local distribution uses `internal/product` for its independent application,
+data directory, service, process, URI and gateway defaults. Original icon assets
+and existing page styles remain unchanged. Its update feed defaults to disabled;
+only `TUZI_MAGPIE_UPDATE_FEED` may select its future release feed. Automatic
+replacement requires the gateway distribution marker to match this app.
+
+The desktop adds the [Tuzi account workspace](tuzi-account.md). Its routes are
+registered only in the native handler and also require `ownWindow` context. The
+fixed `tuzimagpie://account/connect` link navigates without a credential. A warm
+window keeps its current form and uses the normal discard guard; a cold window
+loads the page. Only a preceding explicit token-page open arms single-use
+clipboard prefill. The Web shell and CLI do not expose account management.

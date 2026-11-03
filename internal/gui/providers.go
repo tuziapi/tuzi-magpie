@@ -462,7 +462,8 @@ type providerAgent struct {
 
 type presetJSON struct {
 	provider.PresetDef
-	Added bool `json:"added"`
+	TuziLinks *provider.TuziWebLinks `json:"tuziLinks,omitempty"`
+	Added     bool                   `json:"added"`
 	// ZhipuTeam: a key of it may be on a team's GLM Coding Plan, whose
 	// organization and project the editor offers to take
 	ZhipuTeam bool `json:"zhipuTeam,omitempty"`
@@ -1064,7 +1065,7 @@ func providersState() providersJSON {
 		bases := provider.Provider{Chat: pr.Chat, Responses: pr.Responses, Anthropic: pr.Anthropic}
 		team := provider.TakesZhipuTeam(bases)
 		vendor, keyRegions := presetAccessKey(pr)
-		s.Presets = append(s.Presets, presetJSON{PresetDef: pr, Added: have[pr.ID], ZhipuTeam: team, AccessKey: vendor != "", AccessKeyVendor: vendor, AccessKeyRegions: keyRegions, Vertex: pr.ID == provider.VertexPreset, OwnClient: presetOwnClient(pr)})
+		s.Presets = append(s.Presets, presetJSON{PresetDef: pr, TuziLinks: tuziPresetLinks(pr.ID), Added: have[pr.ID], ZhipuTeam: team, AccessKey: vendor != "", AccessKeyVendor: vendor, AccessKeyRegions: keyRegions, Vertex: pr.ID == provider.VertexPreset, OwnClient: presetOwnClient(pr)})
 	}
 	cat := provider.Catalog()
 	s.Gateway = gatewayJSON{URL: gateway.URL(), OnNetwork: gateway.OnNetwork(), Models: len(cat), Calls: []gateway.Call{}, Groups: []gwGroupJSON{}}
@@ -2885,4 +2886,13 @@ func fetchedCount(p provider.Provider, ids int) int {
 		return n
 	}
 	return ids
+}
+
+// Only explicit Tuzi preset identities receive these fixed navigation links.
+func tuziPresetLinks(id string) *provider.TuziWebLinks {
+	links, ok := provider.TuziLinks(id)
+	if !ok {
+		return nil
+	}
+	return &links
 }

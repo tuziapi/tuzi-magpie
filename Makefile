@@ -143,15 +143,15 @@ clean:
 # windows stay up and a Go change rebuilds and restarts only the backend
 # behind them (build/dev.sh); without it, dev-once runs the app as one
 # process. Uses its own ports so a running magpie keeps serving the agents.
-DEV_ADDR ?= 127.0.0.1:3426
-DEV_UI ?= 127.0.0.1:3427
-DEV_BACKEND ?= 127.0.0.1:3428
-DEV_CONTROL ?= 127.0.0.1:3429
+DEV_ADDR ?= 127.0.0.1:3446
+DEV_UI ?= 127.0.0.1:3447
+DEV_BACKEND ?= 127.0.0.1:3448
+DEV_CONTROL ?= 127.0.0.1:3449
 dev:
 	@if command -v fswatch >/dev/null; then \
 	  MAGPIE_ADDR=$(DEV_ADDR) MAGPIE_DEV_UI=$(DEV_UI) MAGPIE_DEV_BACKEND=$(DEV_BACKEND) MAGPIE_DEV_CONTROL=$(DEV_CONTROL) build/dev.sh; \
 	else $(MAKE) --no-print-directory dev-once; fi
 
 dev-once:
-	@go build -tags dev -o magpie-dev . && echo "  magpie-dev · UI from internal/gui/assets, reload on save · gateway $(DEV_ADDR)"
-	@MAGPIE_ADDR=$(DEV_ADDR) MAGPIE_DEV_UI=$(DEV_UI) ./magpie-dev app
+	@go build -tags dev -o tuzi-magpie-dev . && echo "  tuzi-magpie-dev · UI from internal/gui/assets, reload on save · gateway $(DEV_ADDR)"
+	@MAGPIE_ADDR=$(DEV_ADDR) MAGPIE_DEV_UI=$(DEV_UI) ./tuzi-magpie-dev app

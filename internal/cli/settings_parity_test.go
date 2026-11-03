@@ -163,6 +163,17 @@ var cliForRoute = map[string]string{
 }
 
 var notYet = map[string]string{
+	"POST /api/usage/checkin-account": U, // Existing wrapped route, now found by the route scanner.
+	"GET /api/tuzi/state":             W, // Desktop-only account management.
+	"POST /api/tuzi/connect":          W, // Desktop-only account management.
+	"POST /api/tuzi/check":            W, // Desktop-only account management.
+	"POST /api/tuzi/disconnect":       W, // Desktop-only account management.
+	"POST /api/tuzi/request":          W, // Desktop-only account management.
+	"POST /api/tuzi/provider":         W, // Desktop-only account management.
+	"POST /api/tuzi/recover":          W, // Desktop-only account management.
+	"POST /api/tuzi/open":             W, // Desktop-only account management.
+	"POST /api/tuzi/prefill":          W, // Desktop-only account management.
+
 	"POST /api/agent-fast":                       A,  // agent_models.go
 	"POST /api/agent-models/{id}":                A,  // agent_models.go
 	"GET /api/agents/cli":                        A,  // api.go
@@ -395,7 +406,7 @@ func guiRoutes(t *testing.T) []string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	re := regexp.MustCompile(`HandleFunc\("([A-Z]+ /api/[^"]*)"`)
+	re := regexp.MustCompile(`(?:HandleFunc|serve)\("([A-Z]+ /api/[^"]*)"`)
 	var routes []string
 	for _, f := range files {
 		if strings.HasSuffix(f, "_test.go") {

@@ -1,0 +1,81 @@
+ok  	github.com/yetone/magpie/internal/product	(cached)
+ok  	github.com/yetone/magpie/internal/appdir	1.908s
+ok  	github.com/yetone/magpie/internal/autostart	2.728s
+--- FAIL: TestSystemdInstallAndUninstall (6.08s)
+    daemon_test.go:123: install ran
+        systemctl --user is-system-running
+        systemctl --user daemon-reload
+        systemctl --user enable tuzi-magpie.service
+        systemctl --user restart tuzi-magpie.service
+        want
+        systemctl --user is-system-running
+        systemctl --user daemon-reload
+        systemctl --user enable magpie.service
+        systemctl --user restart magpie.service
+    daemon_test.go:136: uninstall ran
+        systemctl --user is-system-running
+        systemctl --user disable --now tuzi-magpie.service
+        systemctl --user daemon-reload
+        want
+        systemctl --user is-system-running
+        systemctl --user disable --now magpie.service
+        systemctl --user daemon-reload
+--- FAIL: TestLaunchdInstall (0.12s)
+    daemon_test.go:265: the plist has no "<key>Label</key><string>com.yetone.magpie.serve</string>":
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <!-- Written by magpie daemon install; magpie daemon uninstall removes it. -->
+        <plist version="1.0">
+        <dict>
+        	<key>Label</key><string>com.tuzi.magpie.serve</string>
+        	<key>ProgramArguments</key>
+        	<array><string>/opt/my magpie/magpie%1</string><string>serve</string></array>
+        	<key>RunAtLoad</key><true/>
+        	<key>KeepAlive</key>
+        	<dict><key>SuccessfulExit</key><false/></dict>
+        	<key>ThrottleInterval</key><integer>5</integer>
+        	<key>ProcessType</key><string>Background</string>
+        	<key>StandardOutPath</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/Logs/tuzi-magpie/serve.log</string>
+        	<key>StandardErrorPath</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/Logs/tuzi-magpie/serve.log</string>
+        	<key>EnvironmentVariables</key>
+        	<dict>
+        		<key>PATH</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/bin</string>
+        		<key>HTTP_PROXY</key><string>http://a&amp;b&lt;c&gt;@proxy</string>
+        		<key>XDG_CONFIG_HOME</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/.config</string>
+        		<key>XDG_DATA_HOME</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-2399587715/.local/share</string>
+        		<key>XDG_CACHE_HOME</key><string>/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-2399587715/.cache</string>
+        	</dict>
+        </dict>
+        </plist>
+    daemon_test.go:280: install ran
+        launchctl print gui/501/com.tuzi.magpie.serve
+        launchctl bootstrap gui/501 /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/LaunchAgents/com.tuzi.magpie.serve.plist
+        want
+        launchctl print gui/501/com.yetone.magpie.serve
+        launchctl bootstrap gui/501 /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/LaunchAgents/com.tuzi.magpie.serve.plist
+    daemon_test.go:297: reinstall and restart ran
+        launchctl print gui/501/com.tuzi.magpie.serve
+        launchctl bootout gui/501/com.tuzi.magpie.serve
+        launchctl bootstrap gui/501 /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/LaunchAgents/com.tuzi.magpie.serve.plist
+        launchctl print gui/501/com.tuzi.magpie.serve
+        launchctl kickstart -k gui/501/com.tuzi.magpie.serve
+        want
+        launchctl print gui/501/com.yetone.magpie.serve
+        launchctl bootout gui/501/com.yetone.magpie.serve
+        launchctl bootstrap gui/501 /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall1197721981/001/home/Library/LaunchAgents/com.tuzi.magpie.serve.plist
+        launchctl print gui/501/com.yetone.magpie.serve
+        launchctl kickstart -k gui/501/com.yetone.magpie.serve
+    daemon_test.go:315: uninstall ran
+        launchctl print gui/501/com.tuzi.magpie.serve
+        launchctl bootout gui/501/com.tuzi.magpie.serve
+FAIL
+FAIL	github.com/yetone/magpie/internal/daemon	7.686s
+--- FAIL: TestCLIShim (0.00s)
+    cli_shim_test.go:53: magpie.exe given a shim: "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestCLIShim1860038984/002/tuzi-magpie.cmd", <nil>
+--- FAIL: TestComOwner (0.00s)
+    com_test.go:84: magpie.exe doesn't own its magpie.com
+FAIL
+FAIL	github.com/yetone/magpie/internal/update	20.466s
+ok  	github.com/yetone/magpie/internal/shortcut	5.217s
+ok  	github.com/yetone/magpie/internal/uninstall	1.741s
+FAIL

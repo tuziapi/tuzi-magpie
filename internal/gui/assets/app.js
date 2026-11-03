@@ -9517,8 +9517,7 @@ function drawEditor(p, presetID) {
   };
   side.append(eye);
   const keysUrl = p?.keysUrl || pr?.keysUrl;
-  // the link follows the plan picked: a region's keysUrl goes with its
-  // endpoints, and one without falls back to the preset's own page
+  // A region can override the preset's key page.
   if (keysUrl) {
     const b = el("button", "link", t("Get a key ↗"));
     b.onclick = () => {
@@ -9527,6 +9526,7 @@ function drawEditor(p, presetID) {
     };
     side.append(b);
   }
+  window.tuziShell?.links(pr, side);
   const keyWrap = el("div", "pair");
   keyWrap.append(key, side);
   // Google Vertex AI takes no key: it is asked at the user's own Google
@@ -23161,11 +23161,11 @@ for (const v of document.querySelectorAll(".view")) {
 
 let settingsLoad = Promise.resolve(); // show()'s read of Settings, for openSettingsAt
 async function show(v) {
-  // a built-in page a plugin's page replaces (magpie.page.replaces) opens that
+  if (v === "tuzi" && (window.bootPrefs?.web || !magpie.page("tuzi"))) v = "agents";
+  if (v !== view && view === "tuzi" && !await window.tuziShell.leave()) return false;
+  // Resolve replacement and unavailable pages.
   v = magpie.replacing?.(v) || v;
-  // a page gateway mode leaves out (a link to it, an address kept) opens Providers
   if (gatewayMode && GATEWAY_HIDES.includes(v)) v = "providers";
-  // and one a built-in plugin switched off has, Agents
   if (featureHides($(`#nav button[data-view="${v}"]`))) v = gatewayMode ? "providers" : "agents";
   if (v !== view) {
     if (v === "plugins" && pluginUpdates) window.pluginTabTo?.("installed");
@@ -23259,11 +23259,10 @@ function setGatewayMode(on) {
   else if (!sideNav()) slide($("#nav"), "nav");
   navSubs();
 }
-// navHides leaves out the tabs of the pages gateway mode or a built-in
-// plugin switched off leaves out
+// Hide unavailable pages.
 function navHides() {
   if (mode !== "window") return;
-  for (const b of $("#nav").querySelectorAll("button[data-view]")) b.hidden = (gatewayMode && GATEWAY_HIDES.includes(b.dataset.view)) || featureHides(b);
+  for (const b of $("#nav").querySelectorAll("button[data-view]")) b.hidden = (b.dataset.view === "tuzi" && !!window.bootPrefs?.web) || (gatewayMode && GATEWAY_HIDES.includes(b.dataset.view)) || featureHides(b);
 }
 // applyFeatures takes the built-in plugins' state from a read of the
 // settings, or a switch on Plugins › Built-in:

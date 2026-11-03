@@ -9,6 +9,6 @@ func init() {
 		ID: "tuzi", API: "^1", Requires: []string{"window"}, Essential: true,
 		Name: "Tuzi account", Sub: "Tuzi account",
 		Parts:  []pluginrt.Part{{Slot: "nav.page", Key: "tuzi"}},
-		Client: []string{"money.js", "i18n.js", "tuzi.css", "client.js"},
+		Client: []string{"money.js", "i18n.js", "tuzi.css", "client.js", "integration.js"},
 	})
 }

@@ -1,0 +1,11 @@
+ok  	github.com/yetone/magpie/internal/product	(cached)
+ok  	github.com/yetone/magpie/internal/appdir	1.587s
+ok  	github.com/yetone/magpie/internal/autostart	3.012s
+ok  	github.com/yetone/magpie/internal/daemon	5.215s
+--- FAIL: TestForgetOldStaging (0.00s)
+    staging_test.go:195: forgot ["/Applications/.magpie-update/app/magpie.app" "/Applications/.magpie-update/old.app" "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-667228516/Library/Caches/tuzi-magpie/update/app/magpie.app" "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-667228516/Library/Caches/tuzi-magpie/update/old.app"], want ["/Applications/.tuzi-magpie-update/app/tuzi-magpie.app" "/Applications/.tuzi-magpie-update/old.app" "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-667228516/Library/Caches/tuzi-magpie/update/app/tuzi-magpie.app" "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-667228516/Library/Caches/tuzi-magpie/update/old.app"]
+FAIL
+FAIL	github.com/yetone/magpie/internal/update	18.962s
+ok  	github.com/yetone/magpie/internal/shortcut	(cached)
+ok  	github.com/yetone/magpie/internal/uninstall	1.815s
+FAIL

@@ -1,0 +1,85 @@
+# github.com/yetone/magpie/internal/proc
+internal/proc/disclaim_darwin.go:35:19: warning: 'posix_spawn_file_actions_addchdir_np' is deprecated: first deprecated in macOS 26.0 - posix_spawn_file_actions_addchdir(3) has replaced posix_spawn_file_actions_addchdir_np(3) [-Wdeprecated-declarations]
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/spawn.h:184:9: note: 'posix_spawn_file_actions_addchdir_np' has been explicitly marked deprecated here
+ok  	github.com/yetone/magpie/internal/product	0.365s
+--- FAIL: TestResolve (0.00s)
+    appdir_test.go:57: data folder: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolve2208516396/001/port/data"
+    appdir_test.go:64: .portable: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolve2208516396/001/marker/data"
+    appdir_test.go:75: Mac app: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolve2208516396/001/mac/data"
+--- FAIL: TestResolveSymlinkedExe (0.00s)
+    appdir_test.go:98: symlinked exe: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSymlinkedExe518508014/001/app/data"
+--- FAIL: TestFolders (0.00s)
+    appdir_test.go:131: installed: portable "", config "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFolders3783796428/001/cfg/tuzi-magpie", cache "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFolders3783796428/001/cache/tuzi-magpie"
+    appdir_test.go:134: installed system cache "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/Library/Caches/tuzi-magpie"
+    appdir_test.go:142: portable: portable "", config "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFolders3783796428/001/cfg/tuzi-magpie", cache "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFolders3783796428/001/cache/tuzi-magpie"
+    appdir_test.go:145: portable system cache "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/Library/Caches/tuzi-magpie"
+--- FAIL: TestWebView (0.00s)
+    appdir_test.go:164: portable: WebView() = "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestWebView2660990570/001/port/data/webview2"
+--- FAIL: TestResolveSharedFolder (0.00s)
+    appdir_test.go:193: nothing installed: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSharedFolder3567855019/001/Applications/data"
+    appdir_test.go:204: Passed "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSharedFolder3567855019/001/Applications/data"
+    appdir_test.go:209: Config "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSharedFolder3567855019/001/cfg/tuzi-magpie", want the installed folder
+    appdir_test.go:214: .portable: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSharedFolder3567855019/001/Applications/data"
+    appdir_test.go:221: own folder: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveSharedFolder3567855019/001/usb/data"
+--- FAIL: TestResolveDownloads (0.00s)
+    appdir_test.go:249: portable run before: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveDownloads68279803/001/home/Downloads/data"
+    appdir_test.go:256: Passed "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveDownloads68279803/001/home/Downloads/data"
+    appdir_test.go:260: .portable: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveDownloads68279803/001/home/Downloads/data"
+--- FAIL: TestBlockedNamesTheFolderInTheWay (0.00s)
+    blocked_test.go:36: Own: only magpie's own folder and what is in it
+--- FAIL: TestConfigNeverRelative (0.00s)
+    env_test.go:38: Config() = "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestConfigNeverRelative1722702390/001/.config/tuzi-magpie", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestConfigNeverRelative1722702390/001/.config/magpie"
+    env_test.go:41: Cache() = "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestConfigNeverRelative1722702390/001/.cache/tuzi-magpie", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestConfigNeverRelative1722702390/001/.cache/magpie"
+--- FAIL: TestFoldersJoinedOnce (0.00s)
+    join_test.go:29: JoinFile = "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/cache/tuzi-magpie/models/openai.json", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/cache/magpie/models/openai.json"
+    join_test.go:34: a cache folder changed since: "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/other/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/other/magpie"
+    join_test.go:39: under the home folder: "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/home/.config/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestFoldersJoinedOnce1823603393/001/home/.config/magpie"
+--- FAIL: TestLogsOnEachSystem (0.00s)
+    logs_test.go:29: darwin: logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/Library/Logs/tuzi-magpie", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/Library/Logs/magpie"
+    logs_test.go:29: windows: logs in "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/local/tuzi-magpie/logs", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/local/magpie/logs"
+    logs_test.go:29: linux: logs in "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/state/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/state/magpie"
+    logs_test.go:29: freebsd: logs in "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/state/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/state/magpie"
+    logs_test.go:38: windows, LOCALAPPDATA "": logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/AppData/Local/tuzi-magpie/logs", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/AppData/Local/magpie/logs"
+    logs_test.go:41: linux, XDG_STATE_HOME "": logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/.local/state/tuzi-magpie", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/.local/state/magpie"
+    logs_test.go:38: windows, LOCALAPPDATA "relative": logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/AppData/Local/tuzi-magpie/logs", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/AppData/Local/magpie/logs"
+    logs_test.go:41: linux, XDG_STATE_HOME "relative": logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/.local/state/tuzi-magpie", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/.local/state/magpie"
+    logs_test.go:51: portable on darwin: logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/Library/Logs/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/port/data/logs"
+    logs_test.go:51: portable on windows: logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/AppData/Local/tuzi-magpie/logs", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/port/data/logs"
+    logs_test.go:51: portable on linux: logs in "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/magpie-test-home-182704322/.local/state/tuzi-magpie", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLogsOnEachSystem2947368827/001/port/data/logs"
+--- FAIL: TestResolveMovedDownloadsKeepsData (0.00s)
+    userdirs_test.go:226: nothing installed: "", want "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveMovedDownloadsKeepsData1271140678/001/D/Downloads/data"
+    userdirs_test.go:232: installed has old files: "", want the data folder "/private/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestResolveMovedDownloadsKeepsData1271140678/001/D/Downloads/data"
+FAIL
+FAIL	github.com/yetone/magpie/internal/appdir	1.924s
+ok  	github.com/yetone/magpie/internal/autostart	5.672s
+--- FAIL: TestSystemdInstallAndUninstall (5.11s)
+    daemon_test.go:90: open /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestSystemdInstallAndUninstall1590270994/001/home/.config/systemd/user/magpie.service: no such file or directory
+--- FAIL: TestSystemdStatus (0.07s)
+    daemon_test.go:190: logs "journalctl --user -u tuzi-magpie -f"
+--- FAIL: TestLaunchdInstall (0.02s)
+    daemon_test.go:254: open /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestLaunchdInstall3161545824/001/home/Library/LaunchAgents/com.yetone.magpie.serve.plist: no such file or directory
+--- FAIL: TestPick (0.00s)
+    daemon_test.go:351: got "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestPick1758265404/001/Cellar/magpie/1.0/magpie", <nil>; want the link on PATH
+--- FAIL: TestInstallWithWeb (0.09s)
+    --- FAIL: TestInstallWithWeb/linux (0.04s)
+        daemon_test.go:459: open /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestInstallWithWeblinux1578471219/001/home/.config/systemd/user/magpie.service: no such file or directory
+    --- FAIL: TestInstallWithWeb/darwin (0.05s)
+        daemon_test.go:459: open /var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestInstallWithWebdarwin2378390924/001/home/Library/LaunchAgents/com.yetone.magpie.serve.plist: no such file or directory
+FAIL
+FAIL	github.com/yetone/magpie/internal/daemon	7.033s
+--- FAIL: TestCLIOnPath (3.52s)
+    cli_path_test.go:59: after Add: &{Exe:/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestCLIOnPath620079780/001/Applications/magpie.app/Contents/MacOS/magpie Command:/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestCLIOnPath620079780/001/.local/bin/tuzi-magpie Ours:true Version: Dir: Stuck: Shells:[{Name:zsh Default:true Known:true Command:/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestCLIOnPath620079780/001/.local/bin/tuzi-magpie Ours:true Profile:~/.zshrc HasDir:false} {Name:fish Default:false Known:true Command: Ours:false Profile:~/.config/fish/config.fish HasDir:false}] Windows:false Shim:}
+--- FAIL: TestCLIShim (0.00s)
+    cli_shim_test.go:26: shim at "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestCLIShim1453952197/001/tuzi-magpie.cmd"
+--- FAIL: TestWriteCom (0.00s)
+    com_test.go:36: writeCom: "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestWriteCom1629114044/001/tuzi-magpie.com", <nil>
+--- FAIL: TestComOwner (0.00s)
+    com_test.go:81: a copy beside magpie.exe takes `magpie` from it
+--- FAIL: TestRelaunchLogInMagpiesFolder (0.00s)
+    relaunch_fallback_test.go:194: log at "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestRelaunchLogInMagpiesFolder1980594990/001/tuzi-magpie/relaunch.log", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestRelaunchLogInMagpiesFolder1980594990/001/magpie/relaunch.log"
+--- FAIL: TestStaleCLI (0.00s)
+    --- FAIL: TestStaleCLI/a_copied_release_behind_the_app_is_stale (0.00s)
+        relink_test.go:41: StaleCLI = "", want "/var/folders/y5/pxpgfd896pn3xyjqw2x9g9w00000gn/T/TestStaleCLI2069353265/001/magpie": an older copy won't follow the app
+FAIL
+FAIL	github.com/yetone/magpie/internal/update	20.649s
+FAIL
