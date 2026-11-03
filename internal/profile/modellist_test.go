@@ -2,6 +2,7 @@ package profile
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -16,7 +17,7 @@ import (
 
 // modelsHome is the sandbox with a provider of three models and Codex set up
 // with magpie as its provider, whose model list magpie writes into
-// magpie-models.json, and the agents' files following a change of the
+// tuzi-magpie-models.json, and the agents' files following a change of the
 // catalog as they do in magpie (main sets catalog.Changed).
 func modelsHome(t *testing.T) (catalogFile string) {
 	t.Helper()
@@ -24,16 +25,21 @@ func modelsHome(t *testing.T) (catalogFile string) {
 	if err := provider.Save(provider.Provider{ID: "relay", Name: "Relay", Key: "k", Chat: "http://127.0.0.1:1/v1", Models: []string{"m1", "m2", "m3"}}); err != nil {
 		t.Fatal(err)
 	}
-	catalogFile = filepath.Join(h, ".codex", "magpie-models.json")
+	catalogFile = filepath.Join(h, ".codex", "tuzi-magpie-models.json")
 	// the catalog named as magpie names it: by its full path, and on
 	// Windows relative to config.toml (#816). A C:/ spelling isn't one
 	// magpie writes or takes for its own list, so on Windows Codex's list
 	// was never written and these tests failed there (#1517).
 	ref := "'" + catalogFile + "'"
 	if runtime.GOOS == "windows" {
-		ref = `"magpie-models.json"`
+		ref = `"tuzi-magpie-models.json"`
 	}
 	write(t, filepath.Join(h, ".codex", "config.toml"), "model = \"relay/m1\"\nmodel_provider = \"magpie\"\nmodel_catalog_json = "+ref+"\n\n[model_providers.magpie]\nname = \"magpie\"\nbase_url = \"http://127.0.0.1:1/v1\"\nwire_api = \"responses\"\n")
+	// This is an explicitly connected fixture in this distribution's own
+	// state; a shared provider spelling alone must not authorize sync.
+	if err := os.WriteFile(filepath.Join(filepath.Dir(provider.Path()), "stash.json"), []byte(`{"codex.connect.was":"{}"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
 	was := catalog.Changed
 	catalog.Changed = agent.SyncCatalog
 	t.Cleanup(func() { catalog.Changed = was })
@@ -41,7 +47,7 @@ func modelsHome(t *testing.T) (catalogFile string) {
 	return catalogFile
 }
 
-// lists is which of the relay's models magpie-models.json gives Codex.
+// lists is which of the relay's models tuzi-magpie-models.json gives Codex.
 func lists(t *testing.T, file string) []string {
 	t.Helper()
 	var out []string

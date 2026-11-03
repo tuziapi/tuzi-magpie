@@ -34,6 +34,12 @@ are recorded in [the Tuzi lines reference](../tuzi-magpie/lines-and-images.md).
 
 ## Responsibilities and sources of truth
 
+Codex provider import (`codexImportModels` in `import_codex.go`) excludes both
+the upstream `magpie-models.json` and distribution `tuzi-magpie-models.json`
+inside the active Codex home. They are gateway-generated catalogs, not an
+external provider's native model list. A user catalog with either basename in
+another directory remains importable (`TestCodexImportModelsSameBasename`).
+
 | Part | Responsibility | Source |
 | --- | --- | --- |
 | Provider | `Provider` holds the endpoint bases for each `Protocol` (Chat, Responses, Anthropic, Gemini), the keys, `Fallback`, `Routing`, `Sink`, `Affinity`, concurrency and queue limits, `Headers`, `Proxy`, models, and balance settings. `BaseAPI` is the API a custom provider's editor shows its Base URL as: the one the user picked and saved, while it has a URL, so a provider with a chat URL beside its Responses one isn't shown as OpenAI compatible after Responses was picked. Requests go by which URLs are set; `Native`, the API agents' model files ask a model on, takes `BaseAPI` where it serves the model, after the OpenAI-model and Claude-on-Messages rules (nb5p on Discord: dsh asked a Responses relay's GPTs on Chat). A custom provider's `Gemini` URL is the base of Google's Gemini API, or of one that answers as it does (#1346): `GeminiBase` keeps it as the base (…/v1beta added to a bare host, a pasted endpoint or model list cut back), requests go to `models/{model}:streamGenerateContent?alt=sse` under it (`GeminiPath`) signed with `x-goog-api-key` (`AuthHeaders`), and its models are listed by `catalog.FetchGemini` (paged, only those serving generateContent). Factory's sign-in alone keeps its own `/generate` route and token (`FactoryGemini`). `Account` is set only for a subscription and is never saved (`json:"-"`). | [`provider.go`](../../internal/provider/provider.go) |

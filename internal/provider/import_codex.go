@@ -112,7 +112,8 @@ func codexImportModels(configPath, catalogPath string) []string {
 	} else if !filepath.IsAbs(catalogPath) {
 		catalogPath = filepath.Join(filepath.Dir(configPath), catalogPath)
 	}
-	if filepath.Clean(catalogPath) == filepath.Join(appdir.CodexHomeIn(home), "magpie-models.json") {
+	clean := filepath.Clean(catalogPath)
+	if clean == filepath.Join(appdir.CodexHomeIn(home), "magpie-models.json") || clean == filepath.Join(appdir.CodexHomeIn(home), "tuzi-magpie-models.json") {
 		return nil
 	}
 	b, err := os.ReadFile(catalogPath)

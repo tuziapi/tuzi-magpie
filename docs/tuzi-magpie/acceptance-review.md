@@ -56,6 +56,30 @@ ownership review. Root assigned the repair to the account agent. **Open at
 this review snapshot; inspect the actual repair and its regression before
 closing.**
 
+Final independent re-review: `a691e37` repairs this issue. The reviewer read
+the actual production changes and the affected tests, then independently ran
+`go test -tags nogui ./internal/agent -run TestTuzi -count=1` under temporary
+HOME/pinned caches: passed in 6.681s. Automatic maintenance now requires this
+distribution's own valid ownership records; explicit adoption preserves the
+primary config, and Codex catalogs have distinct names. The reviewer's
+additional crash-window finding in the first backup implementation is fixed
+with private temporary write, fsync and non-overwriting atomic publication.
+The author's recorded old-code negative control shows actual original Codex
+config/catalog mutation, and final full-package/race results were inspected.
+R1's source defect is closed. Native final startup and original-page behavior
+comparison remain independent root acceptance gates, not inferred from this
+focused test.
+
+The reviewer also found and fixed the cross-package catalog rename follow-up:
+the provider importer must exclude both old and new generated catalog names,
+while allowing the same basename elsewhere. GUI/profile fixtures now use the
+new name and explicitly represent owned connections. Its focused GUI/profile/
+provider tests passed (4.506s / 5.897s / 1.759s); removing only the new importer
+exclusion causes `TestCodexImportModelsSameBasename` to fail with the generated
+catalog imported. This follow-up is reviewer-authored and requires root review.
+Logs: `/Users/syd08/Documents/tuzi-magpie-evidence/lines/catalog-cross-package.log`,
+`catalog-import-red.log`, and `agent-isolation-independent.log`.
+
 ### R2 — P2: business authentication failure leaves stale connected UI
 
 Affected AC-03, AC-04. `internal/tuziaccount/business.go:108` changes native
@@ -122,9 +146,9 @@ the root task's gate.
 
 | AC | Source/evidence inspected | Remaining root acceptance gate |
 | --- | --- | --- |
-| 01 | product/appdir/process/port identity changes and isolation tests | Close R1; run final bundle with isolated configuration; original icon check |
+| 01 | product/appdir/process/port identity changes and isolation tests; R1 closed by independent re-review | Run final bundle with isolated configuration; original icon check |
 | 02 | native-only plugin, four tabs, keys summaries, lifecycle hooks | Actual native navigation and polling cancellation |
-| 03 | service connect/check/store/generation tests and UI lifecycle | Close R2; native restart, switch, failure and reconnect flows |
+| 03 | service connect/check/store/generation tests and UI lifecycle; R2 closed by source re-review | Native restart, switch, failure and reconnect flows |
 | 04 | native facade, private store, DTO projections, export boundaries | Final integrated negative-access and secret-leak checks |
 | 05 | all Key actions, partial PATCH, native pending-write recovery | Native complete CRUD, reveal/copy, advanced limits and uncertain-write readback |
 | 06 | summaries, money helpers, applied log filters, refunds and statistics | Native synthetic amounts/timezone/logs; final browser engine checks |
@@ -137,7 +161,7 @@ the root task's gate.
 | 13 | author UI tests plus focused Go/race evidence | Complete repository checks and baseline attribution for any existing failures |
 | 14 | installed Codex/official Claude synthetic CLI evidence | Final actual macOS desktop build/start and complete native synthetic E2E |
 | 15 | original history/license, disabled publishing, independent empty update feed | Final source/history credential scan, repository/update handoff documentation |
-| 16 | scoped CSS and restricted shared-file changes | Close R1; final same-condition old-page visual/behavior comparison |
+| 16 | scoped CSS and restricted shared-file changes; R1 closed | Final same-condition old-page visual/behavior comparison |
 
 Evidence pointers: `account-backend-record.md`, `non-author-review-account.md`,
 `ui-implementation.md`, `lines-and-images.md`, `installed-cli-acceptance.md`,

@@ -333,26 +333,26 @@ func TestImportHeadersDistinguishExistingProvider(t *testing.T) {
 func TestCodexImportModelsSameBasename(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
+	t.Setenv("CODEX_HOME", filepath.Join(home, ".codex"))
 	t.Setenv("USERPROFILE", home)                                  // Windows
 	t.Setenv("APPDATA", filepath.Join(home, "AppData", "Roaming")) // Windows: never the real Alma
 	config := filepath.Join(home, "other", "config.toml")
 	models := []byte(`{"models":[{"slug":"custom-model","visibility":"list"}]}`)
-	for _, path := range []string{
-		filepath.Join(home, ".codex", "magpie-models.json"),
-		filepath.Join(home, "other", "magpie-models.json"),
-	} {
-		if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-			t.Fatal(err)
+	for _, name := range []string{"magpie-models.json", "tuzi-magpie-models.json"} {
+		for _, path := range []string{filepath.Join(home, ".codex", name), filepath.Join(home, "other", name)} {
+			if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, models, 0o600); err != nil {
+				t.Fatal(err)
+			}
 		}
-		if err := os.WriteFile(path, models, 0o600); err != nil {
-			t.Fatal(err)
+		if got := codexImportModels(config, "../.codex/"+name); len(got) != 0 {
+			t.Fatalf("managed catalog %s was imported: %v", name, got)
 		}
-	}
-	if got := codexImportModels(config, "../.codex/magpie-models.json"); len(got) != 0 {
-		t.Fatalf("magpie's own catalog was imported: %v", got)
-	}
-	if got := codexImportModels(config, "magpie-models.json"); len(got) != 1 || got[0] != "custom-model" {
-		t.Fatalf("user catalog with the same basename was skipped: %v", got)
+		if got := codexImportModels(config, name); len(got) != 1 || got[0] != "custom-model" {
+			t.Fatalf("user catalog with basename %s was skipped: %v", name, got)
+		}
 	}
 }
 
