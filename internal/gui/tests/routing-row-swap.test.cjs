@@ -1,10 +1,11 @@
 // Run with Node's test runner and Playwright on the module path; see README.md.
 // Routing, the request list: a request in the middle of the list that
-// finishes has its row made again, and only that row goes in and out. The
-// list put every row after it in again in front of the old one, ~40 rows
+// finishes updates its row in place. The list once put every row after
+// a replaced row in again in front of the old one, ~40 rows
 // moved and laid out on each update a busy gateway sends, and with two
 // groups of hundreds of keys open WebKit dropped to a frame a second for a
-// moment at each (#3164). In Chromium and WebKit.
+// moment at each (#3164). rowOf now morphs the finished row too (#3731),
+// so no row should go out and in. In Chromium and WebKit.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
@@ -52,7 +53,7 @@ function serve(feed) {
 }
 
 for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium", "webkit"])) {
-  test(`${engine}: a request done in the middle of the list swaps its own row only`, async (t) => {
+  test(`${engine}: a request done in the middle of the list updates without replacing rows`, async (t) => {
     const browser = await (engine === "webkit" ? webkit.launch() : chromium.launch({ channel: "chromium" }));
     t.after(() => browser.close());
     const page = await browser.newPage({ viewport: { width: 1100, height: 900 } });
@@ -65,9 +66,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     await page.goto("http://magpie.test/?view=routing");
     await page.locator(".rt-req").nth(first.length - 1).waitFor();
     await page.waitForTimeout(800);
+    assert.equal(await page.locator(".rt-req.wait").count(), 1);
     await page.evaluate(() => {
       const list = document.querySelector(".rt-reqs");
       window.__was = [...list.querySelectorAll(".rt-req:not(.probe)")];
+      window.__finishing = list.querySelector(".rt-req.wait");
+      window.__beforeText = window.__finishing.textContent;
       window.__moved = { added: 0, removed: 0 };
       window.__mo = new MutationObserver((ms) => {
         for (const m of ms) for (const [k, ns] of [["added", m.addedNodes], ["removed", m.removedNodes]])
@@ -78,16 +82,20 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     for (let i = 0; i < 60 && !feed.next; i++) await page.waitForTimeout(50);
     assert(feed.next, "the page asks for the next trace");
     feed.next(req(110, true, 200));
-    await page.waitForFunction(() => document.querySelectorAll(".rt-req.ok, .rt-req:not(.wait)").length && ![...document.querySelectorAll(".rt-req:not(.probe)")].every((r) => window.__was.includes(r)));
+    await page.waitForFunction(() => document.querySelectorAll(".rt-req.ok").length === 30 && !document.querySelector(".rt-req.wait"));
     await page.waitForTimeout(300);
     const got = await page.evaluate(() => {
       window.__mo.disconnect();
       const rows = [...document.querySelectorAll(".rt-reqs .rt-req:not(.probe)")];
-      return { rows: rows.length, kept: window.__was.filter((r) => rows.includes(r)).length, moved: window.__moved };
+      return { rows: rows.length, kept: window.__was.filter((r) => rows.includes(r)).length, moved: window.__moved,
+        finished: window.__finishing.isConnected && window.__finishing.classList.contains("ok"),
+        changed: window.__finishing.textContent !== window.__beforeText };
     });
     assert.equal(got.rows, 30);
-    assert.equal(got.kept, 29, "every other row is the one it was");
-    assert.deepEqual(got.moved, { added: 1, removed: 1 }, "only the finished request's row goes out and in");
+    assert.equal(got.kept, 30, "every row is the one it was");
+    assert.deepEqual(got.moved, { added: 0, removed: 0 }, "no request row goes out and in");
+    assert.equal(got.finished, true, "the original pending row now shows success");
+    assert.equal(got.changed, true, "the finished request's content updates");
     assert.deepEqual(errors, []);
   });
 }

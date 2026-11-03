@@ -49,7 +49,7 @@ a separate pending gate.
 
 ## Inherited static test omissions
 
-The original2251ca1 nav-timeout guard failed because account-rows-fit,
+The original 2251ca1 nav-timeout guard failed because account-rows-fit,
 profile-rename and window-visibility gave their pages a5s interaction timeout
 but no separate navigation timeout. They now set60000ms for navigation, as
 the unchanged guard requires; interaction timeouts and assertions remain.
@@ -63,3 +63,41 @@ old-webkit-static-green.log, and the actual WebKit drawing case passes in
 the root target batch. An initial broad diagnostic lacked the explicit
 browser installation path; its launch error is retained and is not treated
 as a baseline behavior failure or successful runtime check.
+
+## Routing request rows update in place
+
+The first complete Chromium run found `routing-row-swap.test.cjs` waiting
+for a row to be replaced. At original 2251ca1 and integrated b2c3575, both this
+test and the complete `plugins/routing/client.js` are byte-identical. The
+existing `rowOf` now uses `morphRow` to retain the row and its pulse (#3731);
+the old test still required the older replacement behavior (#3164).
+
+The corrected test waits for the one pending request to finish, then requires
+all 30 original row nodes to remain and the observer to see zero row insertions
+or removals. It also requires the original pending row to be connected, have
+the success class, and show changed content. The production renderer is
+unchanged. This keeps the original no-unnecessary-row-reconstruction purpose
+and matches its existing stronger implementation.
+
+Serial single-browser evidence is in
+`/Users/syd08/Documents/tuzi-magpie-evidence/routing-row-01/`:
+
+- Original fixture against original assets: both engines fail the old
+  replacement wait (6.68s Chromium, 6.90s WebKit).
+- Corrected fixture: 1/1 passes in each engine (1.96s,1.94s).
+- Fixture-only mutation replaces the completed row instead of morphing it:
+  both engines fail with 29 retained nodes instead of 30.
+- Fixture-only mutation ignores the row update: both engines fail to reach
+  the required 30 success rows, while the initial pending-row precondition
+  passes. No application file was changed for these mutations.
+
+`sources.json` retains the tested patch and source HEAD; `results.json` and
+engine/case logs retain every initial red, final green and negative control.
+Full integrated suites remain separate pending gates.
+
+The account agent independently reviewed the pending test, `rowOf` through
+`morphRow` and `placeRows`, and the exact diagnostic copies. It found no
+blocking issue: node identity plus the mutation observer still catches the
+original row-movement regression, while success/content assertions reject
+a skipped update. Product assets have no changes from the recorded b2c3575
+through the reviewed d80262b integration head.
