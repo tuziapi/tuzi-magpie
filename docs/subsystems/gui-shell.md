@@ -75,6 +75,17 @@ navigation and font changes remain immediate. The settled geometry is unchanged;
 a size notification can take one frame to be applied. See `header-centre.test.cjs`,
 `header-zoom-fit.test.cjs` and `header-relang.test.cjs`.
 
+### Agent model menu and internal icon scrolling
+
+`openAgentModels` keeps its menu open when the current agent row's exact
+`.ag-sum .mi` element scrolls internally and all four anchor edges still
+match their opening positions. The clipped icon can emit this event without
+moving either the anchor or popup. A moved anchor or any other outside scroll
+continues through the existing `scrollCloses` rule. This exception belongs to
+this menu's listener, not the shared rule. `agent-menu-label.test.cjs` and
+`zcode-models.test.cjs` retain selection, request and position checks and wait
+for the panel's opening animation before interacting.
+
 ### Allowance card refreshes
 
 A card refresh applies only the requested account from the API's full

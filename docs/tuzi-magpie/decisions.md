@@ -81,3 +81,18 @@ in one of32 settled screenshot pairs; all112 measured nodes match exactly.
 See header-observer-review.md for cause, actual diff, independent review and
 pending bounded checks. This does not change AC thresholds or authorize other
 historical product repairs.
+
+
+## 2026-11-04 F08 model menu approval
+
+The user explicitly approved “采用 F08 最小修复”. Apply only the verified
+current-row summary-icon scroll exception while all four anchor edges remain
+unchanged, plus the two panel-animation test preconditions. Existing real view
+scrolling and moved-anchor dismissal remain. External complete files pass20/20
+per engine, causal old/current/candidate controls and strict negative controls
+are retained, and the static popup screenshot is pixel-identical.
+
+The subsequent user instruction authorizes ordinary remaining decisions and
+necessary fixes within the existing finite closing scope without further
+per-item questions. It does not authorize feature expansion, unrelated history
+repairs, remote operations, real credentials or silent acceptance reductions.

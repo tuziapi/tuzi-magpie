@@ -3794,9 +3794,7 @@ async function openAgentModels(a, anchor, ev) {
     }
     draw();
   };
-  // every model of every provider at once is a lot to pick again by hand,
-  // and with one provider picked on the left it read as that one's (#920):
-  // a first click says how many, of every provider, and a second does it
+  // Hide/show all covers every provider: first count them, then confirm (#920).
   const twice = (b, armed, go) => {
     b.onclick = () => {
       if (!b.dataset.armed) {
@@ -3857,7 +3855,13 @@ async function openAgentModels(a, anchor, ev) {
     closeAgentModels();
     me.anchor.focus(NO_SCROLL);
   };
-  me.scrolled = (e) => { if (scrollCloses(box, e)) closeAgentModels(); };
+  me.scrolled = (e) => {
+    if (e.target === me.anchor.closest(".row.agent")?.querySelector(".ag-sum .mi")) {
+      const b = me.anchor.getBoundingClientRect();
+      if (["top", "right", "bottom", "left"].every((k) => b[k] === r[k])) return;
+    }
+    if (scrollCloses(box, e)) closeAgentModels();
+  };
   document.addEventListener("mousedown", me.outside, true);
   document.addEventListener("keydown", me.keys, true);
   document.addEventListener("scroll", me.scrolled, true);
