@@ -16,11 +16,15 @@ const quotas = (empty) => empty ? [] : [
   { provider: "kimi", name: "Kimi", icon: "kimi-color", windows: [{ name: "Weekly", used: 30 }] },
 ];
 
-function serve(lang, empty, ready) {
+function serve(lang, empty, ready, moduleReady, failModule) {
   const settings = { theme: "light", lang, tray: "panel", quotaLeft: false, currency: "usd" };
   return async (route) => {
     const url = new URL(route.request().url());
     const json = (data) => route.fulfill({ json: data });
+    if (url.pathname === "/quotaall.js") {
+      await moduleReady;
+      if (failModule) return route.fulfill({ status: 404, body: "" });
+    }
     if (url.pathname === "/boot.js") return route.fulfill({ contentType: "text/javascript", body: `window.bootPrefs = {lang:"${lang}",theme:"light",web:false};` });
     if (url.pathname === "/wails/runtime.js") return route.fulfill({ contentType: "text/javascript", body: "window.__runtimeReady = true; export const Window = {};" });
     if (url.pathname === "/api/state") return json({ agents: [], profiles: [], settings });
@@ -43,7 +47,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const browser = await (engine === "webkit" ? webkit.launch() : chromium.launch({ channel: "chromium" }));
       t.after(async () => { await browser.close(); });
       const errors = [];
-      const open = async (url, viewport, init, empty, ready) => {
+      const open = async (url, viewport, init, empty, ready, moduleReady, failModule) => {
         // no reduced-motion emulation here: it makes every animation a
         // frame long, and the flash the cards light up with is one
         const context = await browser.newContext({ viewport });
@@ -58,7 +62,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         page.setDefaultTimeout(5000);
         page.setDefaultNavigationTimeout(60000);
         page.on("pageerror", (e) => errors.push(e.message));
-        await page.route("**/*", serve(lang, empty, ready));
+        await page.route("**/*", serve(lang, empty, ready, moduleReady, failModule));
         await page.goto(url);
         return page;
       };
@@ -184,6 +188,44 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.equal(await account.evaluate(() => location.search.includes("card=")), false);
       await account.waitForFunction(() => !document.querySelector('.subscription-card[data-provider="codex"]').classList.contains("flash"));
       await visible(account, '.subscription-account[data-card="codex|other-5@例子.test"]');
+
+      // The first multi-account response starts a lazy summary import.
+      // Hold that response explicitly: its layout must settle before the
+      // requested scroll, still subject to the reader and the 5s deadline.
+      for (const scenario of ["loaded", "wheel", "expired", "failed"]) {
+        await t.test(`summary module ${scenario}`, async () => {
+          let releaseModule;
+          const held = new Promise((resolve) => { releaseModule = resolve; });
+          const delayed = await open("http://magpie.test/?mode=panel", { width: 440, height: 300 }, [], false, undefined, held, scenario === "failed");
+          try {
+            await delayed.waitForFunction(() => !!quotaAllJS.p && !window.quotaAll);
+            if (scenario === "expired") await delayed.clock.install();
+            await delayed.evaluate(() => panelQuotaFocus("kimi"));
+            await delayed.evaluate(() => new Promise(requestAnimationFrame));
+            assert.deepEqual(await delayed.evaluate(() => window.__scrolled), [], "loading the summary must defer the requested scroll");
+            if (scenario === "wheel") {
+              await delayed.mouse.move(200, 150);
+              await delayed.mouse.wheel(0, 200);
+              await delayed.waitForFunction(() => !quotaFocus);
+            }
+            if (scenario === "expired") await delayed.clock.fastForward(6000);
+            releaseModule();
+            await delayed.waitForFunction(() => !!quotaAllJS.done);
+            await delayed.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+            if (scenario === "wheel" || scenario === "expired") {
+              assert.deepEqual(await delayed.evaluate(() => window.__scrolled), [], `${scenario} must cancel pending navigation across summary load`);
+            } else {
+              await visible(delayed, '#panelQuota [data-card="kimi"]');
+              assert.deepEqual(await delayed.evaluate(() => window.__scrolled), ["kimi"], `${scenario} must reveal the requested card once`);
+            }
+            assert.equal(await delayed.evaluate(() => document.activeElement.tagName), "BODY", "revealing a card does not steal keyboard focus");
+          } finally {
+            releaseModule();
+            await delayed.unrouteAll({ behavior: "wait" });
+            await delayed.context().close();
+          }
+        });
+      }
 
       // A slow response must not pull the reader back after the request expires.
       let finish;

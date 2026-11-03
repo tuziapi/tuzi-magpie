@@ -283,8 +283,17 @@ members: what is left of that provider's accounts together
 `quotas` is new). `quotaAll` and `mergeQuotas` are in `quotaall.js`, which app.js imports
 once a provider has two accounts (`quotaAllJS`) and the Routing page
 once a group's member has readings, so they weigh nothing on the core;
-each place is drawn again once it is in. All three come from
-`mergeQuotas`, which puts together only what reads alike:
+each place is drawn again once it is in. An explicit request to reveal an
+allowance card (`focusQuotaCard`, from a menu-bar cell or a main-window URL)
+waits while this import is pending: adding the summary after scrolling would
+push the requested card out of sight. A successful import redraws before the
+scroll; a failed import reveals the card without the summary. The existing
+five-second request deadline and cancellation by the reader's own scrolling
+still apply. Ordinary refreshes do not acquire a navigation request, and
+keyboard focus is unchanged. See `tray-cell-click.test.cjs` for held-import
+success, failure, expiry and real-wheel cancellation.
+
+All three come from `mergeQuotas`, which puts together only what reads alike:
 
 - a counted window (`limit`) of one name and unit adds its amounts and
   limits, its share the share of the sum; a wallet (`balance`) adds its

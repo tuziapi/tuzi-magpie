@@ -14289,7 +14289,13 @@ function ringName(w) {
 
 // quotaall.js: accounts together, loaded once asked for
 function quotaAllJS() {
-  return (quotaAllJS.p ||= import("./quotaall.js").then(() => renderQuotas(), () => {}));
+  return (quotaAllJS.p ||= import("./quotaall.js").then(() => {
+    quotaAllJS.done = true;
+    renderQuotas();
+  }, () => {
+    quotaAllJS.done = true;
+    requestAnimationFrame(focusQuotaCard);
+  }));
 }
 const quotaAllOf = (...a) => window.quotaAll ? quotaAll(...a) : void quotaAllJS();
 // tiersText: a family's windows, one a line, for its tooltip.
@@ -16952,6 +16958,8 @@ function keepQuotaFlash(box) {
 function focusQuotaCard() {
   if (!quotaFocus) return;
   if (performance.now() > quotaFocusUntil) { quotaFocus = ""; return; }
+  // The account summary changes card positions when its lazy module arrives.
+  if (quotaAllJS.p && !quotaAllJS.done) return;
   const box = mode === "panel" ? $("#panelQuota") : $("#subscriptionUsage");
   if (mode === "panel") setPanelTab("usage");
   else if (view !== "usage" || magpie.call("usage", "tab") !== "usage") return;

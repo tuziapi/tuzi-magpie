@@ -1,9 +1,14 @@
-# Tray lazy-summary investigation — isolated candidate only
+# Tray lazy-summary investigation and approved implementation
 
 Owner: account subagent; worktree `/Users/syd08/Documents/tuzi-magpie-account`.
-Source base: `979033f`; original reference: `2251ca1`. Product code has not
-been changed. This candidate needs the user's original-behavior exception
-approval through the parent before implementation or integration.
+Source base: `979033f`; original reference: `2251ca1`. The initial candidate
+was isolated until approval. On 2026-11-03 the parent relayed the user’s
+explicit instruction: “采用托盘定位时序修复”. This approves the minimal
+`quotaAllJS`/`focusQuotaCard` timing change described below, with the existing
+five-second expiry and reader-scroll cancellation preserved. It does not
+authorize unrelated layout or behavior changes. The approved source patch
+and controlled module regressions are now applied in this independent
+worktree; integration remains the parent’s responsibility.
 
 ## Observed defect
 
@@ -28,7 +33,7 @@ Current Chromium/en trace:
   Kimi bottom becomes 331.34px. The original and current trees have the same
   sequence; this is not a newly introduced Tuzi style or navigation change.
 
-## Reviewable proposed behavior change
+## Approved behavior change
 
 The isolated patch is
 `/Users/syd08/Documents/tuzi-magpie-evidence/tencent-tray-01/tray-candidate.patch`.
@@ -95,9 +100,64 @@ original race reproducible without relying on wall-clock delays.
 All browser work was serial, one browser and one worker, under the parent's
 lightweight slot. Requests used synthetic route fixtures, with no real
 account, credential, service, or model. No Go/build command or listener ran.
-The parent retains approval, actual product implementation, independent
-review and integration/full-suite verification responsibilities.
+The parent retains independent review and integration/full-suite verification
+responsibilities.
 
-All owned browser processes finished and the browser slot was handed to the UI
-subagent by the parent’s explicit instruction. No product source or tests are
-uncommitted in this worktree; only this investigation document was added.
+The initial candidate browsers finished and the slot was handed to the UI
+subagent. After the explicit approval, the UI subagent explicitly returned
+the slot before final repository verification. No browser or Go/build command
+was run out of queue.
+
+
+## Approved repository change and final verification
+
+The actual source diff is exactly the reviewed isolated patch. Four controlled
+module scenarios now live in `internal/gui/tests/tray-cell-click.test.cjs`,
+under each existing language test: load success, reader wheel, request expiry,
+and HTTP 404 failure. They hold the module response itself, retain all original
+scenarios, assert no early scroll, require exactly one requested scroll on
+success/failure, require no scroll after cancellation/expiry, and preserve
+BODY keyboard focus. A finally block releases the held response, waits for route handlers with
+`unrouteAll({ behavior: "wait" })`, and closes its context even on assertion
+failure. No visibility tolerance is relaxed.
+The GUI shell subsystem reference records the shared tray/main-window timing.
+
+Final actual-repository tests were run serially, one browser/worker at a time:
+
+| Actual repository file | Chromium | WebKit |
+| --- | --- | --- |
+| `tray-cell-click.test.cjs` | 10/10, 16.815s | 10/10, 16.902s |
+| `panel-quota-lazy.test.cjs` | 10/10, 6.736s | 10/10, 6.194s |
+| `panel-quota-refresh.test.cjs` | 10/10, 8.512s | 10/10, 7.303s |
+| `allowance-open-read.test.cjs` | 4/4, 4.377s | 4/4, 3.581s |
+
+That is 34/34 per engine. The tray count includes two parent language cases
+and eight controlled subtests. The adjacent tests cover prompt quota drawing
+without history, stable refreshes and focus, and opening/refresh request rates.
+No earlier complete scenario was removed or weakened.
+
+The four new scenario bodies were also extracted verbatim from the actual
+repository test into an isolated diagnostic. They pass against final assets
+in both engines, 10/10 each including parents. Removing only the new pending
+module guard in an isolated asset copy makes every one of the eight subtests
+fail its real “loading the summary must defer the requested scroll” assertion
+in each engine (parents included: 0/10). The failure path finishes without
+route-fulfillment/context-close errors, exercising the added cleanup too.
+Original-code failures and visual/root-cause evidence remain in the earlier
+evidence directory; no original production source was changed for the red run.
+
+Final evidence is in
+`/Users/syd08/Documents/tuzi-magpie-evidence/tray-approved-01/`:
+`final-<engine>-<test>.log` contains the actual file runs,
+`controlled-final-<engine>.log` the extracted controlled cases, and
+`negative-no-wait-<engine>.log` the real guard-removal negative control.
+The extracted script, isolated assets, and source/approval manifest are kept
+beside them. Commands use the runtime paths recorded above, `BROWSER` set to
+one engine, and `node --test --test-concurrency=1` with one file at a time.
+
+Syntax and `git diff --check` pass. All owned browsers and test processes
+finished, no listener/port remains, and the browser slot was explicitly
+released to the parent. No Go/build command ran in this follow-up. The final
+product diff is limited to the approved two functions; the remaining files
+are this test, this evidence/approval record and the GUI subsystem reference.
+Parent review, integration and full-suite verification remain separate.
