@@ -12,6 +12,7 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { test } = require("node:test");
 const { chromium, webkit } = require("playwright");
+const { settled } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 
@@ -97,6 +98,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           await page.locator(`${cd} .ag-sum`).click();
           menu = page.locator(`${cd} .ag-open .ag-menu`);
           await page.waitForFunction((sel) => document.querySelector(sel)?.getBoundingClientRect().height > 0, `${cd} .ag-open .ag-menu`);
+          // Let the panel finish opening before the click can scroll its clipped body.
+          await settled(page);
           assert.equal(await page.locator(`${cd} .ag-conn-said`).textContent(), await said(3));
         }
         assert.equal(await menu.count(), 1, "no models button");
