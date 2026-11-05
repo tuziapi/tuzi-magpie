@@ -189,8 +189,8 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await page.route("**/*", server(lang, [], { web, gateway: false, agents: true }));
         await page.goto("http://magpie.test/");
         await page.waitForSelector("#nav button.on");
-        assert.deepEqual(await tabs(page), ["agents", "sessions", "library", "providers", "routing", "gateway", "usage", "masking", "plugins", ...(web ? [] : ["tuzi"])], where);
-        assert.deepEqual(await viewShown(page), ["view-agents"], where);
+        assert.deepEqual(await tabs(page), [...(web ? [] : ["tuzi"]), "agents", "sessions", "library", "providers", "routing", "gateway", "usage", "masking", "plugins"], where);
+        assert.deepEqual(await viewShown(page), [web ? "view-agents" : "view-tuzi"], where);
         await page.locator("#prefs").click();
         await page.waitForSelector("#langPick span");
         assert.equal(await page.locator("#gatewayModeRow").isVisible(), web, `${where}: the switch`);

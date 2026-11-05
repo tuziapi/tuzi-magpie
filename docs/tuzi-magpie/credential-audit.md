@@ -101,3 +101,14 @@ no new fingerprint compared with final-main-c7238e1.json. Summary is
 `/Users/syd08/Documents/tuzi-magpie-evidence/final-audit/closing-main-04-summary.json`.
 Later handoff documentation only records these nonsecret counts/source hashes.
 The shallow-history, binary and pattern limits remain; no credential was used.
+
+## Authorized source upload scan (2026-11-05)
+
+Before committing the consolidated frontend/defaults work in
+`/Users/syd08/Documents/tuzi-magpie-local`, upload-main-20261105.json scanned
+6923 working text files (894 binary skipped), 7299 historical text blobs
+(885 binary skipped). Its 196 matches have the same 49 fingerprints as
+closing-main-04.json, with no new candidate fingerprints. The historical
+shallow and pattern-based scope limits still apply. The user authorized
+source upload to `https://github.com/tuziapi/tuzi-magpie`; this does not
+claim a tested release or enable the disabled publishing workflows.

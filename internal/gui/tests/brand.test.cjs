@@ -62,7 +62,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.ok(await brand.locator(".logo svg").isVisible(), `${where}: logo`);
         // a header short of room keeps the logo only (fitTop's tight)
         const tight = !side && await page.locator(".top.tight").count();
-        if (!tight) assert.ok(await brand.getByText(brandName, { exact: true }).isVisible(), `${where}: name`);
+        if (!tight) {
+          const name = brand.getByText(brandName, { exact: true });
+          assert.ok(await name.isVisible(), `${where}: name`);
+          const lines = await name.evaluate(e => { const r = document.createRange(); r.selectNodeContents(e); return [...r.getClientRects()].length; });
+          assert.equal(lines, 1, `${where}: brand stays on one line`);
+        }
         // beside the tabs, not under them; above the sidebar's pages
         const [b, n] = [await brand.boundingBox(), await page.locator("#nav").boundingBox()];
         if (side) assert.ok(b.y + b.height <= n.y, `${where}: ${JSON.stringify(b)} overlaps the pages ${JSON.stringify(n)}`);
@@ -78,6 +83,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       }
       if (brandName === "tuzi-magpie" && !c.web && c.platform === "MacIntel") {
         const account = page.locator('#nav button[data-view="tuzi"]');
+        assert.equal(await page.locator('#nav button[data-view]').first().getAttribute('data-view'), 'tuzi');
         if (side) assert(await account.locator("#tuziNavLabel").isVisible(), "the sidebar retains the full new label");
         else for (const lang of ["en", "zh", "zh-TW", "ja", "de"]) {
           const label = await page.evaluate((lang) => { setLocale(lang); return t("Tuzi account"); }, lang);

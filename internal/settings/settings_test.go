@@ -15,9 +15,33 @@ import (
 	"github.com/yetone/magpie/internal/redact"
 )
 
+// An unconfigured Tuzi install starts in Simplified Chinese. Explicit choices,
+// including following the system, survive saves and later loads.
+func TestTuziDefaultLanguage(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	if got := Defaults().Lang; got != "zh" {
+		t.Fatalf("reset default language = %q, want zh", got)
+	}
+	if got := Load().Lang; got != "zh" {
+		t.Fatalf("first-launch language = %q, want zh", got)
+	}
+	for _, lang := range []string{"", "en", "system", "zh", "zh-TW", "ja", "de"} {
+		if err := Save(Settings{Lang: lang}); err != nil {
+			t.Fatal(err)
+		}
+		want := lang
+		if want == "" {
+			want = "zh"
+		}
+		if got := Load().Lang; got != want {
+			t.Errorf("saved language %q loads as %q, want %q", lang, got, want)
+		}
+	}
+}
+
 func TestRoundTrip(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
-	if s := Load(); s.Theme != "system" || s.Lang != "system" {
+	if s := Load(); s.Theme != "system" || s.Lang != "zh" {
 		t.Fatalf("defaults: %+v", s)
 	}
 	if err := Save(Settings{Theme: "dark", Lang: "zh"}); err != nil {

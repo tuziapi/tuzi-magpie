@@ -12,7 +12,7 @@ import (
 
 // windowW, windowH is the main window's size, in points, before it is first
 // given one.
-const windowW, windowH = 660, 600
+const windowW, windowH = 1200, 800
 
 // openSize is the size, in points, the main window opens at: the one it was
 // last given (saved), else windowW×windowH; no smaller than its least (minW,

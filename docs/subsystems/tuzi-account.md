@@ -25,16 +25,42 @@ other built-in clients do. `integration.js` declares lazy shell callbacks;
 they use the app helpers only when invoked after startup, so declaration
 does not require those helpers to exist yet.
 
-The new account entry in a native header uses its existing icon in a 32px
-button. Its translated span supplies the accessible name through
-`aria-labelledby`, and `data-tt` translates the hover title. In the sidebar
-the full label stays visible. These rules live only in the Tuzi stylesheet;
-the shell's `fitTop` steps, original controls and brand styles are unchanged.
-The added width may make Update collapse to its arrow earlier, an explicitly
-accepted difference. `brand.test.cjs` checks the logo at 860px and all five
-translated names. `header-zoom-fit.test.cjs` retains the original navigation
-as a fixture control and allows the added entry its 32px width budget.
-See [navigation evidence](../tuzi-magpie/navigation-layout-evidence.md).
+The account entry is first in the native navigation, before Work/Agents,
+using the bundled rabbit mark from tuzi-switch. A native horizontal header
+keeps an icon-only entry with its translated accessible name and tooltip;
+the sidebar shows the full label. The first native launch opens Tuzi account, then restores the saved page;
+see [GUI shell startup defaults](gui-shell.md). Feature gates and native/web
+ownership remain unchanged.
+
+The distribution brand keeps the original Magpie bird and is a single line. On macOS its sidebar mark and name
+sit below the traffic lights and navigation toggle, using the distribution's
+`tuzi-brand` and `tuzi-side-top` classes. The shell's fitting steps and saved layout preferences remain unchanged;
+a new window starts at 1200×800 points as documented in the GUI shell.
+
+The account stylesheet owns its outlined/primary/destructive button hierarchy,
+aligned filters, responsive cards, tables and dialogs. Tabs use a simple
+underline; log filters have no outer card. Statistics keep label/value pairs
+close together and place the full-ranking action beside its section heading.
+The account-key picker shows the selected model and full-width key rows.
+Recorded-call details omit the related-request button; the backend endpoint
+remains available, but this page no longer invokes it. The existing log columns
+remain available in an independently scrolling table. Consumption bars add
+currency/time axes and model shares add a visual track; success history adds
+threshold/sample legends and timestamps. Calculations, request filters,
+refresh timing, mutation guards and pricing rules are unchanged. Catalog
+family icons use bundled assets; descriptions select a supplied translation
+for the active UI language, falling back to the original description.
+
+`tuziIcon` selects the rabbit for Tuzi/Tuzi Coding preset defaults and
+unbranded custom rows at the known Tuzi account hosts. It changes only the
+rendered icon, never saved providers, endpoints or keys. Explicit custom icons
+and unrelated providers retain their icons. The account API is not exposed to
+browsers by these presentation changes.
+
+`brand.test.cjs` checks logo visibility, a single-line name, navigation order
+and translated account labels. The account tests exercise its existing writes,
+filters, dialogs, lifecycle and narrow layouts in both engines and five languages.
+See [UI polish](../tuzi-magpie/frontend-polish-2026-11-04.md).
 
 ## Page visibility and in-flight operations
 

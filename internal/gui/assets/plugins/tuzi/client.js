@@ -17,7 +17,9 @@
       return { keys: { page: 1, page_size: 20, keyword: "", token: "", group: "", status: "" }, logs: { page: 1, page_size: 10, start_timestamp: Math.floor(start / 1000), end_timestamp: Math.floor(now / 1000), type: "", token_name: "", model_name: "", group: "", request_id: "", upstream_request_id: "", request_path: "", error_keyword: "" }, models: { page: 1, page_size: 20, search: "" }, performance: { page: 1, page_size: 6, search: "", hours: 6 } };
     }
     const node = (tag, cls, text) => ui.el(tag, cls, text);
-    const button = (label, fn, cls = "text") => ui.button(t(label), fn, cls);
+    const primaryActions = new Set(["Connect account", "Create API key", "Save", "Add provider", "Confirm"]);
+    const dangerActions = new Set(["Disconnect account", "Delete key", "Discard"]);
+    const button = (label, fn, cls = "tuzi-btn") => ui.button(t(label), fn, cls + (primaryActions.has(label) ? " tuzi-primary" : dangerActions.has(label) ? " tuzi-danger" : ""));
     function text(label, cls = "tuzi-notice") { return node("p", cls, t(label)); }
     function empty(label) { return node("div", "list tuzi-empty", t(label)); }
     function row(...children) { const n = node("div", "tuzi-actions"); n.append(...children); return n; }
@@ -112,10 +114,10 @@
       if (oninput) input.oninput = () => oninput(input.value, input); wrap.append(input); return { wrap, input };
     }
     function check(label, checked, changed) { const wrap = node("label", "tuzi-check"), input = node("input"); input.type = "checkbox"; input.checked = !!checked; input.onchange = () => changed(input.checked); wrap.append(input, node("span", "", t(label))); return wrap; }
-    function menu(label, value, opts, change) { const b = ui.menu(opts.map(([v,name]) => ({ v, name: t(name) })), value, t(label), change); b.setAttribute("aria-label", t(label)); return b; }
+    function menu(label, value, opts, change) { const b = ui.menu(opts.map(([v,name]) => ({ v, name: t(name) })), value, t(label), change); b.setAttribute("aria-label", t(label)); b.classList.add("tuzi-select"); return b; }
     function picker(label, value, opts, change) { const n = node("label", "tuzi-field"); n.append(node("span", "", t(label)), menu(label, value, opts, change)); return n; }
     function facts(entries) { const dl = node("dl", "tuzi-facts"); for (const [label,value] of entries) dl.append(node("dt", "", t(label)), node("dd", "", value === undefined || value === null || value === "" ? "—" : String(value))); return dl; }
-    function time(n) { return n > 0 ? new Date(n * 1000).toLocaleString() : "—"; }
+    function time(n) { return n > 0 ? new Date(n * 1000).toLocaleString(intlLang()) : "—"; }
     function money(q, places = 2) { try { return tuziMoney.formatMoney(String(q), { ...account.money, display_type: currency }, places); } catch { return "—"; } }
     function openSheet(title) { dirtyForm = null; discardPrompt = null; sheetGeneration++; sheet.replaceChildren(); sheet.hidden = false; root.querySelector("#tuziShade").hidden = false; sheet.setAttribute("aria-label", t(title)); const h = node("div", "tuzi-toolbar"); h.append(node("h3", "", t(title)), node("span", "grow"), button("Close", () => closeSheet())); sheet.append(h); queueMicrotask(() => { if (!sheet.hidden) sheet.querySelector("button")?.focus({preventScroll:true}); }); return sheet; }
     function closeSheet(force = false) {
@@ -136,7 +138,7 @@
       const pages = Number.isFinite(total) ? Math.max(1, Math.ceil(total / size)) : filter.page + (p.has_more ? 1 : 0);
       b.classList.add("tuzi-toolbar", "tuzi-pagination");
       const move = (page) => { filter.page = Math.max(1, Math.min(pages, page)); refresh(); pane.scrollIntoView({block:"start"}); };
-      const prev = button("Previous", () => move(filter.page - 1)), next = button("Next", () => move(filter.page + 1)); prev.disabled = filter.page <= 1; next.disabled = !p.has_more;
+      const prev = button("Previous", () => move(filter.page - 1)), next = button("Next page", () => move(filter.page + 1)); prev.disabled = filter.page <= 1; next.disabled = !p.has_more;
       const jump = field("Go to page", filter.page, "number"); jump.input.min = 1; jump.input.max = pages;
       jump.input.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); if (jump.input.checkValidity() && Number.isInteger(Number(jump.input.value))) move(Number(jump.input.value)); } };
       b.append(node("span", "note", t("{first}–{last} of {total}", { first: total === 0 ? 0 : (filter.page - 1) * size + 1, last: Math.min(filter.page * size, total), total: p.total ?? "—" })), prev, node("span", "note", pageSummary(data, filter)), next, jump.wrap);
@@ -146,7 +148,7 @@
     function drawHeader() {
       header.replaceChildren(); const status = node("span", "tuzi-status", t(state.status === "connected" ? "Connected" : state.status === "offline" ? "Offline" : state.status === "invalid" ? "Invalid connection" : "Not connected")); status.dataset.state = state.status;
       const who = node("div", "who"); who.append(node("div", "name", state.identity?.displayName || state.identity?.username || t("Tuzi account")), status);
-      header.append(who, node("span", "grow"));
+      header.append(icon("tuzi-rabbit"), who, node("span", "grow"));
       if (state.identity || state.status !== "disconnected") header.append(button("Check connection", () => guarded(async () => { acceptState(await http("check", {})); account = null; groups = []; drawHeader(); await loadTab(); })), button("Disconnect account", () => confirmAction("Disconnect account", "Disconnect only clears this app's account connection. Saved providers remain available.", async () => { acceptState(await http("disconnect", {})); drawHeader(); await loadTab(); })));
       if (!isConnected()) {
         const form = node("form", "tuzi-form tuzi-wide"); const token = field("Account system token", "", "password"); token.input.id = "tuziSystemToken"; token.input.required = true; token.input.autocomplete = "new-password";
@@ -161,7 +163,6 @@
     function drawTabs() {
       tabbar.replaceChildren(); tabbar.setAttribute("role", "tablist");
       for (const [id, label] of tabs) { const b = button(label, async () => { if (busy) return; if (dirtyForm?.() && !(await confirmDiscard())) return; tab = id; closeSheet(true); drawTabs(); loadTab(); }, tab === id ? "opt on" : "opt"); b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(tab === id)); b.tabIndex = tab === id ? 0 : -1; b.onkeydown = (e) => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) { e.preventDefault(); const at = tabs.findIndex(([x]) => x === tab), next = e.key === "Home" ? 0 : e.key === "End" ? 3 : (at + (e.key === "ArrowRight" ? 1 : 3)) % 4; const choices = tabbar.querySelectorAll("[role=tab]"); choices[next].click(); tabbar.querySelectorAll("[role=tab]")[next].focus({ preventScroll: true }); } }; tabbar.append(b); }
-      queueMicrotask(() => slide(tabbar, "tuzi-tabs"));
     }
     async function refreshState() { const next = await http("state"); acceptState(next); drawHeader(); }
     async function loadTab() {
@@ -190,7 +191,7 @@
       for (const [label, value] of [["Account balance", money(account.quota)], ["Today's recorded consumption", d ? money(d.quota) : "—"], ["Today's consumption calls", d?.call_count ?? "—"], ["Today's input / output tokens", d ? `${d.prompt_tokens} / ${d.completion_tokens}` : "—"]]) { const card = node("div", "list"); card.append(node("dt", "", t(label)), node("dd", "", value)); if (label === "Account balance") card.append(row(button("Top up", () => guarded(() => openWeb("topup"))), button("Redeem", () => guarded(() => openWeb("redemption"))))); metrics.append(card); }
       pane.append(metrics, text("These are the account's recorded server logs, including other devices. Missing logs and reporting delay are unknown. Refunds are listed separately."));
       if (!d) pane.append(text(errorText(daily.reason), "tuzi-notice tuzi-error"));
-      const f = filters.keys, toolbar = node("form", "tuzi-toolbar"), search = field("Search key names", f.keyword, "search"); search.wrap.classList.add("tuzi-search"); const fragment = field("Short key fragment", f.token, "text"); fragment.input.maxLength = 4; fragment.input.pattern = "[A-Za-z0-9]{4}"; fragment.input.title = t("Enter exactly four letters or digits.");
+      const f = filters.keys, toolbar = node("form", "tuzi-toolbar tuzi-key-toolbar"), search = field("Search key names", f.keyword, "search"); search.wrap.classList.add("tuzi-search"); const fragment = field("Short key fragment", f.token, "text"); fragment.input.maxLength = 4; fragment.input.pattern = "[A-Za-z0-9]{4}"; fragment.input.title = t("Enter exactly four letters or digits.");
       toolbar.append(search.wrap, fragment.wrap, menu("Key group", f.group, groupOptions(), (v) => { f.group = v; f.page = 1; loadTab(); }), menu("Key status", f.status, [["", "All statuses"], ["1", "Enabled"], ["2", "Disabled"], ["3", "Expired"], ["4", "Exhausted"]], (v) => { f.status = v; f.page = 1; loadTab(); }), currencyMenu());
       const find = button("Search", () => {}); find.type = "submit"; toolbar.append(find, reloadButton(), mutation("Create API key", () => editKey(null)));
       toolbar.onsubmit = (e) => { e.preventDefault(); f.keyword = search.input.value; f.token = fragment.input.value; f.page = 1; loadTab(); }; pane.append(toolbar);
@@ -252,35 +253,35 @@
     }
     async function chooseKeyForModel(model) {
       const box = openSheet("Choose an account key"), at = sheetGeneration; let page = 1;
-      const list = node("div"); box.append(list);
-      async function read() { const data = await request("GET", "/account/keys", { page, page_size: 20, status: 1 }); if (at !== sheetGeneration) return; list.replaceChildren(); for (const key of data.items || []) { const b = button(key.name, () => guarded(() => configure(key, model.model_name))); b.disabled = key.is_expired || (key.model_limits_enabled && !key.model_limits.split(",").map((s) => s.trim()).includes(model.model_name)); list.append(row(b, node("span", "note", key.group))); } if (!data.items?.length) list.append(empty("No eligible keys on this page.")); const f = { page }; list.append(paginate(data, f, () => { page = f.page; guarded(read); })); }
+      const context = modelHeading(model.model_name); context.classList.add("tuzi-key-context");
+      const list = node("div", "tuzi-key-picker"); box.append(context, list);
+      async function read() { const data = await request("GET", "/account/keys", { page, page_size: 20, status: 1 }); if (at !== sheetGeneration) return; list.replaceChildren(); for (const key of data.items || []) { const b = button(key.name, () => guarded(() => configure(key, model.model_name)), "tuzi-key-option"); b.setAttribute("aria-label", key.name); const who = node("span", "tuzi-key-option-info"), arrow = node("span", "tuzi-key-option-arrow", "›"); arrow.setAttribute("aria-hidden", "true"); who.append(node("span", "name", key.name), node("span", "note", key.group)); b.replaceChildren(who, arrow); b.disabled = key.is_expired || (key.model_limits_enabled && !key.model_limits.split(",").map((s) => s.trim()).includes(model.model_name)); list.append(b); } if (!data.items?.length) list.append(empty("No eligible keys on this page.")); const f = { page }; list.append(paginate(data, f, () => { page = f.page; guarded(read); })); }
       await read();
     }
     function table(headers, rows) { const wrap = node("div", "tuzi-table-wrap"), table = node("table"), head = node("tr"), body = node("tbody"); for (const h of headers) head.append(node("th", "", t(h))); const thead = node("thead"); thead.append(head); for (const cells of rows) { const r = node("tr"); for (const c of cells) { const td = node("td"); if (c instanceof Node) td.append(c); else td.textContent = c === null || c === undefined ? "—" : String(c); r.append(td); } body.append(r); } table.append(thead, body); wrap.append(table); return wrap; }
     async function loadLogs(turn) {
       const f = filters.logs, applied = { ...f }, data = await request("GET", "/account/logs", applied); if (turn !== serial) return;
-      pane.replaceChildren(); const form = node("form", "tuzi-toolbar"), from = field("From", localDate(f.start_timestamp), "datetime-local"), to = field("Until", localDate(f.end_timestamp), "datetime-local"); from.input.required = to.input.required = true;
+      pane.replaceChildren(); const form = node("form", "tuzi-toolbar"), from = field("Start time", localDate(f.start_timestamp), "datetime-local"), to = field("Until", localDate(f.end_timestamp), "datetime-local"); from.input.required = to.input.required = true;
       const model = field("Model name", f.model_name, "search"), token = field("Key name", f.token_name, "search"), id = field("Request ID", f.request_id), error = field("Public error filter", f.error_keyword), upstream = field("Upstream request ID", f.upstream_request_id), requestPath = field("Request path", f.request_path);
       let group = f.group, kind = f.type;
-      const advanced = node("details"), sum = node("summary", "", t("More log filters")), fields = node("div", "tuzi-form"); advanced.append(sum, fields); fields.append(token.wrap, id.wrap, upstream.wrap, requestPath.wrap, error.wrap, picker("Log group", group, groupOptions(), (v) => { group = v; }), picker("Log kind", kind, [["", "All log kinds"], ["2", "Consumption"], ["6", "Errors"], ["7", "Refunds"]], (v) => { kind = v; }));
+      const advanced = node("details", "tuzi-log-filters"), sum = node("summary", "", t("More log filters")), fields = node("div", "tuzi-form"); advanced.append(sum, fields); fields.append(token.wrap, id.wrap, upstream.wrap, requestPath.wrap, error.wrap, picker("Log group", group, groupOptions(), (v) => { group = v; }), picker("Log kind", kind, [["", "All log kinds"], ["2", "Consumption"], ["6", "Errors"], ["7", "Refunds"]], (v) => { kind = v; }));
       form.append(from.wrap, to.wrap, model.wrap, currencyMenu()); const apply = button("Apply filters", () => {}); apply.type = "submit"; form.append(apply, reloadButton());
       form.onsubmit = (e) => { e.preventDefault(); const start = Math.floor(Date.parse(from.input.value) / 1000), end = Math.floor(Date.parse(to.input.value) / 1000); if (!(end > start) || end - start > 90 * 86400) { note(t("Choose a valid time range of at most 90 days."), true); return; } Object.assign(f, { start_timestamp: start, end_timestamp: end, model_name: model.input.value, token_name: token.input.value, request_id: id.input.value, upstream_request_id: upstream.input.value, request_path: requestPath.input.value, error_keyword: error.input.value, group, type: kind, page: 1 }); loadTab(); };
       pane.append(form, advanced, node("p", "tuzi-notice", pageSummary(data, f)));
       const rows = (data.items || []).map((l) => {
         const model = node("span", "tuzi-model-name", l.model_name); model.title = l.model_name;
         const duration = node("div", "tuzi-log-duration"); duration.append(node("div", "", l.duration_ms == null ? "—" : `${l.duration_ms} ms`), node("div", "note", t(l.is_stream ? "Streaming" : "Non-streaming")));
-        const result = node("span", "", t(l.result === "success" ? "Successful" : l.result === "error" ? "Failed" : "Unknown result")); result.title = l.error_message || "";
+        const result = node("span", "tuzi-result", t(l.result === "success" ? "Successful" : l.result === "error" ? "Failed" : "Unknown result")); result.title = l.error_message || ""; result.dataset.result = l.result;
         return [button("Recorded call details", () => logDetails(l)), time(l.created_at), model, l.token_name, result, money(l.quota), `${l.prompt_tokens} / ${l.completion_tokens}`, l.group, duration];
       });
       const list = rows.length ? table(["Log operation", "Time", "Model", "Key name", "Call result", "Recorded charge", "Input / output tokens", "Log group", "Duration"], rows) : empty("No recorded calls in this range."); list.classList.add("tuzi-logs");
       pane.append(list, paginate(data, f));
-      const statistics = node("section", "list tuzi-sheet"), stats = node("div"); statistics.append(node("h3", "", t("Consumption statistics and trends")), text("Tuzi server records include calls outside this device. Consumption records do not imply success, and refunds are not subtracted into a net balance."), stats); pane.append(statistics);
+      const statistics = node("section", "list tuzi-sheet tuzi-statistics"), stats = node("div"); statistics.append(node("h3", "", t("Consumption statistics and trends")), text("Tuzi server records include calls outside this device. Consumption records do not imply success, and refunds are not subtracted into a net balance."), stats); pane.append(statistics);
       stats.append(text("Loading…"));
       try { const {page, page_size, ...statisticsFilters} = applied; const result = await request("GET", "/account/logs/statistics", { ...statisticsFilters, interval_seconds: 3600 }); if (turn !== serial) return; stats.replaceChildren(); drawStatistics(stats, result); } catch (e) { if (turn === serial) stats.replaceChildren(text(errorText(e), "tuzi-notice tuzi-error")); }
     }
     function logDetails(l) {
       const box = openSheet("Recorded call details"); box.append(facts([["Log ID", l.id], ["Time", time(l.created_at)], ["Model", l.model_name], ["Key name", l.token_name], ["Log group", l.group], ["Call result", t(l.result === "success" ? "Successful" : l.result === "error" ? "Failed" : "Unknown result")], ["Recorded charge", money(l.quota, 8)], ["Billing status", t(({charged:"Charged",not_charged:"Not charged",refunded:"Refunded"})[l.billing_status] || "Unknown billing status")], ["Input / output tokens", `${l.prompt_tokens} / ${l.completion_tokens}`], ["Duration", l.duration_ms == null ? "—" : `${l.duration_ms} ms`], ["Streaming", l.is_stream ? t("Yes") : t("No")], ["Request ID", l.request_id], ["Request path", l.request_path], ["Upstream request ID", l.upstream_request_id], ["HTTP status", l.status_code], ["Public error code", l.public_error_code || l.error_code], ["Public error", l.error_message]]));
-      if (l.request_id) box.append(button("Related request records", () => guarded(async () => { const at = sheetGeneration, result = await request("GET", "/account/logs/requests/" + encodeURIComponent(l.request_id)); if (at !== sheetGeneration) return; const others = (result.items || []).filter((x) => String(x.id) !== String(l.id)); box.append(table(["Time", "Model", "Recorded charge", "Call result"], others.map((x) => [time(x.created_at), x.model_name, money(x.quota), x.result]))); if (result.has_more) box.append(text("More related records are available on the website.")); })));
     }
     function drawStatistics(box, data) {
       const s = data.summary || {};
@@ -288,19 +289,43 @@
       const trend = Array.isArray(data.trend) ? data.trend : [], chart = node("div", "tuzi-trend");
       const values = trend.map((x) => { try { return BigInt(x.quota); } catch { return 0n; } }), max = values.reduce((a,b) => a > b ? a : b, 0n);
       trend.forEach((x,i) => { const bar = node("i"); bar.style.height = `${max > 0n ? Number(values[i] * 10000n / max) / 100 : 0}%`; bar.tabIndex = 0; bar.title = `${time(x.start_timestamp)} – ${time(x.end_timestamp)} · ${money(x.quota)}`; bar.setAttribute("aria-label", bar.title); chart.append(bar); });
-      box.append(node("h3", "", t("Recorded consumption trend")), chart);
+      const plot = node("div", "tuzi-plot"), axis = node("div", "tuzi-plot-axis");
+      axis.append(node("span", "", money(max.toString())), node("span", "", money((max / 2n).toString())), node("span", "", money("0")));
+      plot.append(axis, chart);
+      const ticks = node("div", "tuzi-plot-ticks");
+      if (trend.length) ticks.append(node("span", "", time(trend[0].start_timestamp)), node("span", "", time(trend.at(-1).end_timestamp)));
+      plot.append(ticks);
+      box.append(node("h3", "", t("Recorded consumption trend")), trend.length ? plot : empty("No consumption samples."));
       const models = [...(data.by_model || [])].sort((a,b) => { try { const d = BigInt(b.quota) - BigInt(a.quota); return d > 0n ? 1 : d < 0n ? -1 : 0; } catch { return 0; } });
       const rankings = (items) => table(["Model", "Recorded charge", "Consumption share", "Consumption records"], items.map((x) => {
         let share = "—"; try { if (BigInt(s.quota) > 0n) share = (Number(BigInt(x.quota) * 10000n / BigInt(s.quota)) / 100).toFixed(2) + "%"; } catch {}
-        const name = row(catalogIcon(x.model_name), node("span", "", x.model_name)); return [name, money(x.quota), share, x.record_count];
+        const name = row(catalogIcon(x.model_name), node("span", "", x.model_name));
+        const portion = node("div", "tuzi-share"), fill = node("i");
+        fill.style.width = `${Math.min(100, Math.max(0, parseFloat(share) || 0))}%`;
+        const track = node("span", "tuzi-share-track"); track.setAttribute("aria-hidden", "true"); track.append(fill);
+        portion.append(track, node("span", "", share)); return [name, money(x.quota), portion, x.record_count];
       }));
-      box.append(node("h3", "", t("By model")), rankings(models.slice(0, 5)), button("All model rankings", () => { const full = openSheet("All model rankings"); full.append(rankings(models)); }));
+      const rankingHead = node("div", "tuzi-section-head");
+      rankingHead.append(node("h3", "", t("By model")), button("All model rankings", () => { const full = openSheet("All model rankings"); full.append(rankings(models)); }));
+      box.append(rankingHead, rankings(models.slice(0, 5)));
       box.append(node("h3", "", t("By public error")), facts([["Error records", s.error_count]]), table(["Public error code", "Error records"], (data.by_error || []).map((x) => [x.error_code || x.public_error_code || "—", x.record_count])));
       box.append(node("h3", "", t("Refunds")), facts([["Refund amount", money(s.refund_quota)]]));
     }
     function catalogIcon(name) {
-      const id = /^(gpt|o[1-9]|chatgpt)/i.test(name) ? "openai" : /claude/i.test(name) ? "anthropic" : /gemini/i.test(name) ? "gemini" : /deepseek/i.test(name) ? "deepseek" : "generic";
-      return icon(id);
+      const families = [
+        [/^(?:.*\/)?(?:gpt|o[1-9]|chatgpt|dall-e|sora)/i, "openai"],
+        [/claude/i, "claude-color"], [/gemini|banana/i, "gemini-color"],
+        [/deepseek/i, "deepseek-color"], [/qwen|qwq|qvq/i, "qwen-color"],
+        [/kimi|moonshot/i, "kimi"], [/glm|zhipu/i, "zhipu-color"],
+        [/minimax|hailuo/i, "minimax-color"], [/grok/i, "grok"],
+        [/doubao|seedance|seedream/i, "doubao-color"],
+      ];
+      const mark = icon(families.find(([pattern]) => pattern.test(name))?.[1] || "generic");
+      mark.classList.add("tuzi-model-mark"); return mark;
+    }
+    function modelHeading(name) {
+      const head = row(catalogIcon(name), node("div", "name", name));
+      head.classList.add("tuzi-model-heading"); return head;
     }
     function modelCatalog(data) {
       if (!Array.isArray(data?.items) || !data.pagination || !Number.isFinite(Number(data.pagination.total))) throw { code: "invalid_response" };
@@ -335,7 +360,7 @@
       pane.append(options, text(performance ? "Historical service samples only. No test inference is sent. Unknown samples are shown as unknown." : "Visible catalog prices are reference group prices, excluding personal discounts. Key permissions are checked separately."));
       const list = node("div", "tuzi-models");
       for (const m of data.items) {
-        const card = node("section", "list tuzi-model"); card.append(row(catalogIcon(m.model_name), node("div", "name", m.model_name)), node("p", "sub", m.supported_endpoint_types.join(" · ")));
+        const card = node("section", "list tuzi-model"); card.append(modelHeading(m.model_name), node("p", "sub", m.supported_endpoint_types.join(" · ")));
         if (performance) drawPerformance(card, metrics.find((x) => x.model_name === m.model_name));
         else { card.append(node("p", "tuzi-notice", [billing(m.quota_type), m.tags || ""].filter(Boolean).join(" · "))); card.append(row(button("Model details", () => modelDetails(m, data.pricing_meta)), button("Configure with a key", () => guarded(() => chooseKeyForModel(m))))); }
         list.append(card);
@@ -347,14 +372,31 @@
     function drawPerformance(card, item) {
       const metric = item?.aggregate || {}, has = metric.has_samples === true;
       const fixed = (value, suffix) => value != null && Number.isFinite(Number(value)) ? Number(value).toFixed(2) + suffix : "—";
+      card.classList.add("tuzi-performance");
       card.append(facts([["Success rate", has ? fixed(metric.success_rate, "%") : "—"], ["Average latency", has ? fixed(metric.avg_latency_ms, " ms") : "—"], ["First token latency", has ? fixed(metric.avg_ttft_ms, " ms") : "—"]]));
       card.append(node("p", "tuzi-notice", t("Success rate over {hours} hours · each block is 30 minutes", { hours: filters.performance.hours })));
       const series = node("div", "tuzi-series"), detail = node("p", "tuzi-notice"); detail.hidden = true; detail.setAttribute("aria-live", "polite"); series.setAttribute("aria-label", t("Historical success rate"));
       for (const p of metric.half_hour_series?.length ? metric.half_hour_series : [{ts:null, has_samples:false}]) { const swatch = node("i"); const valid = p.has_samples && p.success_rate != null && Number.isFinite(Number(p.success_rate)); swatch.tabIndex = 0; swatch.dataset.level = valid ? p.success_rate >= 95 ? "good" : p.success_rate >= 80 ? "fair" : "bad" : "unknown"; swatch.title = `${time(p.ts)} · ${valid ? fixed(p.success_rate, "%") : t("No samples")}`; swatch.setAttribute("aria-label", swatch.title); swatch.onfocus = () => { detail.textContent = swatch.title; detail.hidden = false; }; swatch.onblur = () => { detail.hidden = true; detail.textContent = ""; }; series.append(swatch); }
-      card.append(series, detail); if (!has) card.append(text("No samples in this window."));
+      const legend = node("div", "tuzi-legend");
+      for (const [level, label] of [["good", "≥ 95%"], ["fair", "80–<95%"], ["bad", "< 80%"], ["unknown", t("No samples")]]) {
+        const item = node("span", "", label), dot = node("i"); dot.dataset.level = level; item.prepend(dot); legend.append(item);
+      }
+      const ticks = node("div", "tuzi-series-ticks"), points = metric.half_hour_series || [];
+      if (points.length) ticks.append(node("span", "", time(points[0].ts)), node("span", "", time(points.at(-1).ts)));
+      card.append(series, ticks, legend, detail);
+      if (metric.latest_sample_ts > 0) card.append(node("p", "tuzi-notice", t("Latest sample") + " · " + time(metric.latest_sample_ts)));
+      if (!has) card.append(text("No samples in this window."));
+    }
+    function modelDescription(model) {
+      try {
+        const translated = JSON.parse(model.description_i18n);
+        const value = translated?.[locale] || translated?.[intlLang()];
+        if (typeof value === "string") return value;
+      } catch { /* Legacy descriptions remain readable. */ }
+      return typeof model.description === "string" ? model.description : "";
     }
     function modelDetails(m, meta) {
-      const box = openSheet("Model details"); box.append(facts([["Model", m.model_name], ["Description", m.description || m.description_i18n], ["Aliases", m.aliases.join(", ")], ["Endpoint type", m.supported_endpoint_types.join(", ")], ["Visible model group", m.enable_groups.join(", ")], ["Billing mode", billing(m.quota_type)], ["Model tag", m.tags]]), text("USD group catalog prices, excluding personal discounts. Final charges are determined by the service."));
+      const box = openSheet("Model details"); box.append(facts([["Model", m.model_name], ["Description", modelDescription(m)], ["Aliases", m.aliases.join(", ")], ["Endpoint type", m.supported_endpoint_types.join(", ")], ["Visible model group", m.enable_groups.join(", ")], ["Billing mode", billing(m.quota_type)], ["Model tag", m.tags]]), text("USD group catalog prices, excluding personal discounts. Final charges are determined by the service."));
       for (const group of tuziMoney.groupPrices(m, meta)) {
         const section = node("section", "list tuzi-sheet tuzi-group-prices"); section.append(node("h3", "", group.label)); const prices = node("div"); let at = 0;
         const draw = () => { const data = group.tiers[at]?.prices || []; prices.replaceChildren(data.length ? table(["Billing item", "Catalog price", "Catalog unit"], data.map((p) => [t(p.label), `$${p.amount.toLocaleString("en-US", { maximumFractionDigits: 12 })}`, t(p.unit)])) : text("No reliable price is available. See the website for full pricing.")); };

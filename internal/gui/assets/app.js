@@ -343,7 +343,7 @@ function maskSpan(src, failed) {
   if (failed) load.then((ok) => ok || failed());
   return m;
 }
-const pngIcons = new Set(["crush", "zcode", "alma", "hanako", "cindy", "lody", "typesafe", "atomcode", "snow", "mlx-serve", "mothx", "zoo-code", "kimi-code-desktop"]);
+const pngIcons = new Set(["tuzi-rabbit", "crush", "zcode", "alma", "hanako", "cindy", "lody", "typesafe", "atomcode", "snow", "mlx-serve", "mothx", "zoo-code", "kimi-code-desktop"]);
 
 // lazy: a picture in a long list (Plugins' rows) is asked for near the
 // screen: each SVG an <img> draws is a ~0.6 MB webview document, kept (#909)
@@ -6191,7 +6191,7 @@ function renderProviders(quiet) {
     chev.append(svg(CHEV_R, 11, 1.7));
     // a provider on is listed, and tried, in the order the user puts it in
     // (#499): its logo is the handle, as an agent row's is
-    row.append(p.off ? icon(p.icon || "generic") : providerHandle(p, row), who, uses, key, providerSwitch(p), chev);
+    row.append(p.off ? icon(tuziIcon(p) || "generic") : providerHandle(p, row), who, uses, key, providerSwitch(p), chev);
     // right-click: Move to Top, Move Up, Move Down, Move to Bottom (#1614)
     if (!p.off) row.oncontextmenu = (ev) => { ev.preventDefault(); openProviderMenu(row.querySelector(".pv-handle"), p); };
     row.onclick = async () => {
@@ -6233,7 +6233,7 @@ function providerHandle(p, row) {
   b.type = "button";
   b.setAttribute("aria-label", t("Arrange {agent}", { agent: p.name }));
   b.title = t("Drag to reorder — a model several providers serve goes to the higher one first · Alt+↑/↓ to move") + " · " + t("right-click to move it to the top or the bottom");
-  b.append(icon(p.icon || "generic"));
+  b.append(icon(tuziIcon(p) || "generic"));
   b.onkeydown = (e) => {
     if (!e.altKey || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
     e.preventDefault();
@@ -7327,7 +7327,7 @@ const globalOf = (pr) => pr.id.endsWith("-cn") ? providers.presets.find((x) => x
 // provider when both are.
 function pairTile(pr, cn) {
   const both = [pr, cn];
-  const b = pickRow(pr.icon || "generic", shortName(pr.short || pr.name), both.some((x) => editing?.preset === x.id) ? " on" : "");
+  const b = pickRow(tuziIcon(pr) || "generic", shortName(pr.short || pr.name), both.some((x) => editing?.preset === x.id) ? " on" : "");
   const added = both.filter((x) => x.added);
   b.title = both.map((x) => t(x === pr ? "Global" : "China") + " " + hostOf(x.chat || x.responses || x.anthropic) + (x.added ? " · " + t("Added") : "")).join("\n");
   if (added.length) markAdded(b);
@@ -7368,7 +7368,7 @@ function subTile(x) {
 }
 
 function tile(pr) {
-  const b = pickRow(pr.icon || "generic", pr.short || pr.name, editing?.preset === pr.id ? " on" : "");
+  const b = pickRow(tuziIcon(pr) || "generic", pr.short || pr.name, editing?.preset === pr.id ? " on" : "");
   if (pr.sponsored) b.querySelector(".nm").append(el("span", "badge", t("sponsored")));
   b.title = (pr.short ? pr.name + " · " : "") + (pr.note ? t(pr.note) : hostOf(pr.chat || pr.responses || pr.anthropic));
   if (pr.added) {
@@ -9097,7 +9097,7 @@ function drawEditor(p, presetID) {
   {
     const h = el("div", "ehead");
     const copyOf = draft.copyOf && providers.providers.find((x) => x.id === draft.copyOf);
-    h.append(icon(p?.icon || (copyOf && draft.icon) || pr?.icon || "generic"), el("b", "", p ? p.name : copyOf ? t("Copy of {name}", { name: copyOf.name }) : pr ? pr.name : t("Custom provider")));
+    h.append(icon(tuziIcon(p) || (copyOf && draft.icon) || tuziIcon(pr) || "generic"), el("b", "", p ? p.name : copyOf ? t("Copy of {name}", { name: copyOf.name }) : pr ? pr.name : t("Custom provider")));
     if (pr?.kind === "partner") { if (partnerNote(pr)) h.append(el("span", "note", partnerNote(pr))); } else if (pr?.note) h.append(el("span", "note", t(pr.note)));
     h.append(el("span", "grow"));
     // a region's own page (Tencent Cloud's), following the region picked
@@ -10557,7 +10557,7 @@ function importAppRow(ia, s, it, recount, boxes) {
   else if (it.skip) tag = el("span", "apptag", t("Can't import"));
   else if (it.status === "taken") tag = el("span", "apptag", t("Name in use"));
   else if (it.keyOf) tag = el("span", "apptag", t("Same vendor"));
-  row.append(box, icon(p.icon || "generic"), who);
+  row.append(box, icon(tuziIcon(p) || "generic"), who);
   if (tag) row.append(tag);
   return row;
 }
@@ -10570,7 +10570,7 @@ function renderImport(im) {
   ed.onclick = (e) => e.stopPropagation();
   const p = im.provider || {};
   const h = el("div", "ehead");
-  h.append(icon(p.icon || "generic"), el("b", "", im.error ? t("Import link") : p.name));
+  h.append(icon(tuziIcon(p) || "generic"), el("b", "", im.error ? t("Import link") : p.name));
   if (!im.error) h.append(el("span", "note", t("from a link")));
   ed.append(h);
   const bar = el("div", "bar");

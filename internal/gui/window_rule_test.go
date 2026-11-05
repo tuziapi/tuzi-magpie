@@ -16,7 +16,8 @@ func TestOpenSize(t *testing.T) {
 		minW, minH int
 		w, h       int
 	}{
-		{"default", nil, 560, 420, windowW, windowH},
+		{"default", nil, 560, 420, 1200, 800},
+		{"kept smaller", []int{660, 600}, 560, 420, 660, 600},
 		{"kept", []int{1713, 1084}, 560, 420, 1713, 1084},
 		{"under the least", []int{300, 200}, 560, 420, windowW, windowH},
 		{"malformed", []int{900}, 560, 420, windowW, windowH},

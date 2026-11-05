@@ -2261,7 +2261,7 @@ func (s Settings) normal() Settings {
 		s.Theme = "system"
 	}
 	if s.Lang == "" {
-		s.Lang = "system"
+		s.Lang = "zh"
 	}
 	if s.Tray == "" {
 		s.Tray = "panel"

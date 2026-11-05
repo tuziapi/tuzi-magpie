@@ -295,7 +295,8 @@ func TestSync(t *testing.T) {
 	}
 
 	// both change the settings: the older change gives way, and is kept
-	settings.Save(settings.Settings{Theme: "light", Proxy: "http://127.0.0.1:7890"})
+	// Explicit languages keep this conflict independent of the default.
+	settings.Save(settings.Settings{Theme: "light", Lang: "system", Proxy: "http://127.0.0.1:7890"})
 	now(t) // a's is on the server now
 	b.use(t)
 	settings.Save(settings.Settings{Theme: "system", Lang: "zh", Proxy: "direct"})
@@ -305,7 +306,7 @@ func TestSync(t *testing.T) {
 	if v.Notice == nil || !slices.Equal(v.Notice.Here, []string{"settings"}) || len(v.Notice.There) != 0 {
 		t.Fatalf("older here: %+v", v.Notice)
 	}
-	if s := settings.Load(); s.Theme != "light" || s.Lang == "zh" {
+	if s := settings.Load(); s.Theme != "light" || s.Lang != "system" {
 		t.Fatalf("b's settings: %+v", s)
 	}
 	// …and the newer one stays, the server's kept aside

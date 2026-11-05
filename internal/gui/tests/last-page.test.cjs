@@ -68,8 +68,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       page.on("pageerror", (e) => errors.push(e.message));
       await page.route("**/*", server());
 
-      // first time: Agents, the first page
-      await open(page, BASE, "agents", `${where}: first open`);
+      // First native launch opens Tuzi; later launches restore the chosen page.
+      await open(page, BASE, "tuzi", `${where}: first open`);
+      await open(page, BASE, "tuzi", `${where}: Tuzi kept`);
       // left on Routing, opened again and reloaded: Routing
       const tab = page.locator('#nav button[data-view="routing"]');
       await tab.scrollIntoViewIfNeeded();
@@ -91,7 +92,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await open(page, BASE + "?view=agents", "agents", `${where}: ?view=agents`);
       // a page there is no longer: the first page
       await keep(page, "nonesuch");
-      await open(page, BASE, "agents", `${where}: a page gone`);
+      await open(page, BASE, "tuzi", `${where}: a page gone`);
       // left on Agents: Agents
       await keep(page, "plugins");
       await open(page, BASE, "plugins", `${where}: Plugins kept`);
@@ -99,6 +100,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       await open(page, BASE, "agents", `${where}: Agents kept`);
       assert.deepEqual(errors, [], where);
       await context.close();
+
+      const webContext = await browser.newContext({ viewport: { width, height: 640 } });
+      const webPage = await webContext.newPage();
+      await webPage.route("**/*", server({ web: true }));
+      await open(webPage, BASE, "agents", `${where} web: first open`);
+      await webContext.close();
 
       // magpie web in gateway mode: Agents and Library aren't there
       const gw = await browser.newContext({ viewport: { width, height: 640 }, reducedMotion: "reduce" });

@@ -61,7 +61,9 @@ def main():
     home.mkdir(mode=0o700)
     config = home / 'config/tuzi-magpie'
     config.mkdir(parents=True)
-    (config / 'settings.json').write_text(json.dumps({'lang': 'en', 'theme': 'light', 'port': port}))
+    # This is a new install, not a legacy settings file whose absent Dock
+    # choice meant Hide. Leave language unset to exercise the product default.
+    (config / 'settings.json').write_text(json.dumps({'theme': 'light', 'port': port, 'dockSettled': True}))
     wrapper = out / 'tuzi-magpie-production-acceptance.app'
     shutil.copytree(app, wrapper, symlinks=True)
     copied = wrapper / 'Contents/MacOS' / info['CFBundleExecutable']

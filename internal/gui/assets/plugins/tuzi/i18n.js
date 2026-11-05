@@ -1,7 +1,8 @@
 // The desktop Tuzi workspace owns these words.
 magpie.strings({
   "zh": {
-    "Tuzi call details": "兔子调用明细",
+    "No consumption samples.": "暂无消费样本。",
+    "Tuzi call details": "调用明细",
     "Model marketplace": "模型广场",
     "Connect your Tuzi account first.": "请先连接兔子账户。",
     "The system token is invalid. Connect again.": "系统令牌已失效，请重新连接。",
@@ -177,7 +178,8 @@ magpie.strings({
     "Catalog unit": "计价单位"
   },
   "zh-TW": {
-    "Tuzi call details": "兔子呼叫明細",
+    "No consumption samples.": "暫無消費樣本。",
+    "Tuzi call details": "呼叫明細",
     "Model marketplace": "模型廣場",
     "Connect your Tuzi account first.": "請先連線兔子帳戶。",
     "The system token is invalid. Connect again.": "系統權杖已失效，請重新連線。",
@@ -353,6 +355,7 @@ magpie.strings({
     "Catalog unit": "計價單位"
   },
   "ja": {
+    "No consumption samples.": "消費サンプルがありません。",
     "Tuzi call details": "Tuzi 呼び出し明細",
     "Model marketplace": "モデル一覧",
     "Connect your Tuzi account first.": "先に Tuzi アカウントを接続してください。",
@@ -529,6 +532,7 @@ magpie.strings({
     "Catalog unit": "料金単位"
   },
   "de": {
+    "No consumption samples.": "Keine Verbrauchsdaten vorhanden.",
     "Tuzi call details": "Tuzi-Aufrufdetails",
     "Model marketplace": "Modellkatalog",
     "Connect your Tuzi account first.": "Verbinden Sie zuerst Ihr Tuzi-Konto.",

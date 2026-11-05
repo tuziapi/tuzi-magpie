@@ -1,6 +1,24 @@
 # Local delivery and acceptance
 
-Status: closing freeze. The final product source includes the approved
+Current source (2026-11-05): the frontend polish and startup defaults are
+consolidated in `/Users/syd08/Documents/tuzi-magpie-local` on
+`codex/tuzi-magpie-local`. See [current build and verification](unified-preview-2026-11-05.md).
+
+Historical local preview (2026-11-04): rebuilt from `9585a49` plus the local
+Simplified Chinese default change, version `9585a49-local-zh`, at the same
+`tuzi-magpie.app` path. Executable SHA256:
+`6c62f48354e8eb2ec0b3e36615decac86dfa6e48ef61a51df5e59fcd91c66777`.
+The preview launcher now marks its configuration as a new install
+(`dockSettled: true`) and leaves language unset. The native window opens in
+Simplified Chinese with the original With window Dock behavior and unchanged
+upstream icon bytes. Startup evidence is
+`/private/tmp/tuzi-magpie-preview-20261104-02/result.json`; this temporary
+preview uses port 18553. See [preview verification and release readiness](preview-defaults-2026-11-04.md).
+
+The acceptance freeze below records the **previous** candidate. Its source,
+hash and test results must not be attributed to the rebuilt preview.
+
+Previous acceptance status: closing freeze. The final product source includes the approved
 F08/F14/F15 repairs. Production build, isolated startup and native window
 inspection pass. The frozen complete GUI suite finished red; two files
 still require a supported closing conclusion (see closing-blockers.md).
@@ -33,7 +51,7 @@ and `nogui`; the production startup checker enforces this before launching.
 
 From the development worktree, build with `make app TAGS=production`. The
 local Go toolchain is `/Users/syd08/.local/toolchains/go1.25.12/bin/go`, which
-selects the repository's Go1.26.8 toolchain. The current candidate is version 079fea7, source
+selects the repository's Go1.26.8 toolchain. The previous acceptance candidate was version 079fea7, source
 079fea7f635729c88f703862e5c3981cc9845ae4, executable SHA256
 `22a7ec57298045ba1e61a8a404efdb4b26787823c1783099a92fe7721b8f1e46`.
 Evidence is `final-source-checks-04/artifact.json` and `production-start-03`
