@@ -84,7 +84,12 @@ def main():
             notices(stage)
             (stage / "Applications").symlink_to("/Applications")
             dmg = target(prefix + ".dmg")
-            run("hdiutil", "create", "-volname", "tuzi-magpie", "-srcfolder", stage, "-format", "UDZO", dmg)
+            # hdiutil's inferred size can be too small for the signed app.
+            # Reserve filesystem space in addition to the logical file sizes.
+            size = sum(p.stat().st_size for p in stage.rglob("*") if p.is_file() and not p.is_symlink())
+            megabytes = max(128, (size + 1048575) // 1048576 + 64)
+            run("hdiutil", "create", "-volname", "tuzi-magpie", "-srcfolder", stage,
+                "-fs", "HFS+", "-size", f"{megabytes}m", "-format", "UDZO", dmg)
             run("hdiutil", "verify", dmg)
         elif args.platform == "windows":
             run("make", "release-windows", f"VERSION={args.version}", f"LDFLAGS={flags}", env=env)
