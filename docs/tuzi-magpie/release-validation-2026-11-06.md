@@ -3,11 +3,11 @@
 Status: **local artifacts prepared; not published**. No release tag, published
 Release, API-site deployment or automatic update feed was created.
 
-The candidate source is `715bc671c52069d178e43dd8de20a875ea3d8f36`, based on
-Tuzi `main` at `9ac31d9678f5b70e9bd29a312357528576e100ea`. The working branch is
+The initial packaging candidate source is `715bc671c52069d178e43dd8de20a875ea3d8f36`, based on
+Tuzi `main` at `9ac31d9678f5b70e9bd29a312357528576e100ea`. The remote review branch is
 `codex/tuzi-unsigned-release`. The existing UI preview and daily account/config
 folders were not modified. This document is a later documentation-only commit;
-the six candidate assets all identify the candidate source above.
+the six original assets all identify the initial candidate source above.
 
 ## Changes
 
@@ -114,3 +114,38 @@ excluded by the user. They remain unverified and must be described as such in
 beta release notes. The repository is private, so its eventual Release will be
 available only to authorized repository users unless its administrator separately
 chooses a public distribution destination.
+
+## Refreshed local packages after browser corrections
+
+The latest local six-asset set identifies
+`03e8af852475351249fc0100c088839d7fb40a03` and lives separately in
+`/Users/syd08/Documents/tuzi-magpie-tools/release-20261106/candidate-packages/`.
+Use this directory for current local review; `final-packages/` above is the
+retained earlier candidate, not the newest UI build. The version string is the
+same proposed beta; neither set has been published or tagged.
+
+This candidate adds only the documented Tuzi gutter/sidebar spacing fixes and
+browser-fixture corrections. See
+[browser validation](browser-release-validation-2026-11-06.md) for the failing
+frozen suite, successful focused checks and unresolved failures. No further
+production Go code changed after the recorded full Go/race validation.
+
+All six refreshed artifacts and four manifests pass the complete set verifier,
+which produced `SHA256SUMS.txt`. Both macOS DMGs pass architecture, ad-hoc
+signature and disk-image verification; ARM64 executes its version command.
+Both Windows PE architectures and portable ZIP integrity/content pass; the
+installer compiles with NSIS warnings treated as errors. The Linux GTK binary
+has no unresolved linked dependencies, and the DEB installs, reports the version
+and uninstalls inside the Ubuntu 24.04 x64 container. The Windows manifest still
+explicitly says native installation was not verified.
+
+`candidate-package-results.json` and `candidate-*.log` in the evidence directory
+record each completed build/verification stage. The first dependency bootstrap
+hit Ubuntu HTTP 502 errors; a mirror retry completed successfully. Source and
+artifacts were not changed to bypass a check.
+
+The candidate branch is pushed to draft
+[PR 1](https://github.com/tuziapi/tuzi-magpie/pull/1). Main is unchanged. Billing,
+Windows native verification and unresolved browser regressions remain publication
+gates. API-site deployment and real-account integration remain explicitly excluded
+and unverified; beta notes must retain that limitation.

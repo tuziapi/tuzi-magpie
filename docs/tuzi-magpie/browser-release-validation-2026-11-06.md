@@ -112,7 +112,9 @@ while the full regression continues reading the untouched frozen checkout.
 `candidate-validation/results.json` records the source patch, file hashes,
 complete changed test files and affected Tuzi/navigation/layout cases in both
 engines. The 22-file Chromium candidate batch passed 159/159 checks in 849.50 seconds.
-The WebKit candidate batch and the remaining frozen full batch are still running.
+The 22-file WebKit candidate batch passed 159/159 checks in 951.63 seconds.
+Thus all 318 candidate checks pass. The remaining frozen full batch is still
+running; its failures are not superseded by this focused candidate result.
 The candidate source is committed through `c0dc27135`; the recorded base plus
 patch and hashes identify the same tested file contents.
 
