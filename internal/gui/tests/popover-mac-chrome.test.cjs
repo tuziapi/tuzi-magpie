@@ -65,7 +65,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       const errors = [];
       page.on("pageerror", (e) => errors.push(e.message));
       await page.route("**/*", server(lang));
-      await page.goto("http://magpie.test/?mode=window");
+      await page.goto("http://magpie.test/?mode=window&view=agents");
       assert.equal(await page.evaluate(() => document.body.classList.contains("mac")), mac);
       const head = await page.evaluate(() => document.querySelector("header.top").getBoundingClientRect().bottom);
       if (mac) assert(head >= 49, `a Mac window's header reaches under the traffic lights: ${head}`);

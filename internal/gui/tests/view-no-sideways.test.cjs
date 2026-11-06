@@ -97,7 +97,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
             page.setDefaultNavigationTimeout(60000);
             page.on("pageerror", (e) => errors.push(e.message));
             await page.route("**/*", server(lang, web));
-            await page.goto("http://magpie.test/");
+            await page.goto("http://magpie.test/?view=agents");
             await page.locator("#view-agents").waitFor();
             const bad = [];
             for (const v of VIEWS) {

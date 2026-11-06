@@ -76,7 +76,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const errors = [];
         page.on("pageerror", (e) => errors.push(e.message));
         await page.route("**/*", server(lang, Math.round(zoom * 100), withTuzi));
-        await page.goto("http://magpie.test/");
+        await page.goto("http://magpie.test/?view=agents");
         await page.waitForSelector("#nav button.on");
         await page.waitForFunction(() => !document.querySelector("#update").hidden);
         assert(Math.abs(await page.evaluate(() => devicePixelRatio) - zoom) < 0.01, "the page isn't zoomed");

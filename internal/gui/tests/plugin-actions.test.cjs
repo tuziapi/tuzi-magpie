@@ -91,7 +91,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           const errors = [];
           page.on("pageerror", (e) => errors.push(e.message));
           await page.route("**/*", server(lang, { pages }));
-          await page.goto("http://magpie.test/");
+          await page.goto("http://magpie.test/?view=agents");
           // the agent's menu: magpie's own items, then the plugin's
           await page.locator('.row.agent[data-id="codex"] .ag-handle').click();
           await page.locator(".pop.row-menu").waitFor();

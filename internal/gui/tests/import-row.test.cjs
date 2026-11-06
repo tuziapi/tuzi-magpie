@@ -93,7 +93,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         page.setDefaultNavigationTimeout(60000);
         const ctl = {};
         await page.route("**/*", (route) => serve(route, lang, added, ctl));
-        await page.goto("http://magpie.test/");
+        await page.goto("http://magpie.test/?view=agents");
         await page.waitForLoadState("networkidle");
 
         const more = page.locator('.agent-more[aria-expanded="false"]');
