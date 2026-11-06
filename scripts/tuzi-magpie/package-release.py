@@ -45,6 +45,8 @@ def main():
         parser.error("commit source changes before packaging, so assets identify an exact source commit")
     flags = f"-s -w -X main.version={args.version} -X github.com/yetone/magpie/internal/product.Repository={REPOSITORY}"
     env = {**os.environ, "GOARCH": args.arch}
+    if args.platform != "windows":
+        env["CGO_ENABLED"] = "1"
     prefix = f"tuzi-magpie-{args.version}-{args.platform}-{args.arch}"
     artifacts = []
 
