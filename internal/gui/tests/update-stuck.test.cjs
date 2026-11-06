@@ -16,6 +16,26 @@ const { chromium, webkit } = require("playwright");
 const assets = path.resolve(__dirname, "../assets");
 const DIR = "C:\\";
 
+// Showing Update changes the header's width. fitTop runs in the frame after
+// its ResizeObserver delivery; a visible pill alone is not settled geometry.
+async function headerPaint(page) {
+  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    const state = window.__updateHeaderPaint = { done: false, frame: 0 };
+    const observer = new ResizeObserver(() => {
+      observer.disconnect();
+      state.frame = requestAnimationFrame(() => { state.frame = 0; state.done = true; });
+    });
+    state.cleanup = () => { observer.disconnect(); if (state.frame) cancelAnimationFrame(state.frame); };
+    observer.observe(document.querySelector(".top"));
+  });
+  try {
+    await page.waitForFunction(() => window.__updateHeaderPaint.done);
+  } finally {
+    await page.evaluate(() => { window.__updateHeaderPaint.cleanup(); delete window.__updateHeaderPaint; });
+  }
+}
+
 const words = {
   en: { version: "Version", why: "magpie can't write to the folder it runs from (C:\\), so it can't update itself; move it to a folder you can write to and open it from there." },
   zh: { version: "版本", why: "magpie 无法写入它所在的文件夹（C:\\），所以无法自动更新；请把它移到你有写入权限的文件夹，再从那里打开。" },
@@ -89,6 +109,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           const title = await page.locator("#update").getAttribute("title");
           assert.ok(title.startsWith(want), title);
           // nothing is cut off or pushes the page sideways at a narrow width
+          await headerPaint(page);
           const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           assert.ok(over <= 0, `the page scrolls sideways by ${over}px`);
           assert.deepEqual(errors, []);
@@ -137,7 +158,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           // no Update pill, once the pill has read the update too (a fetch
           // of /api/update beside the row's)
           await page.waitForFunction(() => performance.getEntriesByType("resource").filter((e) => new URL(e.name).pathname === "/api/update").length >= 2);
-          await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+          await headerPaint(page);
           assert.equal(await page.locator("#update").isHidden(), true);
           const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           assert.ok(over <= 0, `the page scrolls sideways by ${over}px`);
