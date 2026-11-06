@@ -33,7 +33,7 @@ Section "tuzi-magpie"
   CreateShortcut "$SMPROGRAMS\tuzi-magpie.lnk" "$INSTDIR\tuzi-magpie.exe"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "DisplayName" "tuzi-magpie"
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "DisplayVersion" "${VERSION}"
-  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
+  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "UninstallString" '"$INSTDIR\Uninstall.exe"'
   WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "InstallLocation" "$INSTDIR"
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "NoModify" 1
   WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie" "NoRepair" 1
@@ -52,7 +52,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Uninstall.exe"
   Delete "$SMPROGRAMS\tuzi-magpie.lnk"
   ReadRegStr $0 HKCU "Software\Classes\tuzimagpie\shell\open\command" ""
-  StrCmp $0 '$"$INSTDIR\tuzi-magpie.exe$" $"%1$"' 0 keep_scheme
+  StrCmp $0 '"$INSTDIR\tuzi-magpie.exe" "%1"' 0 keep_scheme
     DeleteRegKey HKCU "Software\Classes\tuzimagpie"
   keep_scheme:
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie"

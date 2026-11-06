@@ -117,7 +117,7 @@ def main():
             if not makensis:
                 raise SystemExit("NSIS is required to create the Windows installer")
             setup = target(prefix + "-setup.exe")
-            run(makensis, f"/DVERSION={args.version}", f"/DSOURCE={ROOT}", f"/DOUTPUT={setup}", ROOT / "build/tuzi-magpie/installer.nsi")
+            run(makensis, "/WX", f"/DVERSION={args.version}", f"/DSOURCE={ROOT}", f"/DOUTPUT={setup}", ROOT / "build/tuzi-magpie/installer.nsi")
         else:
             run("make", "release-linux", f"VERSION={args.version}", f"LDFLAGS={flags}", env=env)
             binary = ROOT / "dist/tuzi-magpie-linux-amd64"

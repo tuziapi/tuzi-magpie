@@ -13,6 +13,9 @@ $expected = (Get-FileHash 'dist/tuzi-magpie-windows-amd64.exe').Hash
 if ((Get-FileHash $installed).Hash -ne $expected) { throw 'Installed executable differs from the build.' }
 $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie'
 if ((Get-ItemProperty $key).DisplayVersion -ne $Version) { throw 'Wrong registered version.' }
+if ((Get-ItemProperty $key).UninstallString -ne ('"' + (Join-Path $install 'Uninstall.exe') + '"')) {
+  throw 'The registered uninstall command is not quoted correctly.'
+}
 $sentinel = Join-Path $install 'user-added-file.txt'
 Set-Content -Path $sentinel -Value 'Preserve user files'
 $uninstaller = Join-Path $install 'Uninstall.exe'
