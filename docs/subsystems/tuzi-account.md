@@ -41,6 +41,9 @@ The account stylesheet owns its outlined/primary/destructive button hierarchy,
 aligned filters, responsive cards, tables and dialogs. Tabs use a simple
 underline; log filters have no outer card. Statistics keep label/value pairs
 close together and place the full-ranking action beside its section heading.
+The page shares the desktop shell's 16px minimum gutters and centred 1200px
+reading area. When the native-only account entry is hidden, the following Work
+heading keeps the first visible group's 2px top padding.
 The account-key picker shows the selected model and full-width key rows.
 Recorded-call details omit the related-request button; the backend endpoint
 remains available, but this page no longer invokes it. The existing log columns

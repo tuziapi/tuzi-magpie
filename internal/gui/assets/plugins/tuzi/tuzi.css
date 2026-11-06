@@ -1,6 +1,6 @@
 /* Account styles are scoped to Tuzi; the distribution brand has its own classes. */
 /* Match the original built-in pages' centred 1200px reading area. */
-body.window #view-tuzi { padding-left:max(20px,calc(50% - 600px)); padding-right:max(0px,calc(max(20px,calc(50% - 600px)) - var(--bar,0px))); }
+body.window #view-tuzi { padding-left:max(16px,calc(50% - 600px)); padding-right:max(0px,calc(max(16px,calc(50% - 600px)) - var(--bar,0px))); }
 #view-tuzi .tuzi-toolbar, #view-tuzi .tuzi-actions, #view-tuzi .tuzi-tabs { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 #view-tuzi .tuzi-toolbar { margin:16px 0; align-items:flex-end; gap:10px; }
 #view-tuzi .tuzi-tabs { margin:16px 0; }
@@ -225,3 +225,6 @@ body.side-nav #nav button[data-view="tuzi"] { margin-bottom:8px; }
 #view-tuzi .tuzi-key-option-info .note { white-space:normal; overflow-wrap:anywhere; }
 #view-tuzi .tuzi-key-option-arrow { color:var(--muted); font-size:20px; flex:none; }
 #view-tuzi .tuzi-key-picker>.tuzi-pagination { margin-bottom:0; }
+
+/* A hidden native-only account entry leaves Work as the first visible group. */
+body.side-nav #nav > button[data-view="tuzi"][hidden] + .nav-gl { padding-top:2px; }
