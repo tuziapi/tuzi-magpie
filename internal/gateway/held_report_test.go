@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,6 +12,48 @@ import (
 	"testing"
 	"time"
 )
+
+// A client can close its connection as soon as the flushed 504 arrives.
+// Ending the wait at that exact boundary must not erase what held it.
+type heldReplyEndsWait struct {
+	*httptest.ResponseRecorder
+	end func()
+}
+
+func (w *heldReplyEndsWait) Flush() {
+	w.end()
+	w.ResponseRecorder.Flush()
+}
+
+func TestHeldReportKeepsWaitAtReply(t *testing.T) {
+	t.Setenv("XDG_CACHE_HOME", t.TempDir())
+	s := New()
+	r := httptest.NewRequest("POST", "/v1/chat/completions", nil)
+	u := &unroutedHold{s: s, r: r, f: &inflight{start: time.Now()}, cancel: func(error) {}}
+	u.asked.Store("probe/text")
+	done := noteWait(context.WithValue(r.Context(), unroutedKey{}, u), "image description")
+	w := &heldReplyEndsWait{ResponseRecorder: httptest.NewRecorder(), end: done}
+	u.w = newHeldWriter(w)
+	u.giveUp(false)
+	if w.Code != http.StatusGatewayTimeout {
+		t.Fatalf("reply = %d, want 504", w.Code)
+	}
+	if strings.Contains(u.waitsSaid(), "(under way)") {
+		t.Fatal("the reply did not end the simulated client's wait")
+	}
+	rs := routesOf(s, "probe/text")
+	if len(rs) != 1 || rs[0].Held == "" {
+		t.Fatalf("no report on the route: %+v", rs)
+	}
+	report, err := HeldReport(rs[0].Held)
+	if err != nil {
+		t.Fatal(err)
+	}
+	waits := strings.Split(strings.Split(report, "known waits:")[1], "\n")[0]
+	if !strings.Contains(waits, "image description") || !strings.Contains(waits, "(under way)") {
+		t.Fatalf("report lost the wait present when the reply began:\n%.1000s", report)
+	}
+}
 
 // A request held too long before routing leaves a report its user can
 // reach: the GUI app's log goes only to stderr. The report names the wait
