@@ -1,13 +1,17 @@
 # Unsigned prerelease preparation — 2026-11-06
 
-Status: **local artifacts prepared; not published**. No release tag, published
+Status: **local artifacts prepared; not published; PR remains draft**.
+The latest platform results, unresolved gates, package/source equivalence and
+manual checklist are in [the final acceptance follow-up](prerelease-acceptance-2026-11-06.md).
+The earlier validation below is retained as dated evidence, not a claim of native
+Windows/Intel/Linux desktop acceptance. No release tag, published
 Release, API-site deployment or automatic update feed was created.
 
 The initial packaging candidate source is `715bc671c52069d178e43dd8de20a875ea3d8f36`, based on
 Tuzi `main` at `9ac31d9678f5b70e9bd29a312357528576e100ea`. The remote review branch is
 `codex/tuzi-unsigned-release`. The existing UI preview and daily account/config
-folders were not modified. This document is a later documentation-only commit;
-the six original assets all identify the initial candidate source above.
+folders were not modified. The six original assets identify the initial candidate source above. The refreshed
+current package set and its distinct source are recorded at the end of this document.
 
 ## Changes
 
@@ -149,3 +153,25 @@ The candidate branch is pushed to draft
 Windows native verification and unresolved browser regressions remain publication
 gates. API-site deployment and real-account integration remain explicitly excluded
 and unverified; beta notes must retain that limitation.
+
+## Acceptance follow-up
+
+Both frozen full browser runs have now completed with failures; WebKit is no
+longer running. The focused 318 checks and later 62 update-notice checks are
+passing, but are not a final full-suite green result. Five remaining failed
+files plus the historical F01/F11 evidence gaps remain open.
+
+The refreshed ARM64 DMG was copied into an isolated test directory and its
+actual native GUI was launched, navigated and quit successfully on Apple Silicon.
+The Intel DMG launched under Rosetta on that same machine, not Intel hardware.
+Linux also started GUI/WebKit processes under Xvfb and D-Bus as a private
+unprivileged user, but actual desktop interaction was not verified. Windows
+installation, launch, uninstall and portable execution remain unverified.
+
+All six current artifacts were rechecked against their four original manifests
+and hashes. No production source changed since their actual build commit
+`03e8af852475351249fc0100c088839d7fb40a03`; later changes are tests and acceptance
+documentation, so no rebuild or manifest-source rewriting was needed.
+See [the follow-up](prerelease-acceptance-2026-11-06.md),
+[asset inventory](release-candidate-assets.json) and
+[checksums](release-candidate-SHA256SUMS.txt). PR #1 stays draft.
