@@ -32,18 +32,22 @@ func screenshot(n int) string {
 // pasted into a user message, then the latest user message with a
 // screenshot of its own. compact ends it in Codex's compaction trigger.
 func screenshotSession(compact bool) string {
+	return screenshotSessionWith(compact, screenshot)
+}
+
+func screenshotSessionWith(compact bool, image func(int) string) string {
 	var b strings.Builder
 	b.WriteString(`{"model":"fake/m1","stream":true,"store":false,"prompt_cache_key":"thread-shots","input":[`)
 	for i := range 19 {
 		if i%2 == 0 {
-			fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"look at screen %d"},{"type":"input_image","image_url":"%s"}]},`, i, screenshot(i))
+			fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"look at screen %d"},{"type":"input_image","image_url":"%s"}]},`, i, image(i))
 			continue
 		}
 		fmt.Fprintf(&b, `{"type":"function_call","call_id":"call_%d","name":"view_image","arguments":"{\"path\":\"shot%d.png\"}"},`, i, i)
-		fmt.Fprintf(&b, `{"type":"function_call_output","call_id":"call_%d","output":[{"type":"input_text","text":"tool output %d kept"},{"type":"input_image","image_url":"%s"}]},`, i, i, screenshot(i))
+		fmt.Fprintf(&b, `{"type":"function_call_output","call_id":"call_%d","output":[{"type":"input_text","text":"tool output %d kept"},{"type":"input_image","image_url":"%s"}]},`, i, i, image(i))
 		fmt.Fprintf(&b, `{"type":"message","role":"assistant","content":[{"type":"output_text","text":"seen %d"}]},`, i)
 	}
-	fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"the latest ask"},{"type":"input_image","image_url":"%s"}]}`, screenshot(19))
+	fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"the latest ask"},{"type":"input_image","image_url":"%s"}]}`, image(19))
 	if compact {
 		b.WriteString(`,{"type":"compaction_trigger"}`)
 	}
@@ -265,7 +269,14 @@ func compactionOverByteCapEveryTime(t *testing.T, header ...string) {
 	up := &capped{proto: provider.Responses, most: 0, status: 400, ctype: "application/json", body: commandCodeCap}
 	cappedOn(t, up)
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest("POST", CodexPath+"/responses", strings.NewReader(screenshotSession(true)))
+	// This vendor refuses every size, so exercise its bounded retry and
+	// fallback path with small images. The actual 32 MB boundary remains
+	// covered by TestCompactionOverByteCapLeavesOutOldImages. Reprocessing
+	// 40 MB four times under -race tripped the unrelated 30s route guard.
+	bodyIn := screenshotSessionWith(true, func(n int) string {
+		return fmt.Sprintf("data:image/png;base64,SHOT%02d", n) + strings.Repeat("iVBORw0KGgo", 1900)
+	})
+	req := httptest.NewRequest("POST", CodexPath+"/responses", strings.NewReader(bodyIn))
 	req.Header.Set("Authorization", "Bearer chatgpt-token")
 	req.Header.Set("chatgpt-account-id", "acct-1")
 	for i := 0; i+1 < len(header); i += 2 {
@@ -280,7 +291,7 @@ func compactionOverByteCapEveryTime(t *testing.T, header ...string) {
 		t.Fatalf("local summary: %.300s", got)
 	}
 	calls := up.calls()
-	if len(calls) > 6 {
+	if len(calls) < 3 || len(calls) > 6 {
 		t.Fatalf("asked %d times", len(calls))
 	}
 	for i := 1; i < 4 && i < len(calls); i++ {
