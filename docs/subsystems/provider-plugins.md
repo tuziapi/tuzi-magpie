@@ -342,3 +342,11 @@ personal-key entry for it; ordinary API methods still require a key.
 its account slot and the account action says Sign in again. Existing records
 are not deleted. Other plugins keep multiple accounts. OpenCode ignores
 these optional fields; no provider id is special-cased in magpie.
+
+When a fetch's response head and completion arrive between the consumer's
+empty queue read and its completion check, `headRead` rechecks the queue
+before declaring that the plugin gave no response (`completedHead` in
+`internal/plugin/host.go`). The queued HTTP status reaches the caller;
+any terminal error still reaches the body reader. Completion without a
+head remains an error. `TestHostHeadArrivesBetweenEmptyReadAndCompletion`
+in `internal/plugin/host_test.go` exercises that ordering.
