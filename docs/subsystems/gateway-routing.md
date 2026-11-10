@@ -1859,3 +1859,13 @@ text-only or local summary even when fitting attempts are slow. Ordinary
 client streams retain their existing keep-alives and in-stream errors.
 `TestCompactionOverByteCapEveryTime` and `TestCompactionOverByteCapSlowFitting`
 exercise plain and Codex-user-agent requests, including the delayed path.
+
+### EOF while an upstream request is still being written
+
+For a fresh HTTP/1 connection, `replayable` also recognizes an EOF returned
+by the read loop when `httptrace.WroteRequest` confirms a closed-connection
+write failure. The existing bounded retry and `errClosedUnsent` reporting
+apply. An EOF after a completed write, without write-result evidence, or
+with a body-source error is not retried by this rule; HTTP/2 and reused
+connections retain their existing behavior. `TestClosedUnsentEOFUsesWriteResult`
+checks these boundaries, alongside the real TLS before/after-send tests.
