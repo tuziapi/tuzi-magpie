@@ -448,6 +448,12 @@ its stderr and in its exit (`fail` in `Run`). It never becomes `claude
 after which every run went `-p` for up to a day; that mark is no longer
 written or read, and one left on disk does nothing.
 
+Before reporting a child exit, `shim.ended` lets the terminal reader retain
+its final error text. Unix waits for the reader to finish; Windows waits for
+reading to go quiet after its first bytes because ConPTY stays open. Both
+waits are bounded to two seconds if another process keeps the terminal open.
+`TestShimEndedAfterLastWordsRead` covers a delayed final error on both paths.
+
 The helper answers the bridge's `initialize` only once the prompt is
 shown and Claude Code has listed the tools of magpie's MCP server. Claude
 Code connects its MCP servers beside its prompt, and a first message sent
