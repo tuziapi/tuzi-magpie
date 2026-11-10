@@ -202,6 +202,11 @@ func servePageService(rw http.ResponseWriter, r *http.Request, p *pluginPage, to
 			http.Error(rw, "the plugin's service isn't answering", http.StatusBadGateway)
 		},
 	}
+	// The service may start replying while the transport is still reading
+	// the upload. HTTP/1's default flush drains that same request body,
+	// racing the proxy and cutting its response short. HTTP/2 already
+	// permits concurrent reads and writes (and may report ErrNotSupported).
+	_ = http.NewResponseController(rw).EnableFullDuplex()
 	rp.ServeHTTP(rw, r)
 }
 

@@ -308,11 +308,13 @@ func TestPluginPageServiceProxied(t *testing.T) {
 		t.Errorf("X-Accel-Buffering %q, want no (nginx would hold the stream)", sres.Header.Get("X-Accel-Buffering"))
 	}
 	lines := make(chan string, 8)
+	scanErr := make(chan error, 1)
 	go func() {
 		sc := bufio.NewScanner(sres.Body)
 		for sc.Scan() {
 			lines <- sc.Text()
 		}
+		scanErr <- sc.Err()
 		close(lines)
 	}()
 	select {
@@ -327,6 +329,9 @@ func TestPluginPageServiceProxied(t *testing.T) {
 	got := ""
 	for l := range lines {
 		got += l + "\n"
+	}
+	if err := <-scanErr; err != nil {
+		t.Errorf("reading the event stream: %v", err)
 	}
 	if !strings.Contains(got, "data: second") {
 		t.Errorf("the rest of the stream: %q", got)
@@ -402,5 +407,61 @@ func TestServiceSelf(t *testing.T) {
 		if got := serviceSelf(c.in, self); got != c.want {
 			t.Errorf("serviceSelf(%q) = %q, want %q", c.in, got, c.want)
 		}
+	}
+}
+
+// The service can answer before the upload ends. The response must not
+// make net/http drain a body that the proxy is still forwarding.
+func TestPluginPageServiceDuringUpload(t *testing.T) {
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := http.NewResponseController(w).EnableFullDuplex(); err != nil {
+			t.Error(err)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprint(w, "data: ready\n\n")
+		w.(http.Flusher).Flush()
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		fmt.Fprintf(w, "data: %s\n\n", b)
+	}))
+	defer upstream.Close()
+	_, port, _ := net.SplitHostPort(upstream.Listener.Addr().String())
+	servicePlugins(t, `{"port": `+port+`}`, nil)
+	page := serviceMux(true)
+	p := listed(t, page)
+	srv := httptest.NewServer(webHandler("3430", onePortWebKey, 0, page))
+	defer srv.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	reader, writer := io.Pipe()
+	stop := context.AfterFunc(ctx, func() { reader.CloseWithError(ctx.Err()) })
+	defer stop()
+	defer reader.Close()
+	defer writer.Close()
+	req, _ := http.NewRequestWithContext(ctx, "POST", srv.URL+strings.TrimSuffix(p.URL, "index.html")+pageServicePath+"api/chat", reader)
+	req.Header.Set("Accept-Encoding", "gzip")
+	res, err := http.DefaultTransport.RoundTrip(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	sc := bufio.NewScanner(res.Body)
+	if !sc.Scan() || sc.Text() != "data: ready" {
+		t.Fatalf("reply before upload: %q (%v)", sc.Text(), sc.Err())
+	}
+	if _, err := io.WriteString(writer, "complete"); err != nil {
+		t.Fatal(err)
+	}
+	writer.Close()
+	got := ""
+	for sc.Scan() {
+		got += sc.Text() + "\n"
+	}
+	if sc.Err() != nil || !strings.Contains(got, "data: complete") {
+		t.Fatalf("reply after upload: %q (%v)", got, sc.Err())
 	}
 }

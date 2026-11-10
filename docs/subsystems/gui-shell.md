@@ -1008,3 +1008,12 @@ fixed `tuzimagpie://account/connect` link navigates without a credential. A warm
 window keeps its current form and uses the normal discard guard; a cold window
 loads the page. Only a preceding explicit token-page open arms single-use
 clipboard prefill. The Web shell and CLI do not expose account management.
+
+### Plugin service upload and streaming
+
+`servePageService` enables HTTP/1 full duplex before proxying a service
+response. A service may start replying before its upload has ended; flushing
+that response must not make the HTTP server drain the request body while the
+proxy transport is forwarding it. HTTP/2 already permits concurrent reads
+and writes. `TestPluginPageServiceDuringUpload` checks the first event before
+the upload ends and the complete reply after it, through the web middleware.
