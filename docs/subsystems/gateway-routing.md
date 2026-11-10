@@ -1848,3 +1848,14 @@ go test -tags nogui ./internal/provider -run 'TestGroup|TestCodexCreditsSwitch|T
 
 The gateway's `TestMain` gives the package a home of its own, so these tests
 never read real providers or accounts.
+
+## Internal summary responses retain their status
+
+An internal compaction summary request (`wantsWhole`) carries `keptAlive.whole`
+in `Server.serve`. It does not inherit a client's streaming keep-alive, send
+held-stream comments, or translate an HTTP 413 into a 200 stream error.
+`codexCompact` can therefore observe the original refusal and fall back to a
+text-only or local summary even when fitting attempts are slow. Ordinary
+client streams retain their existing keep-alives and in-stream errors.
+`TestCompactionOverByteCapEveryTime` and `TestCompactionOverByteCapSlowFitting`
+exercise plain and Codex-user-agent requests, including the delayed path.
