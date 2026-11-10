@@ -80,7 +80,7 @@ def main():
             # not Developer ID signing and does not provide notarization.
             run("codesign", "--force", "--deep", "--sign", "-", bundle)
             run("codesign", "--verify", "--deep", "--strict", bundle)
-            run("lipo", "-verify_arch", "arm64" if args.arch == "arm64" else "x86_64", bundle / "Contents/MacOS/tuzi-magpie")
+            run("lipo", bundle / "Contents/MacOS/tuzi-magpie", "-verify_arch", "arm64" if args.arch == "arm64" else "x86_64")
             native_arch = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "amd64"
             if native_arch == args.arch:
                 version = subprocess.check_output([str(ROOT / "scripts/tuzi-magpie/isolated.sh"), str(bundle / "Contents/MacOS/tuzi-magpie"), "--version"], text=True)
