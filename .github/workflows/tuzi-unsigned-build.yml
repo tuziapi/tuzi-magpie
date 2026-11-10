@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Prerelease version (vX.Y.Z-beta.N)'
+        description: 'Version (vX.Y.Z or vX.Y.Z-beta.N)'
+        default: 'v0.1.0'
         required: true
         type: string
 

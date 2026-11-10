@@ -11,8 +11,8 @@ parser.add_argument("--directory", type=Path, required=True)
 parser.add_argument("--version", required=True)
 parser.add_argument("--commit", required=True)
 args = parser.parse_args()
-if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+-beta\.[1-9][0-9]*", args.version):
-    parser.error("expected a beta version")
+if not re.fullmatch(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-beta\.([1-9][0-9]*))?", args.version):
+    parser.error("expected vX.Y.Z or vX.Y.Z-beta.N")
 if not re.fullmatch(r"[0-9a-f]{40}", args.commit):
     parser.error("expected a full source commit")
 root = args.directory.resolve()
