@@ -10,7 +10,7 @@
 Switch any of them from the menu bar. One local gateway serves them all,<br>
 and when a quota runs out, it quietly moves on to your next account.
 
-[![Release](https://img.shields.io/github/v/release/yetone/magpie-releases?label=release&color=111111)](https://github.com/yetone/magpie-releases/releases/latest) [![Stars](https://img.shields.io/github/stars/yetone/magpie?style=flat&color=111111)](https://github.com/yetone/magpie/stargazers) [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/vGSnD3ZKQF) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE)<br>
+[![Release](https://img.shields.io/github/v/release/tuziapi/tuzi-magpie?label=release&color=111111)](https://github.com/tuziapi/tuzi-magpie/releases/latest) [![Stars](https://img.shields.io/github/stars/yetone/magpie?style=flat&color=111111)](https://github.com/yetone/magpie/stargazers) [![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/vGSnD3ZKQF) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE)<br>
 ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white) ![Windows](https://img.shields.io/badge/Windows-0078D4?logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![Termux](https://img.shields.io/badge/Termux-000000?logo=android&logoColor=white)
 
 <sub>Sponsors</sub>
@@ -46,13 +46,21 @@ Runs on macOS, Windows and Linux (menu bar app, window, TUI, web UI and CLI), in
 
 ## Quick start
 
-**1 · Install.** Download the app from **[usemagpie.ai](https://usemagpie.ai)**, or run:
+**1 · Install the tuzi-magpie desktop app.** The command selects the architecture and verifies SHA-256 automatically.
+
+macOS / Ubuntu 24.04 x64:
 
 ```sh
-curl -fsSL https://usemagpie.ai/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.sh | sh
 ```
 
-<sub>Mac builds are signed and notarised, and every build updates itself. On Linux the script installs the desktop app, and on a desktop without WebKitGTK 4.1 installs it first with your package manager (sudo asks for your password); with no desktop, or no terminal to ask at, it installs the terminal build and says which package to add. `--gui` or `--tui` chooses. Behind a firewall, use `--proxy` or `--mirror`. Or `go install github.com/yetone/magpie@latest`, or the [Docker image](https://usemagpie.ai/docs/docker). Remove what the script installed with `curl -fsSL https://usemagpie.ai/install.sh | sh -s -- --uninstall`; your settings in `~/.config/magpie` stay unless you add `--purge`, which disconnects your agents and deletes them too.</sub>
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.ps1 | iex
+```
+
+Run `tuzi-magpie` afterwards, or `~/.local/bin/tuzi-magpie` on macOS if its directory is not on PATH. This installs the desktop app, which needs a graphical session, not a headless server build. These packages have no trusted developer signature/notarization and automatic updates are disabled. See [installation, pinned versions and removal](docs/tuzi-magpie/unsigned-install.md), or [download manually](https://github.com/tuziapi/tuzi-magpie/releases/latest).
 
 **2 · Add a provider.** Open magpie and go to **Providers → Add provider**. Pick a preset and paste a key, or sign in with a subscription.
 

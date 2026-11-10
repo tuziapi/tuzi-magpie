@@ -7,6 +7,47 @@ This desktop release has no trusted developer signature or notarization. Automat
 are disabled. Consult its Release notes for actual platform testing and API-site
 integration status. Keep the original Magpie licenses and attribution with it.
 
+## 一行命令安装 / Command-line installation
+
+脚本自动下载本仓库最新正式版，按操作系统及架构选择文件，验证 `SHA256SUMS.txt` 后安装。它仍使用已发布的二进制包，只是不需要手动下载或编译源码。不安装上游 Magpie，不关闭 Gatekeeper/SmartScreen，不自动启动应用。更新前请退出 tuzi-magpie。
+
+macOS / Ubuntu 24.04 amd64：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.sh | sh
+```
+
+Windows PowerShell：
+
+```powershell
+irm https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.ps1 | iex
+```
+
+安装后运行 `tuzi-magpie`。macOS 安装到 `~/Applications/tuzi-magpie.app`，命令链接在 `~/.local/bin/tuzi-magpie`；如未在 PATH，可直接运行该路径，或将下面这一行加入 `~/.zshrc`（其他 shell 使用对应配置文件）再打开新终端：
+
+```sh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Linux 使用 APT 安装 DEB 并处理依赖，需要 sudo 权限及图形桌面。仅支持 Ubuntu 24.04 amd64，不声称支持其他发行版或 Linux ARM64。
+
+Windows x64 使用现有当前用户安装器；ARM64 安装便携版到 `%LOCALAPPDATA%\Programs\tuzi-magpie-arm64`，升级保留其 `tuzi-magpie-data`。两者都将安装目录加入用户 PATH 及当前 PowerShell 会话，不需要管理员权限。需要 WebView2 Runtime。账户及设置不会被脚本删除。
+
+指定版本或只下载校验、不安装：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.sh | sh -s -- --version v0.1.0
+curl -fsSL https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.sh | sh -s -- --check
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.ps1))) -Version v0.1.0 -Check
+```
+
+The scripts install released desktop binaries after checksum verification; they do not build from source or install a headless server edition. Downloads stay on the resolved release tag even if Latest changes during installation. macOS uses the current user's Applications and local bin folders; Ubuntu uses APT; Windows uses a per-user installer (x64) or a portable folder (ARM64) and adds it to the user PATH. Quit the app before upgrading. Run `--check` / `-Check` to verify the download without installation.
+
+卸载：macOS 删除 `~/Applications/tuzi-magpie.app` 及对应的 `~/.local/bin/tuzi-magpie` 链接；Ubuntu 运行 `sudo apt remove tuzi-magpie`；Windows x64 使用系统“已安装的应用”，ARM64 可先备份便携目录中的数据后删除应用目录。Windows 用户 PATH 中残留的对应目录可通过系统环境变量设置移除。不要删除账户数据目录，除非确定不再需要。
+
 ## macOS (12 or later)
 
 选择 Apple Silicon (`arm64`) 或 Intel (`amd64`) 的 DMG，打开后将

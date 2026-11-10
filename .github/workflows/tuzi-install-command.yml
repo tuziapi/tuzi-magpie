@@ -1,0 +1,66 @@
+name: Tuzi desktop install commands
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/tuzi-magpie/install.*'
+      - 'scripts/tuzi-magpie/test-install-command.*'
+      - '.github/workflows/tuzi-install-command.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax and offline rejection tests
+        if: runner.os != 'Windows'
+        run: |
+          sh -n scripts/tuzi-magpie/install.sh
+          python3 scripts/tuzi-magpie/test-install-command.py
+      - name: PowerShell 5.1 offline rejection tests
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: ./scripts/tuzi-magpie/test-install-command.ps1
+      - name: Install published macOS app in an isolated home
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          export HOME="$RUNNER_TEMP/tuzi install home"
+          mkdir -p "$HOME"
+          sh scripts/tuzi-magpie/install.sh --version v0.1.0
+          "$HOME/.local/bin/tuzi-magpie" --version
+          test -L "$HOME/.local/bin/tuzi-magpie"
+          test -d "$HOME/Applications/tuzi-magpie.app"
+      - name: Install and remove published Ubuntu package
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sh scripts/tuzi-magpie/install.sh --version v0.1.0
+          tuzi-magpie --version
+          dpkg-query -W tuzi-magpie
+          sudo apt-get remove -y tuzi-magpie
+      - name: Install published Windows x64 app and verify ARM64 selection
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'tuzi install home'
+          New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
+          ./scripts/tuzi-magpie/install.ps1 -Version v0.1.0
+          $exe = (Get-Command tuzi-magpie).Source
+          if ($exe -ne (Join-Path $env:LOCALAPPDATA 'Programs\tuzi-magpie\tuzi-magpie.exe')) { throw 'Command resolves to another installation' }
+          & $exe --version
+          $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\tuzi-magpie'
+          if ((Get-ItemProperty $key).DisplayVersion -ne 'v0.1.0') { throw 'Wrong installed version' }
+          $env:PROCESSOR_ARCHITEW6432 = 'ARM64'
+          ./scripts/tuzi-magpie/install.ps1 -Version v0.1.0 -Check

@@ -10,7 +10,7 @@
 在菜单栏一点就能切换。所有 Agent 共用一个本地网关，<br>
 额度用完时，它会悄悄切到你的下一个账号。
 
-[![Release](https://img.shields.io/github/v/release/yetone/magpie-releases?label=release&color=111111)](https://github.com/yetone/magpie-releases/releases/latest) [![Stars](https://img.shields.io/github/stars/yetone/magpie?style=flat&color=111111)](https://github.com/yetone/magpie/stargazers) [![Discord](https://img.shields.io/badge/Discord-加入社区-5865F2?logo=discord&logoColor=white)](https://discord.gg/vGSnD3ZKQF) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE)<br>
+[![Release](https://img.shields.io/github/v/release/tuziapi/tuzi-magpie?label=release&color=111111)](https://github.com/tuziapi/tuzi-magpie/releases/latest) [![Stars](https://img.shields.io/github/stars/yetone/magpie?style=flat&color=111111)](https://github.com/yetone/magpie/stargazers) [![Discord](https://img.shields.io/badge/Discord-加入社区-5865F2?logo=discord&logoColor=white)](https://discord.gg/vGSnD3ZKQF) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE)<br>
 ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=white) ![Windows](https://img.shields.io/badge/Windows-0078D4?logo=windows&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![Termux](https://img.shields.io/badge/Termux-000000?logo=android&logoColor=white)
 
 <sub>赞助商</sub>
@@ -46,13 +46,21 @@
 
 ## 快速开始
 
-**1 · 安装**。从 **[usemagpie.ai](https://usemagpie.ai/zh/)** 下载应用，或者运行：
+**1 · 安装 tuzi-magpie 桌面版**。无需手动下载安装包，脚本自动识别架构并校验 SHA-256：
+
+macOS / Ubuntu 24.04 x64：
 
 ```sh
-curl -fsSL https://usemagpie.ai/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.sh | sh
 ```
 
-<sub>Mac 版已签名并公证，每个版本都会自动更新。Linux 上脚本装桌面版，桌面上没装 WebKitGTK 4.1 时会先用系统的包管理器装上（sudo 会要密码）；没有桌面或没有终端可问时装终端版，并告诉你该装哪个包。用 `--gui` 或 `--tui` 可以自己选。网络受限时可用 `--proxy` 或 `--mirror`。也可以 `go install github.com/yetone/magpie@latest`，或者用 [Docker 镜像](https://usemagpie.ai/docs/zh/docker)。 用 `curl -fsSL https://usemagpie.ai/install.sh | sh -s -- --uninstall` 卸载脚本装上的东西；`~/.config/magpie` 里的设置会保留，加 `--purge` 才会断开 Agent 并一起删除。</sub>
+Windows PowerShell：
+
+```powershell
+irm https://raw.githubusercontent.com/tuziapi/tuzi-magpie/main/scripts/tuzi-magpie/install.ps1 | iex
+```
+
+安装后运行 `tuzi-magpie`；macOS 若终端尚未配置 PATH，可直接运行 `~/.local/bin/tuzi-magpie`。这是桌面版，需要图形环境；不是服务器纯终端版。安装包未作开发者签名或公证，自动更新未启用。详见[安装、指定版本与卸载](docs/tuzi-magpie/unsigned-install.md)，也可[手动下载](https://github.com/tuziapi/tuzi-magpie/releases/latest)。
 
 **2 · 添加 provider**。打开 magpie，进入 **Providers → 添加 provider**。选一个预设、粘贴 key，或者登录一个订阅。
 
