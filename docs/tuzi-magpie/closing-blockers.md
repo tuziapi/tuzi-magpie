@@ -111,3 +111,11 @@
 
 - F05最后闭环：14df3f9（子bbbc3c1）仅等待真实560 resize→.top观察→下一帧；所有成功/失败清理保留，原严格overflow断言不变。受控旧100ms overflow=true、新边界false；真实永久溢出负控仍在原断言红。首个外部诊断after-hook错误导致exit1且已清理，只引用其原始目标日志，不报全程通过。正式文件两引擎各5/5通过，主代理审实际diff/log/manifest。详见header-render-boundary-review-account.md。
 - F01已证文本修正f157b6e单独集成，后续evaluate异常未关闭；F11最后一次单输入原序列12/12仍未复现，不据自然绿豁免。两项均缺原失败时的关键数据，继续未经新证据的重复试验没有可验证修复依据。当前无额外实验排队，验收标准未调整。
+
+
+## 2026-11-06 发布前复核补充
+
+较新的冻结完整 Chromium/WebKit 批次中 side-effort 与 click-scroll 均未失败，
+但原 F01/F11 的失败原因仍缺证据，不据后续通过关闭。完整结果、五项新增未决
+文件以及跨平台验收边界见[发布前复核](prerelease-acceptance-2026-11-06.md)。
+此补充不改变上面的历史运行事实，也不豁免原验收门禁。

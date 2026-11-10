@@ -110,7 +110,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         page.on("pageerror", (e) => errors.push(e.message));
         const seen = { reads: [], options: [], broken: lang === "en" && width === 1100 };
         await page.route("**/*", server(lang, seen, { panels: allPanels, pages }));
-        await page.goto("http://magpie.test/");
+        await page.goto("http://magpie.test/?view=agents");
         const tr = (k, v) => page.evaluate(([k, v]) => t(k, v), [k, v]);
 
         // the Agents page: a panel as tall as it draws, in a frame sandboxed to scripts

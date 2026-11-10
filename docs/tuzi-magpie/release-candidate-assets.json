@@ -1,0 +1,97 @@
+{
+  "packageSource": "03e8af852475351249fc0100c088839d7fb40a03",
+  "reviewedCodeCommit": "eb2490a538e0e0951182c9437777cac147f52147",
+  "version": "v0.1.0-beta.1",
+  "productionSourceEquivalent": true,
+  "differences": [
+    "docs/tuzi-magpie/browser-release-validation-2026-11-06.md",
+    "docs/tuzi-magpie/release-validation-2026-11-06.md",
+    "internal/gui/tests/update-stuck.test.cjs"
+  ],
+  "artifacts": [
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-linux-amd64.deb",
+      "bytes": 24694058,
+      "sha256": "b8a3dd7c5cd52399b853e64eda67d325cf19bc2b505aac0b3621d79714843d7d",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-linux-amd64-manifest.json",
+      "platform": "linux",
+      "buildInfo": "\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=production,gtk3\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=linux\n\tbuild\tGOAMD64=v1",
+      "embeddedVCSRevision": null,
+      "binarySHA256": "4a9b4291b19a50af664297c55193319e6fbc3cf16cbd12cb44f0689e7631e988",
+      "versionStringPresent": true,
+      "fileType": "ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=76148cc38bb27e3c9fb7bceebd1ef384855dcd99, for GNU/Linux 3.2.0, stripped",
+      "architecture": "amd64"
+    },
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-macos-amd64.dmg",
+      "bytes": 37027352,
+      "sha256": "6d840d3b9ff143487ad4944ea819cab3423f4eccc8c888cb263a236b94c20139",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-macos-amd64-manifest.json",
+      "platform": "macos",
+      "buildInfo": "\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=production\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=darwin\n\tbuild\tGOAMD64=v1",
+      "embeddedVCSRevision": null,
+      "binarySHA256": "7e7cbf6762fb95851f5bb9a92bdb51576a92faded319a5acd8dbfe2750aff171",
+      "versionStringPresent": true,
+      "fileType": "Mach-O 64-bit executable x86_64",
+      "architecture": "amd64"
+    },
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-macos-arm64.dmg",
+      "bytes": 33805744,
+      "sha256": "c16e7b9d607eb0c4080a886c33e245cc85dfd483f582cd50c3a14d4a6188309b",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-macos-arm64-manifest.json",
+      "platform": "macos",
+      "buildInfo": "\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=production\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=1\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=darwin\n\tbuild\tGOARM64=v8.0",
+      "embeddedVCSRevision": null,
+      "binarySHA256": "a3bc791a523df671353212eccbf7d322495a1ca5f3d4184c678ab579257f90fd",
+      "versionStringPresent": true,
+      "fileType": "Mach-O 64-bit executable arm64",
+      "architecture": "arm64"
+    },
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-windows-amd64-setup.exe",
+      "bytes": 24543101,
+      "sha256": "dfbf10e711ecd23a5809e7e693293dd8a403866802c458bfb202b019045fe25c",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-windows-amd64-manifest.json",
+      "platform": "windows",
+      "architecture": "amd64"
+    },
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-windows-amd64-portable.zip",
+      "bytes": 31880554,
+      "sha256": "f99d56baccb854275280416de70998296ae76e62403251f6a2b8c1e403689d12",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-windows-amd64-manifest.json",
+      "platform": "windows",
+      "buildInfo": "\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=production,comlauncher\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=amd64\n\tbuild\tGOOS=windows\n\tbuild\tGOAMD64=v1",
+      "embeddedVCSRevision": null,
+      "binarySHA256": "c5942368ded06014253538a37cc1220c2cd7059f17217a4ca09219a997d94a41",
+      "versionStringPresent": true,
+      "fileType": "PE32+ executable (GUI) x86-64, for MS Windows",
+      "architecture": "amd64"
+    },
+    {
+      "file": "tuzi-magpie-v0.1.0-beta.1-windows-arm64-portable.zip",
+      "bytes": 29213993,
+      "sha256": "0ec66ec40bdd1e9c85f53b1f5b85803a160b0b747b86a574a72c73076a940dcf",
+      "manifest": "tuzi-magpie-v0.1.0-beta.1-windows-amd64-manifest.json",
+      "platform": "windows",
+      "buildInfo": "\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-tags=production,comlauncher\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=windows\n\tbuild\tGOARM64=v8.0",
+      "embeddedVCSRevision": null,
+      "binarySHA256": "696489b7877c6bcedbb905c6d8372b50a4c2c6e029f6efbc385ffcdd74f810c3",
+      "versionStringPresent": true,
+      "fileType": "PE32+ executable (GUI) Aarch64, for MS Windows",
+      "architecture": "arm64"
+    }
+  ],
+  "sourceVerification": "Clean-source packaging scripts and recorded build logs/manifests; no embedded VCS revision is present in the five app binaries. Version-string presence is static evidence, not native execution.",
+  "rebuildDecision": "No production or bundled-installation-document changes since packageSource; subsequent reviewedCodeCommit changes only tests and acceptance documentation. Manifests preserve the actual build commit.",
+  "buildRecords": [
+    "candidate-package-results.json",
+    "rebuild-candidate.py",
+    "candidate-macos-arm64.log",
+    "candidate-macos-amd64.log",
+    "candidate-windows-build.log",
+    "candidate-nsis.log",
+    "candidate-linux-build.log"
+  ]
+}

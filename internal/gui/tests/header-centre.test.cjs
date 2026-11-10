@@ -37,7 +37,37 @@ function server(lang) {
   };
 }
 
-const settled = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+// The native resize, then the header observer and its queued layout frame.
+async function resizeHeader(page, size) {
+  const before = page.viewportSize();
+  await page.evaluate(({ size, changed }) => {
+    let observer, frame = 0;
+    const cleanup = () => {
+      removeEventListener("resize", resized);
+      observer?.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
+    const sizing = window.__headerSizing = { done: false, cleanup };
+    const observe = () => {
+      removeEventListener("resize", resized);
+      observer = new ResizeObserver(() => {
+        observer.disconnect();
+        frame = requestAnimationFrame(() => { frame = 0; sizing.done = true; cleanup(); });
+      });
+      observer.observe(document.querySelector(".top"));
+    };
+    const resized = () => { if (innerWidth === size.width && innerHeight === size.height) observe(); };
+    if (changed) addEventListener("resize", resized);
+    else observe();
+  }, { size, changed: before.width !== size.width || before.height !== size.height });
+  try {
+    await page.setViewportSize(size);
+    await page.waitForFunction(() => window.__headerSizing.done);
+  } finally {
+    await page.evaluate(() => { window.__headerSizing.cleanup(); delete window.__headerSizing; });
+  }
+}
+
 const header = (page) => page.evaluate(() => {
   const top = document.querySelector(".top"), r = top.getBoundingClientRect();
   const n = document.querySelector("#nav").getBoundingClientRect(), a = document.querySelector(".actions").getBoundingClientRect();
@@ -68,12 +98,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         await page.goto("http://magpie.test/");
         await page.waitForSelector("#nav button.on");
         await page.waitForFunction(() => !document.querySelector("#update").hidden);
+        await page.evaluate(() => document.fonts.ready);
         let middle = 0, inrow = 0;
         for (let w = 1100; w >= 560; w -= 10) {
           // wide enough for the sidebar, the pages are down it: no tabs here
           if (Math.round(w / zoom) >= 1024) continue;
-          await page.setViewportSize({ width: Math.round(w / zoom), height: 600 });
-          await settled(page);
+          await resizeHeader(page, { width: Math.round(w / zoom), height: 600 });
           const h = await header(page), at = `${w}pt: ${JSON.stringify(h)}`;
           assert(h.update, "the Update pill is up");
           assert(h.right >= 7.5, "the tabs touch the buttons at " + at);

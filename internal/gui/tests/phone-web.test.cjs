@@ -94,7 +94,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     const [top, nav, actions, brand] = [await box(page, ".top"), await box(page, "#nav"), await box(page, ".top .actions"), await box(page, ".top .brand")];
     assert.ok(nav.y >= actions.y + actions.height - 1 && nav.y >= brand.y + brand.height - 1, "the tabs are under the magpie and the icons");
     assert.ok(nav.width >= top.width - 30, `the tabs take the row: ${nav.width} of ${top.width}`);
-    const tab = await page.locator("#nav button").first().evaluate((b) => [parseFloat(getComputedStyle(b).fontSize), b.getBoundingClientRect().height]);
+    const tab = await page.locator('#nav button[data-view="agents"]').evaluate((b) => [parseFloat(getComputedStyle(b).fontSize), b.getBoundingClientRect().height]);
     assert.ok(tab[0] >= 13 && tab[1] >= 30, `a tab is readable and tappable: ${tab}`);
     const on = await box(page, "#nav button.on");
     assert.ok(on.x >= nav.x - 1 && on.x + on.width <= nav.x + nav.width + 1, "Plugins, open, is in sight");

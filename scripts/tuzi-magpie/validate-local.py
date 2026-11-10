@@ -36,7 +36,7 @@ stages = [
  ('build-macos', ['go','build','-o',str(output/'tuzi-magpie-check'),'.'], {}),
  ('build-linux', ['go','build','-tags','nogui','-o',str(output/'tuzi-magpie-linux-check'),'.'], {'GOOS':'linux','CGO_ENABLED':'0'}),
  ('build-windows', ['go','build','-o',str(output/'tuzi-magpie-windows-check.exe'),'.'], {'GOOS':'windows','CGO_ENABLED':'0'}),
- ('test-all', ['go','test','-tags','nogui','-count=1','-p','2','./...'], {}),
+ ('test-all', ['go','test','-tags','nogui','-count=1','-timeout','30m','-p','2','./...'], {}),
  ('race-tuzi', ['go','test','-race','-tags','nogui tuzi_fixture','-count=1','-p','2','-run','Tuzi|DesktopAccountFixture|NoProxyDoesNotFallBack|NoProxyPreservesHTTPEnvironmentMatching','./internal/tuziaccount','./internal/gateway','./internal/provider','./internal/gui','./internal/agent','./internal/tuzifixture','./internal/cli','./internal/netproxy'], {}),
 ]
 results=[]

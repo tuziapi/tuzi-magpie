@@ -90,7 +90,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         const errors = [];
         page.on("pageerror", (e) => errors.push(e.message));
         await page.route("**/*", server(lang, ctl));
-        await page.goto("http://magpie.test/");
+        await page.goto("http://magpie.test/?view=agents");
         const sync = page.locator("#sync");
         await page.locator('.row.agent[data-id="codex"]').waitFor();
         await page.waitForTimeout(300);

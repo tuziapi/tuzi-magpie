@@ -1,0 +1,10 @@
+b4258c241a9e8b74928b3833f01336104102bebda9d00bd3de5233ffb39b9989  tuzi-magpie-v0.1.0-beta.1-linux-amd64-manifest.json
+b8a3dd7c5cd52399b853e64eda67d325cf19bc2b505aac0b3621d79714843d7d  tuzi-magpie-v0.1.0-beta.1-linux-amd64.deb
+bdadd31e37b02b80b21e08be8ee865d1fe30386ba7c1748f216fd8b382c7a9ed  tuzi-magpie-v0.1.0-beta.1-macos-amd64-manifest.json
+6d840d3b9ff143487ad4944ea819cab3423f4eccc8c888cb263a236b94c20139  tuzi-magpie-v0.1.0-beta.1-macos-amd64.dmg
+aa084d5ec9e1bcd3f7779e6d4cf4751c7f31b6070d53dcf8758b6e6fe84fc707  tuzi-magpie-v0.1.0-beta.1-macos-arm64-manifest.json
+c16e7b9d607eb0c4080a886c33e245cc85dfd483f582cd50c3a14d4a6188309b  tuzi-magpie-v0.1.0-beta.1-macos-arm64.dmg
+f2e88d039a33e18cc1a97996021780a506c26566aaf2d0f418f8ff1e3c840bc2  tuzi-magpie-v0.1.0-beta.1-windows-amd64-manifest.json
+f99d56baccb854275280416de70998296ae76e62403251f6a2b8c1e403689d12  tuzi-magpie-v0.1.0-beta.1-windows-amd64-portable.zip
+dfbf10e711ecd23a5809e7e693293dd8a403866802c458bfb202b019045fe25c  tuzi-magpie-v0.1.0-beta.1-windows-amd64-setup.exe
+0ec66ec40bdd1e9c85f53b1f5b85803a160b0b747b86a574a72c73076a940dcf  tuzi-magpie-v0.1.0-beta.1-windows-arm64-portable.zip

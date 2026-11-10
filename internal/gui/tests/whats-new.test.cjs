@@ -194,11 +194,12 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       // a link opens in the browser through the app, and moves nothing
       const body = dialog(page).locator(".ebody");
       const before = await body.evaluate((e) => [e.scrollTop, document.scrollingElement.scrollTop]);
+      const beforeURL = page.url();
       await issue.click();
       for (let i = 0; i < 40 && !ctl.opened.length; i++) await page.waitForTimeout(25);
       assert.deepEqual(ctl.opened, ["https://github.com/yetone/magpie/issues/464"]);
       assert.deepEqual(await body.evaluate((e) => [e.scrollTop, document.scrollingElement.scrollTop]), before, "the click moved the page");
-      assert.equal(page.url(), "http://magpie.test/", "the page didn't navigate");
+      assert.equal(page.url(), beforeURL, "the page didn't navigate");
       assert.equal(await page.evaluate(() => window.__pwned), undefined, "nothing in the notes ran");
       const border = await page.evaluate(() => [...document.querySelectorAll("#modal .whatsnew, #modal .whatsnew *")].map((e) => getComputedStyle(e).borderLeftWidth).filter((b) => parseFloat(b) > 1));
       assert.deepEqual(border, [], "no left-border accent");

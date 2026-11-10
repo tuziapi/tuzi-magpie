@@ -640,6 +640,9 @@ func (u *unroutedHold) giveUp(unknown bool) {
 		where = " its body still arriving (" + u.bodySaid() + ")"
 		msg, status = unroutedBodyMsg(held, u.bodySaid()), http.StatusRequestTimeout
 	}
+	// Flushing the answer lets the client close the connection, ending
+	// its context and waits before heldReport runs. Keep this boundary.
+	waits := u.waitsSaid()
 	if !u.w.answer(unroutedProto(u.r.URL.Path), status, msg) {
 		f.mu.Unlock()
 		return // the handler is answering
@@ -664,7 +667,7 @@ func (u *unroutedHold) giveUp(unknown bool) {
 	asked, _ := u.asked.Load().(string)
 	who := cmpOr(u.agent, cmpOr(f.agent, "?"))
 	where = cmpOr(where, " not masking it")
-	report := u.s.heldReport(u, held, status, who, asked, where)
+	report := u.s.heldReport(u, held, status, who, asked, where, waits)
 	u.cancel(errUnrouted)
 	name, err := writeHeld(report)
 	saved := ""

@@ -42,13 +42,24 @@ func TestRegisterScheme(t *testing.T) {
 				testenv.Program(t, filepath.Join(bin, name), script)
 			}
 			dir := filepath.Join(data, "applications")
-			path := filepath.Join(dir, "magpie.desktop")
-			const old = "[Desktop Entry]\nExec=/usr/bin/magpie %u\nMimeType=x-scheme-handler/magpie;\n"
+			path := filepath.Join(dir, "tuzi-magpie.desktop")
+			const old = "[Desktop Entry]\nExec=/usr/bin/tuzi-magpie %u\nMimeType=x-scheme-handler/tuzimagpie;\n"
 			if tc.existing {
 				if err := os.MkdirAll(dir, 0o755); err != nil {
 					t.Fatal(err)
 				}
 				if err := os.WriteFile(path, []byte(old), 0o644); err != nil {
+					t.Fatal(err)
+				}
+			}
+			// The fork must never replace the original application's entry.
+			original := filepath.Join(dir, "magpie.desktop")
+			const originalEntry = "[Desktop Entry]\nExec=/usr/bin/magpie %u\nMimeType=x-scheme-handler/magpie;\n"
+			if !tc.flatpak {
+				if err := os.MkdirAll(dir, 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(original, []byte(originalEntry), 0o644); err != nil {
 					t.Fatal(err)
 				}
 			}
@@ -76,15 +87,18 @@ func TestRegisterScheme(t *testing.T) {
 				t.Fatal(err)
 			}
 			got, err := os.ReadFile(path)
-			if err != nil || !strings.Contains(string(got), "Exec="+exe+" %u\n") || !strings.Contains(string(got), "MimeType=x-scheme-handler/magpie;\n") {
+			if err != nil || !strings.Contains(string(got), "Exec="+exe+" %u\n") || !strings.Contains(string(got), "MimeType=x-scheme-handler/tuzimagpie;\n") {
 				t.Fatalf("desktop entry: %q, %v", got, err)
 			}
 			checkDesktopBinding(t, data, string(got))
+			if got, err := os.ReadFile(original); err != nil || string(got) != originalEntry {
+				t.Fatalf("original Magpie entry changed: %q, %v", got, err)
+			}
 			// An entry for this executable is already registered on the next run.
 			if err := registerScheme(); err != nil {
 				t.Fatal(err)
 			}
-			want := "update-desktop-database\n" + dir + "\nxdg-mime\ndefault\nmagpie.desktop\nx-scheme-handler/magpie\n"
+			want := "update-desktop-database\n" + dir + "\nxdg-mime\ndefault\ntuzi-magpie.desktop\nx-scheme-handler/tuzimagpie\n"
 			if got, err := os.ReadFile(calls); err != nil || string(got) != want {
 				t.Fatalf("registration calls: %q, want %q (%v)", got, want, err)
 			}
@@ -96,10 +110,10 @@ func TestRegisterScheme(t *testing.T) {
 // is installed, so neither the dock nor the app grid draws a gear (#2626).
 func checkDesktopBinding(t *testing.T, data, entry string) {
 	t.Helper()
-	if !strings.Contains(entry, "\nStartupWMClass="+programName+"\n") || !strings.Contains(entry, "\nIcon=magpie\n") {
+	if !strings.Contains(entry, "\nStartupWMClass="+programName+"\n") || !strings.Contains(entry, "\nIcon=tuzi-magpie\n") {
 		t.Fatalf("desktop entry doesn't bind the window %q and its icon: %q", programName, entry)
 	}
-	icon, err := os.ReadFile(filepath.Join(data, "icons", "hicolor", "256x256", "apps", "magpie.png"))
+	icon, err := os.ReadFile(filepath.Join(data, "icons", "hicolor", "256x256", "apps", "tuzi-magpie.png"))
 	if err != nil || !bytes.Equal(icon, desktopIcon) {
 		t.Fatalf("icon not installed: %d bytes, %v", len(icon), err)
 	}
@@ -130,9 +144,9 @@ func TestRegisterSchemeBindsAnOlderEntry(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := filepath.Join(data, "applications")
-	path := filepath.Join(dir, "magpie.desktop")
-	older := "[Desktop Entry]\nType=Application\nName=magpie\nComment=Every agent's model. One place.\nExec=" + exe +
-		" %u\nIcon=magpie\nCategories=Development;Utility;\nMimeType=x-scheme-handler/magpie;\nTerminal=false\n"
+	path := filepath.Join(dir, "tuzi-magpie.desktop")
+	older := "[Desktop Entry]\nType=Application\nName=tuzi-magpie\nComment=Every agent's model. One place.\nExec=" + exe +
+		" %u\nIcon=tuzi-magpie\nCategories=Development;Utility;\nMimeType=x-scheme-handler/tuzimagpie;\nTerminal=false\n"
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
