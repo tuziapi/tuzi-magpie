@@ -77,8 +77,13 @@ func postResponses(t *testing.T, s *Server, body string) (int, string) {
 // screenshot and every text kept.
 func underCap(t *testing.T, sent []byte) {
 	t.Helper()
+	underByteCap(t, sent, commandCodeMost)
+}
+
+func underByteCap(t *testing.T, sent []byte, most int) {
+	t.Helper()
 	s := string(sent)
-	if len(sent) > commandCodeMost*3/4 {
+	if len(sent) > most*3/4 {
 		t.Errorf("sent %d bytes, over three quarters of the cap", len(sent))
 	}
 	if strings.Contains(s, "SHOT00") || !strings.Contains(s, imageLeftOut) {
@@ -109,9 +114,16 @@ func underCap(t *testing.T, sent []byte) {
 func TestCompactionOverByteCapLeavesOutOldImages(t *testing.T) {
 	for _, proto := range []provider.Protocol{provider.Responses, provider.Chat} {
 		t.Run(string(proto), func(t *testing.T) {
-			up := &capped{proto: proto, most: commandCodeMost, status: 400, ctype: "application/json", body: commandCodeCap}
+			// Compaction must preserve the conversation while fitting a learned
+			// byte cap, independent of its magnitude. Real 32 MiB fitting and
+			// unfittable bodies remain in the turn tests below. A 40 MiB
+			// summary under race instrumentation hit the unrelated 30s
+			// unrouted guard before this assertion on a loaded runner.
+			const most = 320 << 10
+			refusal := `{"error":{"message":"Request body exceeds the limit for one request (327680 bytes)"}}`
+			up := &capped{proto: proto, most: most, status: 400, ctype: "application/json", body: refusal}
 			cappedOn(t, up)
-			code, body := codexPost(t, screenshotSession(true))
+			code, body := codexPost(t, screenshotSessionWith(true, smallScreenshot))
 			if code != 200 {
 				t.Fatalf("Codex's compaction failed: %d %.400s", code, body)
 			}
@@ -119,10 +131,10 @@ func TestCompactionOverByteCapLeavesOutOldImages(t *testing.T) {
 				t.Fatalf("summary %q", got)
 			}
 			calls := up.calls()
-			if len(calls) != 2 || len(calls[0]) <= commandCodeMost {
+			if len(calls) != 2 || len(calls[0]) <= most {
 				t.Fatalf("asked %d times (first %d bytes)", len(calls), len(calls[0]))
 			}
-			underCap(t, calls[1])
+			underByteCap(t, calls[1], most)
 		})
 	}
 }
@@ -271,11 +283,10 @@ func compactionOverByteCapEveryTime(t *testing.T, header ...string) {
 	rec := httptest.NewRecorder()
 	// This vendor refuses every size, so exercise its bounded retry and
 	// fallback path with small images. The actual 32 MB boundary remains
-	// covered by TestCompactionOverByteCapLeavesOutOldImages. Reprocessing
+	// covered by TestTurnOverByteCapLeavesOutOldImages and
+	// TestOverByteCapNothingToLeaveOut. Reprocessing
 	// 40 MB four times under -race tripped the unrelated 30s route guard.
-	bodyIn := screenshotSessionWith(true, func(n int) string {
-		return fmt.Sprintf("data:image/png;base64,SHOT%02d", n) + strings.Repeat("iVBORw0KGgo", 1900)
-	})
+	bodyIn := screenshotSessionWith(true, smallScreenshot)
 	req := httptest.NewRequest("POST", CodexPath+"/responses", strings.NewReader(bodyIn))
 	req.Header.Set("Authorization", "Bearer chatgpt-token")
 	req.Header.Set("chatgpt-account-id", "acct-1")
@@ -299,4 +310,8 @@ func compactionOverByteCapEveryTime(t *testing.T, header ...string) {
 			t.Fatalf("ask %d (%d bytes) no smaller than the one before (%d)", i, len(calls[i]), len(calls[i-1]))
 		}
 	}
+}
+
+func smallScreenshot(n int) string {
+	return fmt.Sprintf("data:image/png;base64,SHOT%02d", n) + strings.Repeat("iVBORw0KGgo", 1900)
 }
