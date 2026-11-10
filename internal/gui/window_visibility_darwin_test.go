@@ -32,6 +32,7 @@ func init() {
 		return
 	}
 	ready := make(chan struct{}, 1)
+	hidden := make(chan url.Values, 1)
 	reports := make(chan url.Values, 1)
 	app := application.New(application.Options{
 		Name: "magpie window visibility regression",
@@ -45,7 +46,19 @@ func init() {
 html.magpie-out-of-sight #probe{animation-play-state:paused!important}
 </style><i id="probe"></i><script>
 const probe = document.querySelector("#probe");
+// Follow the application's visibility override, not WebKit's delayed value.
+let outOfSight = false;
+for (const [k, off] of [["hidden", true], ["visibilityState", "hidden"]]) {
+  const own = Object.getOwnPropertyDescriptor(Document.prototype, k)?.get;
+  own && Object.defineProperty(Document.prototype, k, { configurable: true, get() { return outOfSight ? off : own.call(this); } });
+}
 window.magpieWindowVisibility = (visible) => {
+  const seen = visible && localStorage.getItem("hiddenProbe");
+  if (seen) {
+    localStorage.removeItem("hiddenProbe");
+    fetch("/report?probe=" + encodeURIComponent(seen));
+  }
+  outOfSight = !visible;
   document.documentElement.classList.toggle("magpie-out-of-sight", !visible);
   document.dispatchEvent(new Event("visibilitychange"));
 };
@@ -57,17 +70,20 @@ document.addEventListener("visibilitychange", () => {
       marked: document.documentElement.classList.contains("magpie-out-of-sight"),
       play: getComputedStyle(probe).animationPlayState,
     }));
+    fetch("/hidden");
   }
 });
-setInterval(() => {
-  const probe = localStorage.getItem("hiddenProbe");
-  if (probe) fetch("/report?probe=" + encodeURIComponent(probe));
-}, 100);
 fetch("/ready");
 </script>`)
 			case "/ready":
 				select {
 				case ready <- struct{}{}:
+				default:
+				}
+				w.WriteHeader(http.StatusNoContent)
+			case "/hidden":
+				select {
+				case hidden <- r.URL.Query():
 				default:
 				}
 				w.WriteHeader(http.StatusNoContent)
@@ -116,7 +132,7 @@ fetch("/ready");
 			}
 
 			application.InvokeSync(h.hideMain)
-			time.Sleep(500 * time.Millisecond)
+			wait("the page to see itself hidden", hidden)
 			application.InvokeSync(func() { showWebview(win).Focus() })
 			report := wait("the page's hidden report", reports)
 			probe := struct {

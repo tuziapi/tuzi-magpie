@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptrace"
@@ -179,16 +180,23 @@ func (t replayable) RoundTrip(req *http.Request) (*http.Response, error) {
 		r.Header["X-Idempotency-Key"] = nil
 	}
 	for n := 0; ; n++ {
-		var fresh, h2 atomic.Bool
+		var fresh, h2, failedWrite atomic.Bool
 		trace := &httptrace.ClientTrace{GotConn: func(i httptrace.GotConnInfo) {
 			fresh.Store(!i.Reused)
+			failedWrite.Store(false)
 			if tc, ok := i.Conn.(interface{ ConnectionState() tls.ConnectionState }); ok {
 				h2.Store(tc.ConnectionState().NegotiatedProtocol == "h2")
 			}
+		}, WroteRequest: func(i httptrace.WroteRequestInfo) {
+			failedWrite.Store(i.Err != nil && closedBeforeSent(i.Err))
 		}}
 		try := r.WithContext(httptrace.WithClientTrace(r.Context(), trace))
 		res, err := t.RoundTripper.RoundTrip(try)
-		if err == nil || !fresh.Load() || h2.Load() || !closedBeforeSent(err) || req.Context().Err() != nil {
+		// The read loop may report EOF first while the writer reports a
+		// closed connection. Require that write failure as evidence; EOF
+		// alone can follow a fully delivered request and must not replay it.
+		closed := err != nil && (closedBeforeSent(err) || errors.Is(err, io.EOF) && failedWrite.Load())
+		if err == nil || !fresh.Load() || h2.Load() || !closed || req.Context().Err() != nil {
 			return res, err
 		}
 		if n >= len(unsentAgain) || (r.Body != nil && r.Body != http.NoBody && r.GetBody == nil) {

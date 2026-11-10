@@ -136,34 +136,32 @@ func TestTranslatedStreamKeepsClientAlive(t *testing.T) {
 			// openai-go v2 (Crush) reads every blank line as an event and
 			// fails on one with no data: "unexpected end of JSON input"
 			data, empty := false, 0
-		read:
 			for {
-				select {
-				case line, ok := <-lines:
-					if !ok {
-						break read
-					}
-					if strings.Contains(line, c.ping) {
-						pings++
-					}
-					if line == "" {
-						if !data {
-							empty++
-						}
-						data = false
-					} else if strings.HasPrefix(line, "data:") {
-						data = true
-					}
-					if strings.Contains(line, c.done) && !completed {
-						completed, wait = true, time.After(closeAfterLast)
-					}
-					// what the client's idle timeout counts
-					if strings.HasPrefix(line, "data:") || (c.comments && strings.HasPrefix(line, ":")) {
-						idle.Reset(idleFor)
-					}
-				case <-wait:
+				line, ok, expired := nextKeepaliveLine(lines, wait)
+				if expired {
 					timedOut, unclosed = !completed, completed
-					break read
+					break
+				}
+				if !ok {
+					break
+				}
+				if strings.Contains(line, c.ping) {
+					pings++
+				}
+				if line == "" {
+					if !data {
+						empty++
+					}
+					data = false
+				} else if strings.HasPrefix(line, "data:") {
+					data = true
+				}
+				if strings.Contains(line, c.done) && !completed {
+					completed, wait = true, time.After(closeAfterLast)
+				}
+				// what the client's idle timeout counts
+				if strings.HasPrefix(line, "data:") || (c.comments && strings.HasPrefix(line, ":")) {
+					idle.Reset(idleFor)
 				}
 			}
 			cancel()
@@ -386,5 +384,47 @@ func TestAnthropicKeepaliveBeforeStartIsAComment(t *testing.T) {
 	}
 	if n := strings.Count(body, `"type":"ping"`); n != 1 {
 		t.Fatalf("%d pings within one pingEvery after message_start: %q", n, body)
+	}
+}
+
+// A delayed test consumer can find both its timer and already-read data
+// ready. The receive queue is evidence of client activity; a random select
+// must not call that silence. An empty queue still obeys the same deadline.
+func nextKeepaliveLine(lines <-chan string, wait <-chan time.Time) (string, bool, bool) {
+	select {
+	case line, ok := <-lines:
+		return line, ok, false
+	default:
+	}
+	select {
+	case line, ok := <-lines:
+		return line, ok, false
+	case <-wait:
+		select {
+		case line, ok := <-lines:
+			return line, ok, false
+		default:
+			return "", false, true
+		}
+	}
+}
+
+func TestKeepaliveClientReadsQueuedDataBeforeTimeout(t *testing.T) {
+	expired := make(chan time.Time)
+	close(expired)
+	for range 100 {
+		lines := make(chan string, 1)
+		lines <- "data: alive"
+		line, ok, timedOut := nextKeepaliveLine(lines, expired)
+		if timedOut || !ok || line != "data: alive" {
+			t.Fatal("an expired timer won over an already received keepalive")
+		}
+		if _, _, timedOut = nextKeepaliveLine(lines, expired); !timedOut {
+			t.Fatal("silence with an expired timer was not a timeout")
+		}
+		close(lines)
+		if _, ok, timedOut = nextKeepaliveLine(lines, expired); ok || timedOut {
+			t.Fatal("an already received EOF was treated as idle")
+		}
 	}
 }

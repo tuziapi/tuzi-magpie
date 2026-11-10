@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"image/png"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/yetone/magpie/internal/product"
 	"github.com/yetone/magpie/internal/testenv"
 )
 
@@ -177,6 +179,22 @@ func TestKeepWebData(t *testing.T) {
 		t.Fatal(err)
 	}
 	old := filepath.Base(exe)
+	// keepWebData only migrates this distribution's downloaded executables.
+	// go test names this binary gui.test, which must not migrate data.
+	if !strings.HasPrefix(old, product.Name+"-") {
+		bin := filepath.Join(t.TempDir(), product.Name+"-linux-test")
+		data, err := os.ReadFile(exe)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(bin, data, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if out, err := exec.Command(bin, "-test.run=^TestKeepWebData$", "-test.v").CombinedOutput(); err != nil {
+			t.Fatalf("downloaded executable migration: %v\n%s", err, out)
+		}
+		return
+	}
 	for _, tc := range []struct {
 		name          string
 		webkit, there bool

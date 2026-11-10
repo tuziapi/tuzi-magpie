@@ -65,8 +65,21 @@ func init() {
 	app.Event.OnApplicationEvent(events.Common.ApplicationStarted, func(*application.ApplicationEvent) {
 		go func() {
 			application.InvokeSync(func() { h.openMain("") })
-			waitFor("the window is open", func() bool { return windowOpen(h.main) })
+			waitFor("the window is open", func() bool { return windowOpen(h.main) && h.main.IsVisible() })
 			expect("open", true)
+
+			// Keep both windows inside the screen. On the 1024x768 CI display,
+			// AppKit clamps the default main window and its larger cover to
+			// the same edges; the cover's rounded corners leave it visible.
+			application.InvokeSync(func() {
+				h.main.DisableSizeConstraints()
+				h.main.SetSize(400, 300)
+				h.main.Center()
+			})
+			waitFor("the test window fits inside its cover", func() bool {
+				wd, ht := h.main.Size()
+				return wd == 400 && ht == 300
+			})
 
 			// covered by another window, as by the app Command-Tab went to
 			var cover *application.WebviewWindow

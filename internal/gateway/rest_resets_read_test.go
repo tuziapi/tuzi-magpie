@@ -114,12 +114,13 @@ func TestReadingKeepsARefusalsRest(t *testing.T) {
 	}
 	id := candidate{p: *p, model: "gpt-6.1-sol"}.restKey()
 	resets := time.Now().Add(92 * time.Minute).Truncate(time.Second)
-	used := 100.0
-	readCodexUsage(t, func() float64 { return used }, resets)
+	var used atomic.Int64
+	used.Store(100)
+	readCodexUsage(t, func() float64 { return float64(used.Load()) }, resets)
 	waitUsed(t, 100)
 	restByRefusal(t, id, resets)
 	told := armRenewed(t)
-	used = 80
+	used.Store(80)
 	waitUsed(t, 80)
 	told()
 	if _, ok := restOf(id); !ok {
@@ -149,15 +150,16 @@ func TestAutoVisionKeepsOffARefusedAccount(t *testing.T) {
 		t.Fatal(err)
 	}
 	resets := time.Now().Add(92 * time.Minute).Truncate(time.Second)
-	used := 100.0
-	readCodexUsage(t, func() float64 { return used }, resets)
+	var used atomic.Int64
+	used.Store(100)
+	readCodexUsage(t, func() float64 { return float64(used.Load()) }, resets)
 	waitUsed(t, 100)
 	restByRefusal(t, candidate{p: *p, model: "gpt-6.1-sol"}.restKey(), resets)
 	if m := AutoVision(); m != "keyed/eye" {
 		t.Fatalf("AutoVision = %q with codex refused till %s", m, resets.Format(time.TimeOnly))
 	}
 	told := armRenewed(t)
-	used = 80
+	used.Store(80)
 	waitUsed(t, 80)
 	told()
 	if m := AutoVision(); m != "keyed/eye" {

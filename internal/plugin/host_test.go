@@ -1516,3 +1516,31 @@ func TestHostEnqueueWaitsForRoom(t *testing.T) {
 		})
 	}
 }
+
+// The stdout reader finishes after the consumer observed an empty queue,
+// but before it observes completion. A real head must still reach the caller.
+func TestHostHeadArrivesBetweenEmptyReadAndCompletion(t *testing.T) {
+	for _, why := range []string{"", "vendor broke mid-body"} {
+		t.Run(why, func(t *testing.T) {
+			f := newFakeHost(t)
+			_, c := f.begin(t, true)
+			if _, ok := c.pop(); ok {
+				t.Fatal("unexpected initial head")
+			}
+			if !c.push(message{Event: "head", Status: 202}) {
+				t.Fatal("head refused")
+			}
+			answer := message{}
+			if why != "" {
+				answer = errAnswer(why)
+			}
+			head, got, err := c.completedHead(&answer)
+			if err != nil || head.Status != 202 || got != &answer {
+				t.Fatalf("received head and terminal answer lost: head=%+v answer=%+v err=%v", head, got, err)
+			}
+			if _, _, err = c.completedHead(&answer); err == nil {
+				t.Fatal("missing head reported as a response")
+			}
+		})
+	}
+}

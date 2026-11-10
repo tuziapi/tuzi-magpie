@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/yetone/magpie/internal/provider"
 )
@@ -31,18 +32,22 @@ func screenshot(n int) string {
 // pasted into a user message, then the latest user message with a
 // screenshot of its own. compact ends it in Codex's compaction trigger.
 func screenshotSession(compact bool) string {
+	return screenshotSessionWith(compact, screenshot)
+}
+
+func screenshotSessionWith(compact bool, image func(int) string) string {
 	var b strings.Builder
 	b.WriteString(`{"model":"fake/m1","stream":true,"store":false,"prompt_cache_key":"thread-shots","input":[`)
 	for i := range 19 {
 		if i%2 == 0 {
-			fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"look at screen %d"},{"type":"input_image","image_url":"%s"}]},`, i, screenshot(i))
+			fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"look at screen %d"},{"type":"input_image","image_url":"%s"}]},`, i, image(i))
 			continue
 		}
 		fmt.Fprintf(&b, `{"type":"function_call","call_id":"call_%d","name":"view_image","arguments":"{\"path\":\"shot%d.png\"}"},`, i, i)
-		fmt.Fprintf(&b, `{"type":"function_call_output","call_id":"call_%d","output":[{"type":"input_text","text":"tool output %d kept"},{"type":"input_image","image_url":"%s"}]},`, i, i, screenshot(i))
+		fmt.Fprintf(&b, `{"type":"function_call_output","call_id":"call_%d","output":[{"type":"input_text","text":"tool output %d kept"},{"type":"input_image","image_url":"%s"}]},`, i, i, image(i))
 		fmt.Fprintf(&b, `{"type":"message","role":"assistant","content":[{"type":"output_text","text":"seen %d"}]},`, i)
 	}
-	fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"the latest ask"},{"type":"input_image","image_url":"%s"}]}`, screenshot(19))
+	fmt.Fprintf(&b, `{"type":"message","role":"user","content":[{"type":"input_text","text":"the latest ask"},{"type":"input_image","image_url":"%s"}]}`, image(19))
 	if compact {
 		b.WriteString(`,{"type":"compaction_trigger"}`)
 	}
@@ -72,8 +77,13 @@ func postResponses(t *testing.T, s *Server, body string) (int, string) {
 // screenshot and every text kept.
 func underCap(t *testing.T, sent []byte) {
 	t.Helper()
+	underByteCap(t, sent, commandCodeMost)
+}
+
+func underByteCap(t *testing.T, sent []byte, most int) {
+	t.Helper()
 	s := string(sent)
-	if len(sent) > commandCodeMost*3/4 {
+	if len(sent) > most*3/4 {
 		t.Errorf("sent %d bytes, over three quarters of the cap", len(sent))
 	}
 	if strings.Contains(s, "SHOT00") || !strings.Contains(s, imageLeftOut) {
@@ -104,9 +114,16 @@ func underCap(t *testing.T, sent []byte) {
 func TestCompactionOverByteCapLeavesOutOldImages(t *testing.T) {
 	for _, proto := range []provider.Protocol{provider.Responses, provider.Chat} {
 		t.Run(string(proto), func(t *testing.T) {
-			up := &capped{proto: proto, most: commandCodeMost, status: 400, ctype: "application/json", body: commandCodeCap}
+			// Compaction must preserve the conversation while fitting a learned
+			// byte cap, independent of its magnitude. Real 32 MiB fitting and
+			// unfittable bodies remain in the turn tests below. A 40 MiB
+			// summary under race instrumentation hit the unrelated 30s
+			// unrouted guard before this assertion on a loaded runner.
+			const most = 320 << 10
+			refusal := `{"error":{"message":"Request body exceeds the limit for one request (327680 bytes)"}}`
+			up := &capped{proto: proto, most: most, status: 400, ctype: "application/json", body: refusal}
 			cappedOn(t, up)
-			code, body := codexPost(t, screenshotSession(true))
+			code, body := codexPost(t, screenshotSessionWith(true, smallScreenshot))
 			if code != 200 {
 				t.Fatalf("Codex's compaction failed: %d %.400s", code, body)
 			}
@@ -114,10 +131,10 @@ func TestCompactionOverByteCapLeavesOutOldImages(t *testing.T) {
 				t.Fatalf("summary %q", got)
 			}
 			calls := up.calls()
-			if len(calls) != 2 || len(calls[0]) <= commandCodeMost {
+			if len(calls) != 2 || len(calls[0]) <= most {
 				t.Fatalf("asked %d times (first %d bytes)", len(calls), len(calls[0]))
 			}
-			underCap(t, calls[1])
+			underByteCap(t, calls[1], most)
 		})
 	}
 }
@@ -236,9 +253,48 @@ func TestWithoutOldImagesEachProtocol(t *testing.T) {
 // compaction is asked as text and then made without a model, not sent
 // again into the compaction guard's hold.
 func TestCompactionOverByteCapEveryTime(t *testing.T) {
+	compactionOverByteCapEveryTime(t)
+	t.Run("codex", func(t *testing.T) {
+		// with Codex's own User-Agent, whose turns are told a 413 in the
+		// stream (compactsInStream): the summary ask still gets its status,
+		// or every Codex compaction refused so failed 502 (#4862)
+		compactionOverByteCapEveryTime(t, "User-Agent", codexUA)
+	})
+}
+
+// The same, with the fitting tries past keepHeldAfter, as a 40 MB upload
+// asked four times is on a slow uplink, and as each try is under -race
+// (#4862): the summary ask's recorder was sent the held stream's 200 and
+// a keepalive, the last 413 then came as the stream's error, and the
+// compaction failed 502 "so there is no summary" instead of being made
+// without a model.
+func TestCompactionOverByteCapSlowFitting(t *testing.T) {
+	k, w := keepHeldAfter, watchEvery
+	keepHeldAfter, watchEvery = time.Millisecond, time.Millisecond
+	t.Cleanup(func() { keepHeldAfter, watchEvery = k, w })
+	compactionOverByteCapEveryTime(t)
+	t.Run("codex", func(t *testing.T) { compactionOverByteCapEveryTime(t, "User-Agent", codexUA) })
+}
+
+func compactionOverByteCapEveryTime(t *testing.T, header ...string) {
+	t.Helper()
 	up := &capped{proto: provider.Responses, most: 0, status: 400, ctype: "application/json", body: commandCodeCap}
 	cappedOn(t, up)
-	code, body := codexPost(t, screenshotSession(true))
+	rec := httptest.NewRecorder()
+	// This vendor refuses every size, so exercise its bounded retry and
+	// fallback path with small images. The actual 32 MB boundary remains
+	// covered by TestTurnOverByteCapLeavesOutOldImages and
+	// TestOverByteCapNothingToLeaveOut. Reprocessing
+	// 40 MB four times under -race tripped the unrelated 30s route guard.
+	bodyIn := screenshotSessionWith(true, smallScreenshot)
+	req := httptest.NewRequest("POST", CodexPath+"/responses", strings.NewReader(bodyIn))
+	req.Header.Set("Authorization", "Bearer chatgpt-token")
+	req.Header.Set("chatgpt-account-id", "acct-1")
+	for i := 0; i+1 < len(header); i += 2 {
+		req.Header.Set(header[i], header[i+1])
+	}
+	New().Handler().ServeHTTP(rec, req)
+	code, body := rec.Code, rec.Body.String()
 	if code != 200 {
 		t.Fatalf("Codex's compaction failed: %d %.400s", code, body)
 	}
@@ -246,7 +302,7 @@ func TestCompactionOverByteCapEveryTime(t *testing.T) {
 		t.Fatalf("local summary: %.300s", got)
 	}
 	calls := up.calls()
-	if len(calls) > 6 {
+	if len(calls) < 3 || len(calls) > 6 {
 		t.Fatalf("asked %d times", len(calls))
 	}
 	for i := 1; i < 4 && i < len(calls); i++ {
@@ -254,4 +310,8 @@ func TestCompactionOverByteCapEveryTime(t *testing.T) {
 			t.Fatalf("ask %d (%d bytes) no smaller than the one before (%d)", i, len(calls[i]), len(calls[i-1]))
 		}
 	}
+}
+
+func smallScreenshot(n int) string {
+	return fmt.Sprintf("data:image/png;base64,SHOT%02d", n) + strings.Repeat("iVBORw0KGgo", 1900)
 }

@@ -339,7 +339,8 @@ func TestCodexBackendTimesFirstToken(t *testing.T) {
 type bursty struct {
 	chunks [][]string
 	gap    time.Duration
-	header bool // no Content-Type, as the ChatGPT backend sends
+	header bool      // no Content-Type, as the ChatGPT backend sends
+	heard  func(int) // wait for the previous chunk to reach the agent
 }
 
 func (b *bursty) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -352,6 +353,9 @@ func (b *bursty) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	f := w.(http.Flusher)
 	for i, c := range b.chunks {
 		if i > 0 {
+			if b.heard != nil {
+				b.heard(i - 1)
+			}
 			time.Sleep(b.gap)
 		}
 		io.WriteString(w, strings.Join(c, "\n\n")+"\n\n")
@@ -359,8 +363,10 @@ func (b *bursty) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// burstChunks: a reply's first word at once, then its out tokens' worth
-// of words n events in each later chunk, then its end with the usage.
+// burstChunks: a first word, then per words in each content event, and usage.
+// One burst is one semantic event: translating hundreds of separate events
+// can spread their client arrival times under load, so an upstream write is
+// not evidence that the client received a burst (#2719).
 func burstChunks(proto provider.Protocol, words, per, out int) [][]string {
 	ev := func(word string) string {
 		if proto == provider.Responses {
@@ -370,11 +376,11 @@ func burstChunks(proto provider.Protocol, words, per, out int) [][]string {
 	}
 	chunks := [][]string{{ev("hi")}}
 	for i := 1; i < words; i += per {
-		var c []string
+		var text strings.Builder
 		for j := i; j < min(i+per, words); j++ {
-			c = append(c, ev(" word"))
+			text.WriteString(" word" + strconv.Itoa(j))
 		}
-		chunks = append(chunks, c)
+		chunks = append(chunks, []string{ev(text.String())})
 	}
 	end := []string{`data: {"id":"c1","model":"m1","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":{"prompt_tokens":5,"completion_tokens":` + strconv.Itoa(out) + `}}`, `data: [DONE]`}
 	if proto == provider.Responses {
@@ -385,16 +391,30 @@ func burstChunks(proto provider.Protocol, words, per, out int) [][]string {
 	return chunks
 }
 
-// A reply whose first word came at once and the rest only after a wait,
-// all in one burst, wrote nothing over the wait, and tells no speed (John
-// on Discord: a Kimi Code reply to OpenCode read 1,367 tok/s): before,
-// its 5,000 tokens over the 600 ms from its first word to its end read
-// about 8,300 tok/s. The burst is 5,000 tokens so that the time magpie
-// takes to pass it on (138 ms on a busy macOS runner at 8db24fd6) reads
-// faster than any real stream (MaxDecodeSpeed), as a real burst does;
-// 1,000 read 7,246 tok/s. One that streamed steadily keeps its speed, over
-// nearly all of its time from its first word.
+// A held reply is delivered in one content event after its first word;
+// a steady reply arrives in separate acknowledged events. The vendor's gap
+// starts after receipt, not before a loaded gateway has read the first word.
+// A slow client write is injected as well: this checks the fixture's arrival
+// contract without assuming a scheduler or translator finishes within 138ms.
 func TestBurstTellsNoSpeed(t *testing.T) {
+	for _, slow := range []time.Duration{0, 10 * time.Millisecond} {
+		t.Run(slow.String(), func(t *testing.T) { burstTellsNoSpeed(t, slow) })
+	}
+}
+
+// slowTimingReceiver delays writes, not the timer thresholds or assertions.
+type slowTimingReceiver struct {
+	*hearing
+	delay time.Duration
+}
+
+func (r *slowTimingReceiver) Write(b []byte) (int, error) {
+	time.Sleep(r.delay)
+	return r.hearing.Write(b)
+}
+func (r *slowTimingReceiver) WriteString(s string) (int, error) { return r.Write([]byte(s)) }
+
+func burstTellsNoSpeed(t *testing.T, slow time.Duration) {
 	const gap = 600 * time.Millisecond
 	for _, c := range []struct {
 		name  string
@@ -407,21 +427,25 @@ func TestBurstTellsNoSpeed(t *testing.T) {
 	} {
 		for _, steady := range []bool{false, true} {
 			name := c.name + " burst"
-			chunks, g := burstChunks(c.proto, 200, 199, 5000), gap
+			chunks, g := burstChunks(c.proto, 5000, 4999, 5000), gap
 			if steady {
 				name = c.name + " steady"
 				chunks, g = burstChunks(c.proto, 11, 1, 200), gap/10
 			}
 			t.Run(name, func(t *testing.T) {
 				fresh(t)
-				up := httptest.NewServer(&bursty{chunks: chunks, gap: g})
+				words := []string{"hi"}
+				for i := 1; i < len(chunks); i++ {
+					words = append(words, " word"+strconv.Itoa(i))
+				}
+				rec := &slowTimingReceiver{hearing: newHearing(3*slow, words...), delay: slow}
+				up := httptest.NewServer(&bursty{chunks: chunks, gap: g, heard: rec.heard})
 				t.Cleanup(up.Close)
 				p := provider.Provider{ID: "fake", Name: "Fake", Key: "k", Models: []string{"m1"}, Chat: up.URL + "/v1"}
 				if err := provider.Save(p); err != nil {
 					t.Fatal(err)
 				}
 				s := New()
-				rec := httptest.NewRecorder()
 				s.Handler().ServeHTTP(rec, httptest.NewRequest("POST", c.path, strings.NewReader(c.body)))
 				if rec.Code != 200 || !strings.Contains(rec.Body.String(), "word") {
 					t.Fatalf("%d %s", rec.Code, rec.Body)
@@ -457,10 +481,15 @@ func TestBurstTellsNoSpeed(t *testing.T) {
 // speed for a burst either.
 func TestCodexBackendBurstTellsNoSpeed(t *testing.T) {
 	setup(t, provider.Chat, &fake{t: t})
-	b := &bursty{chunks: burstChunks(provider.Responses, 200, 199, 5000), gap: 600 * time.Millisecond, header: true}
+	rec := newHearing(0, "hi")
+	b := &bursty{chunks: burstChunks(provider.Responses, 5000, 4999, 5000), gap: 600 * time.Millisecond, header: true, heard: rec.heard}
 	chatgpt(t, b.ServeHTTP)
-	if code, body := codexPost(t, `{"model":"gpt-5.5","stream":true,"input":"hi"}`); code != 200 {
-		t.Fatalf("%d %s", code, body)
+	req := httptest.NewRequest("POST", CodexPath+"/responses", strings.NewReader(`{"model":"gpt-5.5","stream":true,"input":"hi"}`))
+	req.Header.Set("Authorization", "Bearer chatgpt-token")
+	req.Header.Set("chatgpt-account-id", "acct-1")
+	New().Handler().ServeHTTP(rec, req)
+	if rec.Code != 200 {
+		t.Fatalf("%d %s", rec.Code, rec.Body.String())
 	}
 	u := lastUsage(t)
 	// the end after the wait, less the moment the first word took to
@@ -470,5 +499,29 @@ func TestCodexBackendBurstTellsNoSpeed(t *testing.T) {
 	}
 	if n, w := u.Decode(); n != 0 || w != 0 {
 		t.Errorf("burst: %d tokens in %d ms (flow %d) read a speed; want none", n, w, u.Flow)
+	}
+}
+
+// Many events received in one read are still a burst. Keep this coverage
+// separate from the translator's CPU/write time: one upstream write need
+// not remain one client write. Advance the observation origin explicitly;
+// no scheduler deadline decides whether these events arrived together.
+func TestBurstEventsReadTogetherHaveOneArrival(t *testing.T) {
+	for _, proto := range []provider.Protocol{provider.Chat, provider.Responses} {
+		t.Run(string(proto), func(t *testing.T) {
+			chunks := burstChunks(proto, 2, 1, 5000)
+			f := firstToken{start: time.Now().Add(-time.Millisecond)}
+			f.see([]byte(chunks[0][0] + "\n\n"))
+			f.start = f.start.Add(-600 * time.Millisecond)
+			f.see([]byte(strings.Repeat(chunks[1][0]+"\n\n", 199)))
+			first, text := f.ms()
+			flow := f.flowMs(first)
+			if first <= 0 || flow != 1 {
+				t.Fatalf("burst arrival: first=%d flow=%d", first, flow)
+			}
+			if n, w := usage.DecodeOf(5000, 0, first+600, first, text, flow); n != 0 || w != 0 {
+				t.Fatalf("events received together reported %d tokens over %dms", n, w)
+			}
+		})
 	}
 }

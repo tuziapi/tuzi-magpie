@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httptrace"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -209,5 +210,46 @@ func TestClosedUnsentFailureScoped(t *testing.T) {
 	}
 	if got := failure(http.StatusInternalServerError, []byte(closedUnsentWords)); got == failProxy {
 		t.Errorf("a vendor's own 500 naming the words was read as nobody's fault")
+	}
+}
+
+// The HTTP/1 read loop can win the race to report a close as EOF even
+// though WroteRequest confirms that the concurrent write failed. An EOF
+// with a completed (or unobserved) write must never be retried here.
+func TestClosedUnsentEOFUsesWriteResult(t *testing.T) {
+	was := unsentAgain
+	unsentAgain = []time.Duration{0, 0}
+	t.Cleanup(func() { unsentAgain = was })
+	for _, c := range []struct {
+		name               string
+		reused, traceWrite bool
+		writeErr           error
+		tries              int
+	}{
+		{"failed write", false, true, net.ErrClosed, 3},
+		{"completed write", false, true, nil, 1},
+		{"no write result", false, false, nil, 1},
+		{"body source failed", false, true, io.ErrUnexpectedEOF, 1},
+		{"reused connection", true, true, net.ErrClosed, 1},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			calls := 0
+			tr := replayable{roundTripFunc(func(r *http.Request) (*http.Response, error) {
+				calls++
+				trace := httptrace.ContextClientTrace(r.Context())
+				trace.GotConn(httptrace.GotConnInfo{Reused: c.reused})
+				if c.traceWrite && trace.WroteRequest != nil {
+					trace.WroteRequest(httptrace.WroteRequestInfo{Err: c.writeErr})
+				}
+				r.Body.Close()
+				return nil, io.EOF
+			})}
+			req, _ := http.NewRequest("POST", "https://vendor.test/responses", strings.NewReader("turn"))
+			_, err := tr.RoundTrip(req)
+			var unsent errClosedUnsent
+			if calls != c.tries || errors.As(err, &unsent) != (c.tries == 3) {
+				t.Fatalf("calls=%d error=%v, want %d calls and unsent=%v", calls, err, c.tries, c.tries == 3)
+			}
+		})
 	}
 }

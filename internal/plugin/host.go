@@ -1886,10 +1886,7 @@ func (c *call) headRead(ctx context.Context) (head message, answer *message, err
 			return message{}, nil, err
 		}
 		if m := c.result(); m != nil {
-			if m.Error != nil {
-				return message{}, m, errors.New(m.Error.Message)
-			}
-			return message{}, m, errors.New("the plugin answered no response")
+			return c.completedHead(m)
 		}
 		select {
 		case <-c.wake:
@@ -1910,6 +1907,19 @@ func (c *call) headRead(ctx context.Context) (head message, answer *message, err
 			continue
 		}
 	}
+}
+
+// completedHead rechecks the queue after observing completion. The stdout
+// reader can queue the head and complete between headRead's first pop and
+// result; completion proves no earlier head is still on its way.
+func (c *call) completedHead(m *message) (message, *message, error) {
+	if head, ok := c.pop(); ok {
+		return head, m, nil
+	}
+	if m.Error != nil {
+		return message{}, m, errors.New(m.Error.Message)
+	}
+	return message{}, m, errors.New("the plugin answered no response")
 }
 
 // body is a fetch's reply body. Its reader takes the chunks the call queued,

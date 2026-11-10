@@ -28,9 +28,9 @@ def main():
     parser.add_argument("--version", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    match = re.fullmatch(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-beta\.([1-9][0-9]*)", args.version)
+    match = re.fullmatch(r"v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-beta\.([1-9][0-9]*))?", args.version)
     if not match:
-        parser.error("version must be vX.Y.Z-beta.N (unsigned prereleases only)")
+        parser.error("version must be vX.Y.Z or vX.Y.Z-beta.N")
     expected = {"macos": "Darwin", "windows": "Windows", "linux": "Linux"}[args.platform]
     if platform.system() != expected:
         parser.error(f"{args.platform} desktop packaging requires {expected}")
@@ -39,6 +39,9 @@ def main():
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     numeric = ".".join(match.groups()[:3])
+    beta = match.group(4)
+    bundle_version = numeric + ("." + beta if beta else "")
+    deb_version = numeric + ("~beta." + beta if beta else "")
     commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain", "--untracked-files=normal"], cwd=ROOT))
     if dirty:
@@ -71,13 +74,13 @@ def main():
             plist_path = bundle / "Contents/Info.plist"
             plist = plistlib.loads(plist_path.read_bytes())
             plist["CFBundleShortVersionString"] = numeric
-            plist["CFBundleVersion"] = numeric + "." + match.group(4)
+            plist["CFBundleVersion"] = bundle_version
             plist_path.write_bytes(plistlib.dumps(plist))
             # Ad-hoc integrity signing is required on Apple Silicon. It is
             # not Developer ID signing and does not provide notarization.
             run("codesign", "--force", "--deep", "--sign", "-", bundle)
             run("codesign", "--verify", "--deep", "--strict", bundle)
-            run("lipo", "-verify_arch", "arm64" if args.arch == "arm64" else "x86_64", bundle / "Contents/MacOS/tuzi-magpie")
+            run("lipo", bundle / "Contents/MacOS/tuzi-magpie", "-verify_arch", "arm64" if args.arch == "arm64" else "x86_64")
             native_arch = "arm64" if platform.machine().lower() in ("arm64", "aarch64") else "amd64"
             if native_arch == args.arch:
                 version = subprocess.check_output([str(ROOT / "scripts/tuzi-magpie/isolated.sh"), str(bundle / "Contents/MacOS/tuzi-magpie"), "--version"], text=True)
@@ -138,7 +141,7 @@ def main():
             notices(doc_dir)
             shutil.copy2(ROOT / "internal/gui/icon-256.png", icon_dir / "tuzi-magpie.png")
             (app_dir / "tuzi-magpie.desktop").write_text("[Desktop Entry]\nType=Application\nName=tuzi-magpie\nExec=tuzi-magpie %u\nIcon=tuzi-magpie\nStartupWMClass=tuzi-magpie\nTerminal=false\nCategories=Development;Utility;\nMimeType=x-scheme-handler/tuzimagpie;\n")
-            (control / "control").write_text(f"Package: tuzi-magpie\nVersion: {numeric}~beta.{match.group(4)}\nArchitecture: amd64\nMaintainer: tuzi-magpie maintainers <noreply@github.com>\nDepends: libc6 (>= 2.39), libgtk-3-0t64, libwebkit2gtk-4.1-0\nSection: utils\nPriority: optional\nHomepage: {REPOSITORY}\nDescription: Tuzi desktop account and local AI gateway (unsigned beta)\n")
+            (control / "control").write_text(f"Package: tuzi-magpie\nVersion: {deb_version}\nArchitecture: amd64\nMaintainer: tuzi-magpie maintainers <noreply@github.com>\nDepends: libc6 (>= 2.39), libgtk-3-0t64, libwebkit2gtk-4.1-0\nSection: utils\nPriority: optional\nHomepage: {REPOSITORY}\nDescription: Tuzi desktop account and local AI gateway (unsigned)\n")
             deb = target(prefix + ".deb")
             run("dpkg-deb", "--root-owner-group", "--build", package, deb)
             run("dpkg-deb", "--info", deb)

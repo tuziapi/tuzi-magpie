@@ -1,9 +1,9 @@
-# Tuzi unsigned desktop prerelease
+# Tuzi unsigned desktop release
 
 This is the release procedure for `tuziapi/tuzi-magpie`. It never publishes to
 `yetone/magpie-releases`, changes repository visibility, enables automatic
 updates, deploys the API site, or signs with a trusted developer certificate.
-The repository is currently private: its Releases require repository access.
+The repository is public; published Release assets are publicly downloadable.
 
 ## Build outputs
 
@@ -24,7 +24,7 @@ existing isolated `tuzi-magpie-data` storage. The Linux package adds no APT feed
 See [installation instructions](unsigned-install.md) for user-facing limits.
 
 `scripts/tuzi-magpie/package-release.py` builds only from a clean committed tree,
-requires a `vX.Y.Z-beta.N` version and records the exact source commit and SHA-256
+accepts `vX.Y.Z` and `vX.Y.Z-beta.N` versions and records the exact source commit and SHA-256
 of each asset. All binaries carry the Tuzi repository URL. The existing original
 application icon, licenses and upstream attribution are retained.
 
@@ -40,12 +40,12 @@ are not interactive desktop acceptance tests.
    Include Chromium/WebKit coverage and explicitly describe remaining native
    platform and real-account integration limits. A build is not a test pass.
 2. Put the reviewed source and build workflow on the Tuzi repository's `main`.
-   Fetch tags from `tuzi` and select an unused beta version. Do not tag upstream.
+   Fetch tags from `tuzi` and select an unused version. Do not tag upstream.
 3. Dispatch the packaging workflow at that source after its checks are green:
 
    ```sh
    gh workflow run tuzi-unsigned-build.yml -R tuziapi/tuzi-magpie \
-     --ref main -f version=vX.Y.Z-beta.N
+     --ref main -f version=vX.Y.Z
    ```
 
 4. Wait for every matrix job to pass; download the four artifact groups into a
@@ -54,15 +54,15 @@ are not interactive desktop acceptance tests.
 
    ```sh
    python3 scripts/tuzi-magpie/verify-release.py \
-     --directory /absolute/path/to/staging --version vX.Y.Z-beta.N \
+     --directory /absolute/path/to/staging --version vX.Y.Z \
      --commit FULL_40_CHARACTER_SOURCE_COMMIT
    ```
 
    This rejects missing assets, incorrect source/version/repository metadata and
    mismatched file sizes/hashes, and writes `SHA256SUMS.txt` only on success.
-5. Create a beta tag at that verified commit on `tuzi/main`. Create a draft GitHub
+5. Create a version tag at that verified commit on `tuzi/main`. Create a draft GitHub
    Release, upload the six assets, four manifests and `SHA256SUMS.txt`, then
-   verify the downloaded assets match. Publish it as **Pre-release**, not Latest.
+   verify the downloaded assets match. Publish `vX.Y.Z` as a regular Release, or `vX.Y.Z-beta.N` as **Pre-release**, not Latest.
    State unsigned status, tested systems, untested systems, and that API-site
    deployment/real-account integration are not part of this delivery.
 

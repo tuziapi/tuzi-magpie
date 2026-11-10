@@ -1,9 +1,9 @@
-# tuzi-magpie 未签名测试版 / Unsigned beta
+# tuzi-magpie 未签名桌面版 / Unsigned desktop release
 
-这是供测试的桌面安装包，不是已签名、公证的正式版。自动更新尚未启用。
+此桌面安装包没有可信开发者签名或公证。自动更新尚未启用。
 API 站部署及真实账户联调的完成情况，以对应 GitHub Release 的说明为准。
 
-This beta has no trusted developer signature or notarization. Automatic updates
+This desktop release has no trusted developer signature or notarization. Automatic updates
 are disabled. Consult its Release notes for actual platform testing and API-site
 integration status. Keep the original Magpie licenses and attribution with it.
 
@@ -40,7 +40,7 @@ never redistribute a used portable folder containing accounts or credentials.
 DEB 面向 Ubuntu 24.04 `amd64`，依赖 GTK 3 和 WebKitGTK 4.1：
 
 ```sh
-sudo apt install ./tuzi-magpie-vX.Y.Z-beta.N-linux-amd64.deb
+sudo apt install ./tuzi-magpie-vX.Y.Z-linux-amd64.deb
 ```
 
 需要桌面会话；安装后从应用菜单启动。其他发行版、Wayland/X11 组合的测试情况
@@ -60,7 +60,7 @@ shasum -a 256 -c SHA256SUMS.txt
 # Linux
 sha256sum -c SHA256SUMS.txt
 # Windows PowerShell: compare the value with SHA256SUMS.txt
-Get-FileHash .\tuzi-magpie-vX.Y.Z-beta.N-windows-amd64-setup.exe -Algorithm SHA256
+Get-FileHash .\tuzi-magpie-vX.Y.Z-windows-amd64-setup.exe -Algorithm SHA256
 ```
 
 仅下载部分平台安装包时，校验文件中其他平台的条目会提示文件缺失；请核对所下载
