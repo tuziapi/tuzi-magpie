@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/yetone/magpie/internal/provider"
@@ -344,37 +345,40 @@ func TestMultipleVisibleReasoningBlocks(t *testing.T) {
 }
 
 func TestLiveVisibleReasoningFixture(t *testing.T) {
-	var sample struct {
-		First  int64 `json:"first_reasoning_ms"`
-		Events []struct {
-			At    int64  `json:"at_ms"`
-			Delta string `json:"delta"`
-		} `json:"events"`
-		Record struct {
-			Out, Reasoning int
-			Ms             int64
-			TTFT           int64 `json:"ttft_ms"`
-			Flow           int64 `json:"flow_ms"`
-		} `json:"record"`
-	}
-	b, err := os.ReadFile("testdata/reasoning-speed-visible.json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err = json.Unmarshal(b, &sample); err != nil {
-		t.Fatal(err)
-	}
-	f := firstToken{}
-	for _, e := range sample.Events {
-		delta, _ := json.Marshal(e.Delta)
-		f.start = time.Now().Add(-time.Duration(e.At) * time.Millisecond)
-		f.see([]byte(`data: {"choices":[{"delta":{"reasoning_content":` + string(delta) + `}}]}` + "\n\n"))
-	}
-	if f.reasoningMs(provider.Chat) != sample.Events[0].At {
-		t.Fatalf("live reasoning fixture lost its start: %d/%d", f.reasoningMs(provider.Chat), sample.Events[0].At)
-	}
-	n, ms := usage.DecodeOf(sample.Record.Out, sample.Record.Reasoning, sample.Record.Ms, sample.Record.TTFT, 0, sample.Record.Flow, sample.First)
-	if n != 76 || ms != 731 {
-		t.Fatalf("live tool turn speed %d/%d; want 76/731", n, ms)
-	}
+	// Fixture timestamps are exact samples, not wall-clock scheduling deadlines.
+	synctest.Test(t, func(t *testing.T) {
+		var sample struct {
+			First  int64 `json:"first_reasoning_ms"`
+			Events []struct {
+				At    int64  `json:"at_ms"`
+				Delta string `json:"delta"`
+			} `json:"events"`
+			Record struct {
+				Out, Reasoning int
+				Ms             int64
+				TTFT           int64 `json:"ttft_ms"`
+				Flow           int64 `json:"flow_ms"`
+			} `json:"record"`
+		}
+		b, err := os.ReadFile("testdata/reasoning-speed-visible.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = json.Unmarshal(b, &sample); err != nil {
+			t.Fatal(err)
+		}
+		f := firstToken{}
+		for _, e := range sample.Events {
+			delta, _ := json.Marshal(e.Delta)
+			f.start = time.Now().Add(-time.Duration(e.At) * time.Millisecond)
+			f.see([]byte(`data: {"choices":[{"delta":{"reasoning_content":` + string(delta) + `}}]}` + "\n\n"))
+		}
+		if f.reasoningMs(provider.Chat) != sample.Events[0].At {
+			t.Fatalf("live reasoning fixture lost its start: %d/%d", f.reasoningMs(provider.Chat), sample.Events[0].At)
+		}
+		n, ms := usage.DecodeOf(sample.Record.Out, sample.Record.Reasoning, sample.Record.Ms, sample.Record.TTFT, 0, sample.Record.Flow, sample.First)
+		if n != 76 || ms != 731 {
+			t.Fatalf("live tool turn speed %d/%d; want 76/731", n, ms)
+		}
+	})
 }
