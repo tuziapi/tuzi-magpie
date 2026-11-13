@@ -1,54 +1,54 @@
 {
   "schema": 1,
   "repository": "tuziapi/tuzi-magpie",
-  "tag": "v0.1.0",
+  "tag": "v0.1.1",
   "draft": false,
   "prerelease": false,
-  "publishedAt": "2026-11-10T13:19:39Z",
-  "checkedAt": "2026-11-13T13:07:29.963Z",
-  "releaseUrl": "https://github.com/tuziapi/tuzi-magpie/releases/tag/v0.1.0",
+  "publishedAt": "2026-11-13T21:28:51Z",
+  "checkedAt": "2026-11-13T21:29:11.663Z",
+  "releaseUrl": "https://github.com/tuziapi/tuzi-magpie/releases/tag/v0.1.1",
   "downloads": [
     {
       "id": "macos-arm64",
-      "name": "tuzi-magpie-v0.1.0-macos-arm64.dmg",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-macos-arm64.dmg",
-      "bytes": 33676625,
-      "sha256": "ab2872c9c74dd3e20adb9736d21d2df90711ceb90f84d10a28b1cd106f764d24"
+      "name": "tuzi-magpie-v0.1.1-macos-arm64.dmg",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-macos-arm64.dmg",
+      "bytes": 34089134,
+      "sha256": "2f48369f3fe8b9f3298f640822326a3e8599186933b3bdaab97d8dc9fb40495f"
     },
     {
       "id": "macos-amd64",
-      "name": "tuzi-magpie-v0.1.0-macos-amd64.dmg",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-macos-amd64.dmg",
-      "bytes": 36929141,
-      "sha256": "65d1a67965885ea20c0ef3edce9fb20735c43bcf3bdd5fa01d31827351b267cf"
+      "name": "tuzi-magpie-v0.1.1-macos-amd64.dmg",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-macos-amd64.dmg",
+      "bytes": 36935107,
+      "sha256": "d1c597d509d57e29079f6f05d29cedeb138c36b5aaf178afb3d6feec4ddbe051"
     },
     {
       "id": "windows-amd64-setup",
-      "name": "tuzi-magpie-v0.1.0-windows-amd64-setup.exe",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-windows-amd64-setup.exe",
-      "bytes": 24468513,
-      "sha256": "af17241930a261beb44f413bd45bf05fcc947be43fb29da712c1f8507cda3796"
+      "name": "tuzi-magpie-v0.1.1-windows-amd64-setup.exe",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-windows-amd64-setup.exe",
+      "bytes": 24479963,
+      "sha256": "df81a5e7416f4f95b5237d7e2763bef40a386196144b589ea4f178384d46cc0d"
     },
     {
       "id": "windows-amd64-portable",
-      "name": "tuzi-magpie-v0.1.0-windows-amd64-portable.zip",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-windows-amd64-portable.zip",
-      "bytes": 31883819,
-      "sha256": "61b2a8cd2d18a217f2d8d641fa7957b0dcce691bc7ae1fc03422060495b6bec1"
+      "name": "tuzi-magpie-v0.1.1-windows-amd64-portable.zip",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-windows-amd64-portable.zip",
+      "bytes": 31894595,
+      "sha256": "0e5bb3cb74065c334d2dfd17bd4390069a1564447e707322703d52e482f21e82"
     },
     {
       "id": "windows-arm64-portable",
-      "name": "tuzi-magpie-v0.1.0-windows-arm64-portable.zip",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-windows-arm64-portable.zip",
-      "bytes": 29214498,
-      "sha256": "993fcbf20cffecf6d338c7ff0f3436a1ae1261a47a6757de77789614e4214869"
+      "name": "tuzi-magpie-v0.1.1-windows-arm64-portable.zip",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-windows-arm64-portable.zip",
+      "bytes": 29217921,
+      "sha256": "98d28de4374a143e700b7d6617e649597ae1cef15dc6f8cf61a7bcd1acdd13ff"
     },
     {
       "id": "linux-amd64",
-      "name": "tuzi-magpie-v0.1.0-linux-amd64.deb",
-      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.0/tuzi-magpie-v0.1.0-linux-amd64.deb",
-      "bytes": 24692374,
-      "sha256": "90ff2c2909049a9ad6dffa9b2d307c51bf99a2354b17050902ba11a72d2e2fee"
+      "name": "tuzi-magpie-v0.1.1-linux-amd64.deb",
+      "url": "https://github.com/tuziapi/tuzi-magpie/releases/download/v0.1.1/tuzi-magpie-v0.1.1-linux-amd64.deb",
+      "bytes": 24701096,
+      "sha256": "41f67906fd305bedea9453dcffb24ba8b6743158b4d4fe5d92297dd3a72fd31b"
     }
   ]
 }
