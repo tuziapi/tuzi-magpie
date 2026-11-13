@@ -1,0 +1,11 @@
+node_modules/
+dist/
+public/release.json
+public/LICENSE.txt
+public/source.tar.gz
+test-results/
+playwright-report/
+
+public/SOURCE.json
+
+evidence/

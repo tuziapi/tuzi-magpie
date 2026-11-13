@@ -1,0 +1,30 @@
+{
+  "name": "Tuzi Magpie standalone download page",
+  "license": "AGPL-3.0-or-later",
+  "copyright": "Copyright (C) 2026 Tuzi",
+  "source": "https://github.com/tuziapi/tuzi-magpie/tree/main/packages/download-page",
+  "reference": {
+    "repository": "https://github.com/tuziapi/tuzi-switch/tree/main/packages/download-page",
+    "copyright": "Copyright (C) 2026 Tuzi",
+    "license": "AGPL-3.0-or-later",
+    "scope": "Page organization and build-time release.json approach; the Magpie page and six-target validator are independently implemented. LICENSE retained.",
+    "origin": "Reference page traces its origin to new-api / QuantumNous (tuziapi/tuzi-api); no assistant JSX, CSS, screenshots or installer code copied."
+  },
+  "visualReference": "https://usemagpie.ai/",
+  "assets": [
+    {
+      "file": "public/magpie.png",
+      "source": "internal/gui/icon-256.png",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 yetone"
+    },
+    {
+      "file": "public/screenshots/*.png",
+      "source": "scripts/capture-product.cjs renders internal/gui/assets with isolated synthetic fixtures",
+      "baseline": "b4590d85a0790a3e3d3f97e6b4d4287fc83222c0",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 yetone; Tuzi modifications",
+      "privacy": "No real account, key, balance or personal data. No external requests allowed. These are UI captures, not generated artwork."
+    }
+  ]
+}
