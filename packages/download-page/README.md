@@ -75,11 +75,11 @@ fixture，所有请求被拦截为合成数据，外部网络被拒绝；不启�
 
 ## GitHub Pages 发布
 
-发布来源为 `main` 分支的 `/docs`。源码仍在本目录，`docs/` 仅额外保存构建产物，
-原有项目文档保留。`.nojekyll` 跳过 Jekyll 处理。
+发布来源为 `main` 分支的 `/ (root)`。源码仍在本目录，仓库根目录保存构建产物，
+`docs/` 保留原有项目文档。`.nojekyll` 跳过 Jekyll 处理。
 
-更新页面时运行 `npm run build`，将 `dist/` 的文件同步到仓库 `docs/`，
-检查差异后提交并推送到兔子版 main。不得清空 docs 或删除已有项目文档。
+更新页面时运行 `npm run build`，将 `dist/` 的文件同步到仓库根目录，
+检查差异后提交并推送到兔子版 main。只替换已生成的网页文件，不得清空仓库或删除源码及文档。
 页面资源基路径保持 `/tuzi-magpie/`，线上地址为 https://tuziapi.github.io/tuzi-magpie/。
 
 `.github/workflows/tuzi-download-page.yml` 仅手动测试、构建和上传预览 artifact，
