@@ -1017,3 +1017,39 @@ that response must not make the HTTP server drain the request body while the
 proxy transport is forwarding it. HTTP/2 already permits concurrent reads
 and writes. `TestPluginPageServiceDuringUpload` checks the first event before
 the upload ends and the complete reply after it, through the web middleware.
+
+## Tuzi Umami analytics
+
+The Tuzi distribution loads `https://umami.tu-zi.com/script.js` from
+`assets/plugins/tuzi/analytics.js`, only for the main window/browser when analytics is enabled.
+Website ID: `b2aa6cf4-3b4e-4e7a-bfd7-b5e675a975e4`. Auto tracking is disabled.
+`boot.js` supplies settings, environment veto, version and OS. Missing boot
+configuration disables analytics (including existing test fixtures). `noStats`,
+`DO_NOT_TRACK`, `MAGPIE_NO_STATS` and browser DNT stop both events and loading;
+`noUsageStats` permits page views only. Saved settings are reapplied by the
+existing state refresh, including other windows; already-sent requests cannot
+be recalled. No permanent user identity is assigned.
+
+Successful navigation records fixed page paths and Chinese titles; repeated
+renders and rejected navigation do not. Tuzi tabs have their own fixed paths.
+Explicit account connection, key creation, provider addition and agent connection
+record Chinese start/result events; disconnects record success only. Provider
+reuse is distinct from creation. Uncertain writes are not counted as failures.
+Model details and the token-page entry record events without model names or URLs.
+Agent profiles and unknown agent IDs become “其他”. Events and attributes have
+allow-lists; no account IDs, tokens, keys, custom names, search text, content or
+raw errors are sent. Public version, OS, language and surface accompany events.
+The SDK request still exposes the client's IP and origin hostname to the server;
+no claim is made that this transport is anonymous. It does not send page query
+parameters, fragments or referrer content in its event payload.
+
+The queue is memory-only and capped at 50, discarded on full opt-out/load failure.
+Usage-only opt-out filters queued custom events but preserves pending page visits.
+An error with `outcomeUnknown: true` always records an uncertain result regardless
+of its code, while the business caller receives the original error unchanged.
+The SDK response is pinned with SHA-384 Subresource Integrity and anonymous CORS.
+An upstream byte change is rejected before execution until reviewed and repinned;
+`testdata/umami` keeps the reviewed bytes for offline tests. Analytics failures never
+reject a business operation. External plugin sandboxes
+and gateway request handling are unchanged. Tests serve the pinned SDK through a mocked transport;
+a native WebView/live Umami delivery check is separate.

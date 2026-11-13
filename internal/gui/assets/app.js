@@ -19250,6 +19250,7 @@ function renderFonts(s) {
 // ?theme= or ?locale= in the URL wins, so a forced look stays forced.
 function applyPrefs(s, rate) {
   s = s || {};
+  window.tuziAnalytics?.settings(s);
   if (!prefsBusy) window.desktopFonts?.apply(s);
   const root = document.documentElement;
   if (!params.get("theme")) {
@@ -21852,7 +21853,7 @@ function renderRedact(s, keep) {
   // Routing's and Usage's Hide accounts, here too, where privacy is looked for
   if (window.hideAccounts) rowIn(share, t("Hide accounts"), t("Email addresses and account names on Usage and Routing are blurred, for a screenshot to share"),
     onOff(window.hideAccounts.on(), (on) => { window.hideAccounts.set(on); renderSettings(); }));
-  rowIn(share, t("Count me as a user"), t("Once a day, a random id for this computer with magpie's version and system"),
+  rowIn(share, t("Count me as a user"), t("Daily device ID/version/OS; Tuzi visits and shared actions at umami.tu-zi.com. No secrets."),
     onOff(!s.noStats, (on) => savePrefs({ ...keep, noStats: !on })));
   // rides on that event: nothing goes without it
   if (!s.noStats) rowIn(share, t("Share the agents, providers and models I use"), t("Sent with that event, by magpie's own ids, with how many of each, and how often each partner was shown, opened and added; a provider you added yourself is only “custom”. No names, addresses, accounts, keys or usage"),
@@ -23235,6 +23236,7 @@ async function show(v) {
   if (v === "plugins") window.loadPlugins?.()?.then(back);
   syncTitle();
   syncURL();
+  window.tuziAnalytics?.page(v === "tuzi" ? "tuzi/keys" : v);
   return true;
 }
 

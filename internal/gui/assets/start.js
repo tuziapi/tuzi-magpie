@@ -2,6 +2,7 @@
 // scripts after app.js are all there, so the first page shown has its
 // code (the Usage page's is a plugin's, run after app.js).
 // the plugins' pages wired up (kernel.js), before the first is shown
+window.tuziAnalytics?.install();
 magpie.start();
 navHides(); // the pages built-in plugins switched off have, from boot.js
 // Explicit links win, then the last page. A new native window starts on Tuzi;
@@ -21,4 +22,5 @@ if (OPEN_VIEWS.includes(firstView)) show(firstView).then(() => view === "plugins
 else if (mode === "window" && !gatewayMode && !sideNav()) slide($("#nav"), "nav");
 // in gateway mode the first page is Providers, Agents' tab gone
 if (gatewayMode) setGatewayMode(true);
+window.tuziAnalytics?.page(view === "tuzi" ? "tuzi/keys" : view);
 load();

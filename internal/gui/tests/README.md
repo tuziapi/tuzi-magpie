@@ -2661,3 +2661,16 @@ hasn't.
 ```sh
 node --test internal/gui/tests/nav-timeout.test.cjs
 ```
+
+## Tuzi Umami analytics
+
+`analytics.test.cjs` uses the real shell with a held, pinned SDK fixture to check initial
+page queueing, navigation deduplication, Chinese names in five languages, agent
+profile masking, provider reuse, uncertain writes, property allow-lists, privacy
+settings, missing configuration, environment/browser opt-outs, tray exclusion and
+SDK failure. Both Chromium and WebKit run without contacting Umami.
+
+`analytics-regression.test.cjs` checks that pending page views survive initial and
+runtime usage-only opt-out, uncertain backend writes keep their reported outcome
+and original error, and browsers reject changed remote SDK bytes while business
+operations still succeed. All SDK and collection requests are intercepted locally.

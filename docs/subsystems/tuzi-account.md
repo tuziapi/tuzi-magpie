@@ -158,3 +158,10 @@ remains the access authority. Protocol metadata rejects non-string methods or
 paths, normalizes endpoint labels, and treats absent legacy details separately
 from malformed data. `testdata/endpoint-compatibility.json` is the synthetic
 reference contract copied from tuzi-switch's tests/fixtures file on 2026-11-03.
+
+## Product analytics
+
+Explicit UI operations emit allow-listed Chinese Umami events through the
+[GUI analytics boundary](gui-shell.md#tuzi-umami-analytics). Refreshes and account
+restoration emit no operation events; account identity and business data remain
+outside analytics. Provider reuse and uncertain writes retain distinct results.

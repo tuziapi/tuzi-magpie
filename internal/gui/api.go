@@ -55,6 +55,7 @@ import (
 	"github.com/yetone/magpie/internal/sessions"
 	"github.com/yetone/magpie/internal/settings"
 	"github.com/yetone/magpie/internal/settingsapi"
+	"github.com/yetone/magpie/internal/stats"
 	"github.com/yetone/magpie/internal/update"
 	"github.com/yetone/magpie/internal/usage"
 )
@@ -977,6 +978,7 @@ func Handler(w Windows, gw *gateway.Server) http.Handler {
 		// traffic lights
 		boot := map[string]any{"lang": s.Lang, "theme": s.Theme, "textSize": s.TextSize, "web": isWeb(w)}
 		boot["repository"] = product.RepositoryURL()
+		boot["analytics"] = map[string]any{"off": stats.Off(), "blocked": analyticsEnvironmentOff(), "usageOff": s.NoUsageStats, "version": Version, "os": runtime.GOOS}
 		if s.Colorblind {
 			boot["colorblind"] = true
 		}
@@ -3120,4 +3122,14 @@ func codexAppOut() *appOutJSON {
 		o.Until = &u
 	}
 	return o
+}
+
+// Environment opt-outs remain authoritative when the UI changes preferences.
+func analyticsEnvironmentOff() bool {
+	for _, key := range []string{"DO_NOT_TRACK", "MAGPIE_NO_STATS"} {
+		if v := os.Getenv(key); v != "" && v != "0" && v != "false" {
+			return true
+		}
+	}
+	return false
 }

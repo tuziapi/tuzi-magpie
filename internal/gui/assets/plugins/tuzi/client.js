@@ -34,6 +34,11 @@
       return e?.retryAfter > 0 ? message + " " + t("Retry after {seconds} seconds.", { seconds: e.retryAfter }) : message;
     }
     async function http(path, body, signal = controller.signal) {
+      const name = { connect: "连接兔子账户", disconnect: "断开兔子账户", provider: "添加服务商" }[path];
+      const run = () => httpRequest(path, body, signal);
+      return name && window.tuziAnalytics ? window.tuziAnalytics.operation(name, run, path === "provider" ? { 入口: providerEntry, 协议: body.protocol } : {}) : run();
+    }
+    async function httpRequest(path, body, signal) {
       const generation = state.generation, identity = state.identity, visit = lifecycle;
       const response = await fetch("/api/tuzi/" + path, { method: body === undefined ? "GET" : "POST", headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body), signal, cache: "no-store" });
       let data; try { data = await response.json(); } catch { throw { code: "invalid_response" }; }
@@ -57,6 +62,10 @@
       return data;
     }
     async function request(method, path, query = {}, body) {
+      const run = () => accountRequest(method, path, query, body);
+      return method === "POST" && path === "/account/keys" && window.tuziAnalytics ? window.tuziAnalytics.operation("创建 API Key", run) : run();
+    }
+    async function accountRequest(method, path, query, body) {
       const generation = state.generation;
       const data = await http("request", { method, path, query: Object.entries(query).filter(([,v]) => v !== "" && v !== undefined && v !== null).map(([k,v]) => [k, String(v)]), ...(body === undefined ? {} : { body }), generation });
       if (state.generation !== generation) throw { code: "stale_generation" };
@@ -144,7 +153,7 @@
       b.append(node("span", "note", t("{first}–{last} of {total}", { first: total === 0 ? 0 : (filter.page - 1) * size + 1, last: Math.min(filter.page * size, total), total: p.total ?? "—" })), prev, node("span", "note", pageSummary(data, filter)), next, jump.wrap);
       return b;
     }
-    async function openWeb(target) { await http("open", { target }); }
+    async function openWeb(target) { await http("open", { target }); if (target === "token") window.tuziAnalytics?.event("获取系统令牌"); }
     function drawHeader() {
       header.replaceChildren(); const status = node("span", "tuzi-status", t(state.status === "connected" ? "Connected" : state.status === "offline" ? "Offline" : state.status === "invalid" ? "Invalid connection" : "Not connected")); status.dataset.state = state.status;
       const who = node("div", "who"); who.append(node("div", "name", state.identity?.displayName || state.identity?.username || t("Tuzi account")), status);
@@ -162,7 +171,7 @@
     }
     function drawTabs() {
       tabbar.replaceChildren(); tabbar.setAttribute("role", "tablist");
-      for (const [id, label] of tabs) { const b = button(label, async () => { if (busy) return; if (dirtyForm?.() && !(await confirmDiscard())) return; tab = id; closeSheet(true); drawTabs(); loadTab(); }, tab === id ? "opt on" : "opt"); b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(tab === id)); b.tabIndex = tab === id ? 0 : -1; b.onkeydown = (e) => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) { e.preventDefault(); const at = tabs.findIndex(([x]) => x === tab), next = e.key === "Home" ? 0 : e.key === "End" ? 3 : (at + (e.key === "ArrowRight" ? 1 : 3)) % 4; const choices = tabbar.querySelectorAll("[role=tab]"); choices[next].click(); tabbar.querySelectorAll("[role=tab]")[next].focus({ preventScroll: true }); } }; tabbar.append(b); }
+      for (const [id, label] of tabs) { const b = button(label, async () => { if (busy) return; if (dirtyForm?.() && !(await confirmDiscard())) return; tab = id; window.tuziAnalytics?.page("tuzi/" + id); closeSheet(true); drawTabs(); loadTab(); }, tab === id ? "opt on" : "opt"); b.setAttribute("role", "tab"); b.setAttribute("aria-selected", String(tab === id)); b.tabIndex = tab === id ? 0 : -1; b.onkeydown = (e) => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) { e.preventDefault(); const at = tabs.findIndex(([x]) => x === tab), next = e.key === "Home" ? 0 : e.key === "End" ? 3 : (at + (e.key === "ArrowRight" ? 1 : 3)) % 4; const choices = tabbar.querySelectorAll("[role=tab]"); choices[next].click(); tabbar.querySelectorAll("[role=tab]")[next].focus({ preventScroll: true }); } }; tabbar.append(b); }
     }
     async function refreshState() { const next = await http("state"); acceptState(next); drawHeader(); }
     async function loadTab() {
@@ -227,7 +236,9 @@
       form.onsubmit = (e) => { e.preventDefault(); if (!draft.group.trim()) { note(t("Choose at least one key group."), true); return; } guarded(async () => { const body = {}; for (const k of ["name", "group", "expired_time", "remain_quota", "unlimited_quota", "model_limits_enabled", "model_limits", "allow_ips", "exclude_ips"]) if (!original || (original[k] ?? "") !== (draft[k] ?? "")) body[k] = draft[k] ?? ""; if (!Object.keys(body).length) { closeSheet(true); return; } const result = await request(original ? "PATCH" : "POST", original ? `/account/keys/${original.id}` : "/account/keys", {}, body); closeSheet(true); await loadTab(); if (!original && result.id) await keyDetails(result.id); }, true); }; box.append(form);
     }
     function localDate(seconds) { const d = new Date(seconds * 1000); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
+    let providerEntry = "API 密钥";
     async function configure(key, modelName = "") {
+      providerEntry = modelName ? "模型市场" : "API 密钥";
       const box = openSheet("Add account key to Magpie"), at = sheetGeneration;
       box.append(text("One account key becomes one provider. Agent model selection follows Magpie's existing workflow; saving does not run a model."));
       const current = await request("GET", `/account/keys/${key.id}`); if (at !== sheetGeneration) return;
@@ -396,6 +407,7 @@
       return typeof model.description === "string" ? model.description : "";
     }
     function modelDetails(m, meta) {
+      window.tuziAnalytics?.event("查看模型详情");
       const box = openSheet("Model details"); box.append(facts([["Model", m.model_name], ["Description", modelDescription(m)], ["Aliases", m.aliases.join(", ")], ["Endpoint type", m.supported_endpoint_types.join(", ")], ["Visible model group", m.enable_groups.join(", ")], ["Billing mode", billing(m.quota_type)], ["Model tag", m.tags]]), text("USD group catalog prices, excluding personal discounts. Final charges are determined by the service."));
       for (const group of tuziMoney.groupPrices(m, meta)) {
         const section = node("section", "list tuzi-sheet tuzi-group-prices"); section.append(node("h3", "", group.label)); const prices = node("div"); let at = 0;

@@ -5,10 +5,11 @@ const path = require('node:path');
 const {test} = require('node:test');
 const {chromium, webkit} = require('playwright');
 const {reach} = require('./reader.cjs');
+const {serveAnalytics} = require('./analytics-fixture.cjs');
 const assets = process.env.TUZI_UI_ASSETS || path.resolve(__dirname, '../assets');
 const key = () => ({id:'8',name:'Synthetic key',masked_key:'sk-••••test',status:1,group:'default',created_time:1700000000,accessed_time:0,expired_time:-1,remain_quota:'500000',unlimited_quota:true,used_quota:'200',model_limits_enabled:false,model_limits:'',allow_ips:null,exclude_ips:null,is_expired:false});
 const model = () => ({model_name:'fixture-model',aliases:null,description:'Synthetic catalog model',tags:'text',quota_type:1,model_ratio:1,completion_ratio:2,enable_groups:['default'],supported_endpoint_types:['responses'],related_pricing:null});
-function fixture(lang='en',theme='light',web=false) {
+function fixture(lang='en',theme='light',web=false,analytics=false) {
   let state={status:'disconnected',generation:1,identity:null,error:null};
   let keys=[key()], next=9, uncertain=false, prefillGate=null, stateGate=null, checkGate=null, nextFailure=null, requestGate=null;
   const calls=[], modelRequests=[], heldRequests=new Set();
@@ -18,7 +19,8 @@ function fixture(lang='en',theme='light',web=false) {
   const handler=async(route)=>{
     const u=new URL(route.request().url()), req=route.request(), body=req.postDataJSON();
     const json=(data,status=200)=>route.fulfill({json:data,status});
-    if(u.pathname==='/boot.js')return route.fulfill({contentType:'text/javascript',body:`window.bootPrefs=${JSON.stringify({lang,theme,web})};`});
+    if(u.hostname==='umami.tu-zi.com')return serveAnalytics(route,'analyticsEvents');
+    if(u.pathname==='/boot.js')return route.fulfill({contentType:'text/javascript',body:`window.bootPrefs=${JSON.stringify({lang,theme,web,...(analytics?{analytics:{off:false,blocked:false,usageOff:false}}:{})})};`});
     if(u.pathname==='/wails/runtime.js')return route.fulfill({contentType:'text/javascript',body:'export const Window={};'});
     if(u.pathname==='/api/state')return json({agents:[],profiles:[],settings:{lang,theme}});
     if(u.pathname==='/api/providers')return json({providers:[],presets:[],gateway:{running:false,url:'http://127.0.0.1:18343',calls:[],groups:[]}});
@@ -89,7 +91,7 @@ for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webk
   const browser=await(engine==='webkit'?webkit.launch():chromium.launch(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{channel:'chromium'}));t.after(()=>browser.close());
   for(const lang of (process.env.TUZI_TEST_LANG?[process.env.TUZI_TEST_LANG]:['en','zh','zh-TW','ja','de']))for(const width of [1100,420]){
     const context=await browser.newContext({viewport:{width,height:850},reducedMotion:'reduce'});t.after(()=>context.close());const page=await context.newPage();page.setDefaultTimeout(10000);page.setDefaultNavigationTimeout(60000);
-    const f=fixture(lang,width===420?'dark':'light'), errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',f.handler);await page.goto('http://magpie.test/?view=tuzi');
+    const f=fixture(lang,width===420?'dark':'light',false,true), errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',f.handler);await page.goto('http://magpie.test/?view=tuzi');
     const root=page.locator('#view-tuzi');await root.waitFor();
     assert.equal(await root.locator('[role=tab]').count(),4);assert.equal(f.calls.filter(x=>x[0].endsWith('/request')).length,0,'disconnected page does not fetch business data');
     await page.getByLabel(await translated(page,'Account system token')).fill('synthetic-account-token');await click(page,await btn(page,'Connect account',root));await root.locator('.tuzi-metrics').waitFor();
@@ -100,7 +102,8 @@ for(const engine of (process.env.BROWSER?[process.env.BROWSER]:['chromium','webk
     await click(page,await btn(page,'Edit',root));await page.getByLabel(await translated(page,'Name'),{exact:true}).fill('Edited key');await click(page,await btn(page,'Save',root));await root.getByText('Edited key',{exact:true}).waitFor();
     const patch=f.calls.find(([,b])=>b?.path==='/account/keys/8'&&b.method==='PATCH')[1];assert.deepEqual(patch.body,{name:'Edited key'},'PATCH preserves untouched limits');
     await click(page,await btn(page,'Create API key',root));await page.getByLabel(await translated(page,'Name'),{exact:true}).fill('New synthetic key');await click(page,await btn(page,'Save',root));await root.getByText('New synthetic key',{exact:true}).first().waitFor();await click(page,await btn(page,'Close',root));
-    await click(page,(await btn(page,'Add to Magpie',root)).first());await page.getByLabel(await translated(page,'Model IDs, separated by commas')).fill('fixture-model');await click(page,await btn(page,'Add provider',root));await root.getByText(await translated(page,'Provider saved'),{exact:true}).waitFor();assert.equal(f.calls.filter(x=>x[0].endsWith('/provider')).length,1);await click(page,await btn(page,'Close',root));
+    await click(page,(await btn(page,'Add to Magpie',root)).first());await page.getByLabel(await translated(page,'Model IDs, separated by commas')).fill('fixture-model');await click(page,await btn(page,'Add provider',root));await root.getByText(await translated(page,'Provider saved'),{exact:true}).waitFor();assert.equal(f.calls.filter(x=>x[0].endsWith('/provider')).length,1);
+    const events=await page.evaluate(()=>window.analyticsEvents);assert.equal(events.filter(e=>e.name==='连接兔子账户'&&e.data.结果==='成功').length,1);assert.equal(events.filter(e=>e.name==='创建 API Key'&&e.data.结果==='成功').length,1);assert.equal(events.filter(e=>e.name==='添加服务商'&&e.data.服务商==='新增').length,1);assert.ok(!JSON.stringify(events).includes('synthetic'));assert.ok(!JSON.stringify(events).includes('fixture-model'));await click(page,await btn(page,'Close',root));
     await click(page,root.getByRole('tab',{name:await translated(page,'Tuzi call details'),exact:true}));await root.locator('table').first().waitFor();assert.equal(await root.locator('.tuzi-metrics').count(),0);assert.equal(f.calls.find(([,b])=>b?.path==='/account/logs')[1].query.find(([k])=>k==='page_size')[1],'10');
     await root.getByText(await translated(page,'Refund amount'),{exact:true}).first().waitFor();if(process.env.ARTIFACT_DIR&&lang==='en'){await fs.mkdir(process.env.ARTIFACT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.ARTIFACT_DIR,`tuzi-logs-${engine}-${width}.png`)});}assert.equal(f.calls.filter(([,b])=>b?.path==='/account/logs/statistics').length,1);
     await click(page,root.getByRole('tab',{name:await translated(page,'Model marketplace'),exact:true}));await root.locator('.tuzi-model').waitFor();await click(page,await btn(page,'Model details',root));await root.getByText(await translated(page,'Catalog price'),{exact:true}).waitFor();assert.match(await root.locator('#tuziSheet').textContent(),/\$2/);if(process.env.ARTIFACT_DIR&&lang==='en')await page.screenshot({path:path.join(process.env.ARTIFACT_DIR,`tuzi-prices-${engine}-${width}.png`)});await click(page,await btn(page,'Close',root));
