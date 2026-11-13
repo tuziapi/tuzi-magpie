@@ -32,6 +32,9 @@ func waitUsed(t *testing.T, used float64) {
 	t.Helper()
 	provider.StaleAllowance("codex", "me@example.com")
 	for deadline := time.Now().Add(10 * time.Second); ; {
+		// The cached value may already equal used. Wait for the refresh
+		// to finish before changing the fixture or arming its renewal hook.
+		provider.AwaitAllowance(t.Context(), "codex", "me@example.com")
 		a := provider.Allowances("codex")["me@example.com"]
 		if len(a) > 0 && a[0].Used == used {
 			return
@@ -165,4 +168,41 @@ func TestAutoVisionKeepsOffARefusedAccount(t *testing.T) {
 	if m := AutoVision(); m != "keyed/eye" {
 		t.Fatalf("AutoVision = %q, back on the refused account, before its reset", m)
 	}
+}
+
+// A matching cached value is not evidence that the refresh finished. Hold
+// the next read so the fixture cannot silently change under that refresh.
+func TestWaitUsedAwaitsRefresh(t *testing.T) {
+	codexSignedIn(t)
+	resets := time.Now().Add(time.Hour)
+	readCodexUsage(t, func() float64 { return 100 }, resets)
+	waitUsed(t, 100)
+
+	entered, release, done := make(chan struct{}), make(chan struct{}), make(chan struct{})
+	var enter, unblock sync.Once
+	readCodexUsage(t, func() float64 {
+		enter.Do(func() { close(entered) })
+		<-release
+		return 100
+	}, resets)
+	t.Cleanup(func() {
+		unblock.Do(func() { close(release) })
+		<-done
+	})
+	go func() {
+		defer close(done)
+		waitUsed(t, 100)
+	}()
+	select {
+	case <-entered:
+	case <-t.Context().Done():
+		t.Fatal("refresh never started")
+	}
+	select {
+	case <-done:
+		t.Fatal("matching stale cache ended the wait before the refresh")
+	case <-time.After(100 * time.Millisecond):
+	}
+	unblock.Do(func() { close(release) })
+	<-done
 }
