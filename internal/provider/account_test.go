@@ -72,6 +72,9 @@ func signIn(t *testing.T) string {
 // logins and forgets anything a previous test cached.
 func isolate(t testing.TB) {
 	t.Helper()
+	endReadsOut(t, "before the test")
+	// Registered first: wait after the test releases its fakes.
+	t.Cleanup(func() { endReadsOut(t, "after the test") })
 	oldKeychain, oldBase, oldExe := claudeKeychain, claudeBase, claudeExecutable
 	oldDevin := DevinExecutable
 	claudeKeychain = false
@@ -261,6 +264,31 @@ func TestAccountsAreProviders(t *testing.T) {
 	// no Claude credential in this home: no claude provider
 	if _, ok := find(All(), "claude"); ok {
 		t.Fatal("claude listed without credentials")
+	}
+}
+
+// endReadsOut waits for the allowance and usage reads a test left running
+// (readsOut). Left to run on, one reads the sign-in in the next test's
+// home before that test has written it, and caches that there is none:
+// TestClaudeAccountServesModelsListedSinceItsFetch found no Claude
+// account, under load only, after TestClaudeAllSignedOutStaysListed's
+// InUseLogin left its Allowances read past firstWait (#3174).
+func endReadsOut(t testing.TB, when string) {
+	t.Helper()
+	deadline := time.After(time.Minute) // a read gives up after 30s
+	for {
+		readsOut.Lock()
+		n, idle := readsOut.n, readsOut.idle
+		readsOut.Unlock()
+		if n == 0 {
+			return
+		}
+		select {
+		case <-idle:
+		case <-deadline:
+			t.Errorf("%d allowance or usage reads still ran a minute %s", n, when)
+			return
+		}
 	}
 }
 

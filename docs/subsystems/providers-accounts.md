@@ -410,6 +410,14 @@ and `TestHistoricalWindowHoldsUsesEachWindowsOwnReading`.
 
 ## Verification
 
+Background allowance and usage reads started by `Allowances`,
+`SubscriptionUsage` and `KeyAllowance` are counted by `goRead`
+([routing.go](../../internal/provider/routing.go)). Test isolation waits for
+these reads before resetting shared state and during cleanup, with a one-minute
+bound. This prevents a preceding test from reading the next test's temporary
+credentials (upstream #3174). Reads remain asynchronous in production.
+`TestReadLeftOutEndsWithItsTest` guards this lifecycle.
+
 ```sh
 go test -tags nogui ./internal/provider -run 'GoesThroughItsProxy'
 go test -tags nogui ./internal/provider -run 'TestClaudeSwitchTakesTheAccountsProxy|TestClaudeAccountProxy'
