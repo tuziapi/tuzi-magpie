@@ -73,25 +73,18 @@ fixture，所有请求被拦截为合成数据，外部网络被拒绝；不启�
 及 yetone 署名。见 SOURCE.json、public/MAGPIE-LICENSE.txt 与页脚源码/许可入口。
 生产发布应同时提供当前页面对应源码（流程生成 source.tar.gz）和 SOURCE.json。
 
-## GitHub Pages 发布准备（尚未发布）
+## GitHub Pages 发布
 
-`.github/workflows/tuzi-download-page.yml` 仅支持 main 上手动运行，默认 deploy=false，
-先测试和真实构建，再上传 Pages artifact；deploy=true 才有部署作业。与客户端打包
-工作流没有依赖，不因修改页面而重建桌面程序，不在 Release/Push 事件自动运行。
-当前仓库没有其他启用的 Pages 工作流；原 `site/` 和 Worker 不做修改。
+发布来源为 `main` 分支的 `/docs`。源码仍在本目录，`docs/` 仅额外保存构建产物，
+原有项目文档保留。`.nojekyll` 跳过 Jekyll 处理。
 
-获得授权后：
+更新页面时运行 `npm run build`，将 `dist/` 的文件同步到仓库 `docs/`，
+检查差异后提交并推送到兔子版 main。不得清空 docs 或删除已有项目文档。
+页面资源基路径保持 `/tuzi-magpie/`，线上地址为 https://tuziapi.github.io/tuzi-magpie/。
 
-1. 审核并提交本目录及工作流到 **tuziapi/tuzi-magpie**（不能推到 origin 上游）。
-2. 管理员核实 Pages 当前 Source；若使用分支发布，停用该发布来源，再选择 GitHub
-   Actions，确保只有本流程写入 Pages。不要同时维护根目录静态快照。
-3. 检查 github-pages 环境保护规则、运行权限/额度，确认正式 Release 六包可下载。
-4. 先手动运行 deploy=false 检查产物，再明确执行 deploy=true。
-5. 访问 https://tuziapi.github.io/tuzi-magpie/，检查子路径、六包链接、摘要和移动端。
-   新版本发布后独立重跑页面流程刷新清单；文案变更同样不需要客户端构建。
-
-没有执行推送、PR、部署或 Pages 设置修改。实际服务器设置需管理员上线前核实，
-不能仅凭仓库中没有 Pages 工作流就断言线上没有其他发布来源。
+`.github/workflows/tuzi-download-page.yml` 仅手动测试、构建和上传预览 artifact，
+不再部署 Pages，避免与分支发布覆盖。分支发布仍依赖 GitHub 的 Pages 服务，
+账号账单锁定可能阻止发布；必须检查实际部署结果，不能把推送成功视为上线成功。
 
 ## 后续 tuzi-api 接入
 

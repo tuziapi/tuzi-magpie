@@ -1,13 +1,9 @@
-name: Tuzi download page (manual)
+name: Tuzi download page validation (manual)
 
 # Deliberately manual: no release, push or client-package workflow triggers.
 on:
   workflow_dispatch:
     inputs:
-      deploy:
-        description: 'Publish to GitHub Pages (requires owner approval and Pages Actions setup)'
-        type: boolean
-        default: false
       release_tag:
         description: 'Optional stable vX.Y.Z; empty uses latest official release'
         type: string
@@ -48,21 +44,7 @@ jobs:
           git archive --format=tar.gz --output=packages/download-page/dist/source.tar.gz HEAD packages/download-page internal/gui/assets internal/gui/tests/tuzi-account.test.cjs LICENSE THIRD_PARTY_NOTICES
           cp packages/download-page/SOURCE.json packages/download-page/dist/SOURCE.json
           cp packages/download-page/LICENSE packages/download-page/dist/LICENSE.txt
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: tuzi-download-page-preview
           path: packages/download-page/dist
-  deploy:
-    if: inputs.deploy
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      # configure-pages is intentionally absent: this workflow never enables or
-      # reconfigures Pages. The owner must choose Actions before deployment.
-      - uses: actions/deploy-pages@v4
-        id: deployment
