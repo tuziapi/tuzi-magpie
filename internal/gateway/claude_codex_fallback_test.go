@@ -133,19 +133,12 @@ done
 			codex = nil
 			mu.Unlock()
 		}
-		done := make(chan struct{})
+		// Wait for the handler itself: a slow runner must not leave this
+		// request writing usage into the next test after a 30s timer (#2859).
 		rec := httptest.NewRecorder()
-		go func() {
-			defer close(done)
-			req := httptest.NewRequest("POST", "/v1/messages", strings.NewReader(`{"model":"claude/claude-opus-5-5","max_tokens":50,"stream":`+stream+`,"thinking":{"type":"adaptive"},"output_config":{"effort":"high"},"messages":[{"role":"user","content":"`+tc.text+`"}]}`))
-			req.Header.Set("User-Agent", "claude-cli/2.1.0 (external, cli)")
-			s.Handler().ServeHTTP(rec, req)
-		}()
-		select {
-		case <-done:
-		case <-time.After(30 * time.Second):
-			t.Fatalf("stream=%s: no answer", stream)
-		}
+		req := httptest.NewRequestWithContext(t.Context(), "POST", "/v1/messages", strings.NewReader(`{"model":"claude/claude-opus-5-5","max_tokens":50,"stream":`+stream+`,"thinking":{"type":"adaptive"},"output_config":{"effort":"high"},"messages":[{"role":"user","content":"`+tc.text+`"}]}`))
+		req.Header.Set("User-Agent", "claude-cli/2.1.0 (external, cli)")
+		s.Handler().ServeHTTP(rec, req)
 		b, _ := os.ReadFile(log)
 		mu.Lock()
 		got := len(codex)
