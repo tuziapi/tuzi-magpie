@@ -763,6 +763,8 @@ func thinkingConfig(r *Request, model string, claude bool, at string) map[string
 				level = "low"
 			case effort == "medium" && (strings.Contains(m, "flash") || gen > 3):
 				level = "medium"
+			case effort == "xhigh" && gen >= 4:
+				level = "xhigh"
 			}
 			tc["thinkingLevel"] = level
 		}
