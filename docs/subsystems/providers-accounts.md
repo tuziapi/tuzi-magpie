@@ -196,6 +196,12 @@ A signed-in account's model list exists only at its vendor (the ChatGPT backend'
 
 ## Runtime path
 
+When copying a provider, [`AddCopy`](../../internal/provider/provider.go) inherits
+the source account’s balance token only when the copy also inherits its API keys
+and the user supplied no token. A copy with its own API key can provide its own
+balance token. This applies when creating the copy. Existing copies retain their
+saved credentials (`TestAddCopy`).
+
 1. **Add.** The Providers page adds a key provider through `Add` or `Save`, or an account through `StartSignIn`. An agent signed in on its own is found by `Accounts` with no step from the user.
 2. **Resolve.** The gateway calls `provider.Resolve` or `GroupFor` with the model name, then plans candidates over the provider's keys or accounts.
 3. **Sign.** For each try, `Sign` gives the request its auth. A token about to expire is refreshed first, and the rotated tokens go back to their one holder: the agent's store, or `logins.json` for an account standing behind it.
