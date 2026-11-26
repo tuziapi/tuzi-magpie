@@ -1226,11 +1226,10 @@ func servesAll(h, p Provider) bool {
 }
 
 // AddCopy adds p, a copy the user made of the provider from (#268), beside
-// it: what the form doesn't carry — the keys, the balance token, how
-// requests spread over the keys, where they fall back to — is from's where
-// p leaves it out. The same key on the same host is taken, the copy being
-// asked for (another model list, another endpoint). A signed-in account is
-// never copied: its sign-in is the agent's.
+// it. It inherits the source keys, their balance token and routing only
+// when p has no key of its own. The fallback list is inherited when omitted.
+// The copy may use the same key on the same host to serve a different model
+// list or endpoint. Signed-in accounts cannot be copied.
 func AddCopy(p Provider, from string) (string, error) {
 	src, err := Find(from)
 	if err != nil {
@@ -1243,9 +1242,10 @@ func AddCopy(p Provider, from string) (string, error) {
 		p.Key, p.KeyName, p.KeyProtocol, p.KeyWeight, p.KeyPlan = src.Key, src.KeyName, src.KeyProtocol, src.KeyWeight, src.KeyPlan
 		p.Keys = slices.Clone(src.Keys)
 		p.Routing, p.Sink, p.Affinity = src.Routing, src.Sink, src.Affinity
-	}
-	if p.BalanceToken == "" {
-		p.BalanceToken = src.BalanceToken
+		// The balance token belongs to the account whose keys were copied.
+		if p.BalanceToken == "" {
+			p.BalanceToken = src.BalanceToken
+		}
 	}
 	// the access key as the copy's editor showed it: the form sends its ID
 	// but never the saved Secret, which went missing from the copy (#1821)
