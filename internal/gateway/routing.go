@@ -284,7 +284,7 @@ var (
 	// words or not — a day's free requests, say, or a sub2api key's own
 	// 5-hour, day or 7-day limit ("api key 7天限额已用完", sent as
 	// rate_limit_exceeded).
-	plannedWords = regexp.MustCompile(`(?i)quota|usage.?limit|hit your .*limit|limit.{0,24}resets|per.?(day|week|month)|daily|weekly|monthly|额度|用量|套餐|限额已用完`)
+	plannedWords = regexp.MustCompile(`(?i)quota|usage.?limit|hit your .*limit|limit.{0,24}resets|per.?(day|week|month)|daily|weekly|monthly|额度|用量|使用上限|套餐|限额已用完`)
 	// minuteWords: a 429 that names a window of a minute or less, or the
 	// rate itself — tokens or requests per minute, TPM, RPM — which some
 	// vendors call a quota all the same: Gemini's "You exceeded your
@@ -514,11 +514,12 @@ func failure(status int, body []byte) string {
 		return failQuota
 	case status == 402, creditWords.Match(body) && (status != 429 || brokeWords.Match(body)) || bytes.Contains(body, []byte("insufficient_quota")):
 		return failCredit
-	case status == 429 && resetsWhen.Match(body):
+	case status == 429 && (resetsWhen.Match(body) || zhipuResets.Match(body)):
 		// out until the time it names, in whichever language it said so:
 		// WorkBuddy's Chinese refusal read as out of quota (用量), its
 		// English one as a rate limit, and each rested its own fallback
-		// (#1669)
+		// (#1669). Zhipu's 1308 and 1310 can name their plan reset in
+		// Beijing time under a generic Anthropic rate_limit_error (#3013).
 		return failQuota
 	case status == 429 && minuteLimit(body):
 		// a limit per minute, whatever it calls itself: back in a
